@@ -2052,15 +2052,40 @@ label.required::before {
     overflow: hidden;
     animation: profileMenuSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1051 !important;
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    left: auto !important;
+    transform: none !important;
 }
 
 /* Profile dropdown positioning for different pages */
 #vault-management-page .admin-profile-menu {
     left: -70px !important;
+    right: auto !important;
 }
 
 #account-management-page .admin-profile-menu {
     left: -70px !important;
+    right: auto !important;
+}
+
+/* Specific positioning for vault admin profile menu */
+#vaultAdminProfileMenu {
+    left: -70px !important;
+    right: auto !important;
+    position: absolute !important;
+    top: 100% !important;
+    transform: none !important;
+}
+
+/* Specific positioning for admin profile menu 2 (account list) */
+#adminProfileMenu2 {
+    left: -70px !important;
+    right: auto !important;
+    position: absolute !important;
+    top: 100% !important;
+    transform: none !important;
 }
 
 /* Profile and Notification Button Styles */
@@ -2077,6 +2102,16 @@ label.required::before {
     text-decoration: none;
     transition: all 0.3s ease;
     position: relative;
+}
+
+/* Ensure dropdown container has proper positioning */
+.nav-item.nav-icon.dropdown {
+    position: relative !important;
+}
+
+/* Specific styling for vault admin profile dropdown */
+#vaultAdminProfileDropdown {
+    position: relative !important;
 }
 
 .nav-icon-1:hover {

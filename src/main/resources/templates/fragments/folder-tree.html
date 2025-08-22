@@ -1,0 +1,93 @@
+<th:block th:fragment="folderNode(folder, level, type)">
+    <li th:attr="data-folder-id=${folder.id},data-type=${type}" th:style="'padding-left: 20px;'">
+        <div class="your-knowledge-wrapper" style="position: relative;" th:attr="data-type=${type}">
+            <th:block th:with="folderParam=${type} == 'public' ? '&official=true' : '&private=true'">
+                <a th:href="@{'/vault-detail?id=' + ${vault.id} + '&folder=' + ${folder.id} + ${folderParam}}"
+                    class="collapsed folder-link" th:data-folder-id="${folder.id}" aria-expanded="false">
+                    <div class="d-flex align-items-center">
+                        <div class="combined-icon-wrapper"
+                            style="position: relative; display: flex; align-items: center; width: 22px; height: 22px;">
+                            <i th:class="${type == 'public'} ? 'public-icon' : 'personal-icon'">
+                                <svg width="20" class="" id="iq-main-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                </svg>
+                            </i>
+                            <span
+                                th:if="${(folder.subfolders != null and folder.subfolders.size() > 0) or (type == 'public')}"
+                                th:class="'expand-collapse-icon d-flex flex-column justify-content-center btn-dropdown ' + (${type} == 'public' ? 'public-toggle-btn' : 'personal-toggle-btn')"
+                                style="cursor: pointer; margin-left: -5px;">
+                                <i class="las la-angle-right iq-arrow-right arrow-active"></i>
+                                <i class="las la-angle-down iq-arrow-right arrow-hover"></i>
+                            </span>
+                        </div>
+                        <span class="folder-name text-truncate" th:text="${folder.name}"
+                            th:title="${folder.name}">Folder
+                            Name
+                        </span>
+                        <div class="your-knowledge-dropdown-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-three-dots" viewBox="0 0 16 16">
+                                <path
+                                    d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
+                            </svg>
+                        </div>
+                    </div>
+                </a>
+            </th:block>
+            <div class="knowledge-menu">
+                <a class="knowledge-menu-item" th:attr="data-folder-id=${folder.id},data-vault-id=${folder.vaultId}"
+                    data-toggle="collapse" href="#collapseMenu" role="button" aria-expanded="false">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 24 24"
+                        style="margin-top: -2px;">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="m4.988 19.012 5.41-5.41m2.366-6.424 4.058 4.058-2.03 5.41L5.3 20 4 18.701l3.355-9.494 5.41-2.029Zm4.626 4.625L12.197 6.61 14.807 4 20 9.194l-2.61 2.61Z">
+                        </path>
+                    </svg>
+                    <span>Create Knowledge</span>
+                </a>
+                <div class="knowledge-menu-item-divider"></div>
+
+                <div class="knowledge-menu-item add-subfolder">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" style="margin-top: -5px;" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M14 8H4m8 3.5v5M9.5 14h5M4 6v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-5.032a1 1 0 0 1-.768-.36l-1.9-2.28a1 1 0 0 0-.768-.36H5a1 1 0 0 0-1 1Z" />
+                    </svg>
+                    <span>Add subfolder</span>
+                </div>
+                <div class="knowledge-menu-item rename-folder" th:attr="data-folder-id=${folder.id}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor"
+                        class="bi bi-input-cursor" viewBox="0 0 16 16">
+                        <path stroke-width="2"
+                            d="M10 5h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4v1h4a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-4zM6 5V4H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v-1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
+                        <path fill-rule="evenodd" stroke-width="2"
+                            d="M8 1a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-1 0v-13A.5.5 0 0 1 8 1" />
+                    </svg>
+                    <span style="margin-left: 5px;">Rename</span>
+                </div>
+                <div class="knowledge-menu-item delete-folder" th:attr="data-folder-id=${folder.id}"
+                    style="margin-top: 3px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-trash" viewBox="0 0 16 16">
+                        <path
+                            d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                        <path
+                            d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+                    </svg>
+                    <span>Delete</span>
+                </div>
+            </div>
+        </div>
+        <ul th:id="${type} + '-user-' + ${folder.id}"
+            th:class="'iq-submenu collapse' + ((level == null or level == 0 or level == '0') ? ' show' : '')"
+            th:if="${folder.subfolders != null and folder.subfolders.size() > 0}">
+            <th:block th:each="sub : ${folder.subfolders}">
+                <th:block
+                    th:replace="fragments/folder-tree :: folderNode(${sub}, ${level != null ? level + 1 : 1}, ${type})" />
+            </th:block>
+        </ul>
+    </li>
+</th:block>

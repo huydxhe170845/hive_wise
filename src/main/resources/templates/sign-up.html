@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="/css/auth.css"/>
+    <link rel="stylesheet" href="/css/global.css"/>
+    <link rel="stylesheet" href="/css/loader.css"/>
+
+    <link rel="icon" href="/images/logo/logo_100x100_transparent.png" type="image/x-icon">
+    <title>Sign up</title>
+    <!-- <link rel="stylesheet" href="/css/global.css" /> -->
+</head>
+
+<body>
+
+<!--<div class="loader" id="loader">-->
+<!--    <ul class="hexagon-container">-->
+<!--        <li class="hexagon hex_1"></li>-->
+<!--        <li class="hexagon hex_2"></li>-->
+<!--        <li class="hexagon hex_3"></li>-->
+<!--        <li class="hexagon hex_4"></li>-->
+<!--        <li class="hexagon hex_5"></li>-->
+<!--        <li class="hexagon hex_6"></li>-->
+<!--        <li class="hexagon hex_7"></li>-->
+<!--    </ul>-->
+<!--</div>-->
+
+<!--<div id="main-content" class="fade-in main-content">-->
+
+<div class="background_login"></div>
+
+<a class="logo" href="/">
+    <img src="/images/logo/logo_200x200_transparent.png" width="66" height="66" alt="logo_200x200_transparent">
+    <div class="brand-name">HIVEWISE</div>
+</a>
+
+<a class="btn-signup-page" href="http://localhost:8080/auth/log-in">
+    <div class="signup-label">LOG IN</div>
+</a>
+
+<div class="login-container">
+
+    <h1 class="header">Welcome to to HiveWise</h1>
+    <p class="description">Quick &amp; Simple way to Automate your payment</p>
+
+    <form th:action="@{/auth/sign-up}" method="POST" th:object="${registerRequest}">
+        <div class="fields">
+            <div class="field-wrapper" th:classappend="${#fields.hasErrors('email')} ? ' error-border' : ''">
+                <input type="email" placeholder=" " th:field="*{email}" class="input-floating">
+                <label class="label-field floating-label">EMAIL ADDRESS</label>
+                <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-text"></div>
+            </div>
+            <div class="field-wrapper" th:classappend="${#fields.hasErrors('username')} ? ' error-border' : ''">
+                <input type="text" placeholder=" " th:field="*{username}" class="input-floating">
+                <label class="label-field floating-label">USERNAME </label>
+                <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="error-text">
+                </div>
+            </div>
+            <div class="field-wrapper" th:classappend="${#fields.hasErrors('password')} ? ' error-border' : ''">
+                <input type="password" placeholder=" " th:field="*{password}" class="input-floating">
+                <label class="label-field floating-label">PASSWORD</label>
+                <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error-text"></div>
+            </div>
+            <div class="field-wrapper"
+                 th:classappend="${#fields.hasErrors('confirmPassword')} ? ' error-border' : ''">
+                <input type="password" placeholder=" " th:field="*{confirmPassword}" class="input-floating">
+                <label class="label-field floating-label">CONFIRM PASSWORD</label>
+                <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"
+                     class="error-text"></div>
+            </div>
+            <div class="rem-fg-wrapper">
+                <div class="remember-me-field">
+                    <input type="checkbox" th:field="*{agreeTerms}"
+                           th:classappend="${#fields.hasErrors('agreeTerms')} ? 'error-checkbox' : ''"/>
+                    <div class="label-field">I agree to the Terms of Service and Privacy Policy.</div>
+                </div>
+            </div>
+            <div th:if="${#fields.hasErrors('agreeTerms')}" th:errors="*{agreeTerms}" class="error-text-term">
+            </div>
+        </div>
+        <button class="btn-login" type="submit">
+            SIGN UP
+        </button>
+    </form>
+
+    <div class="or-use">OR</div>
+
+    <a class="btn-continue-with-google" href="/oauth2/authorization/google">
+        <div class="google-wrapper"><img class="icons_google" src="/images/logo/google.png"/></div>
+        <div class="continue_with_google">Continued with Google</div>
+    </a>
+
+</div>
+
+<p class="copy_right">© 2025. - 2026 All Rights Reserved. HiveWise</p>
+<!--</div>-->
+
+</body>
+<!--<script src="/js/loader.js"></script>-->
+
+</html>

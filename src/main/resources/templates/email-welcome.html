@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chào mừng đến với HiveWise KMS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .welcome-message {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        .features {
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+
+        .features h3 {
+            color: #495057;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: transform 0.2s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+        }
+
+        .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://via.placeholder.com/60x60/ffffff/667eea?text=HW" alt="HiveWise Logo" class="logo">
+            <h1>Chào mừng đến với HiveWise KMS</h1>
+            <p>Hệ thống Quản lý Kiến thức Thông minh</p>
+        </div>
+
+        <div class="content">
+            <div class="welcome-message">
+                Xin chào <span class="highlight">{{name}}</span>! 🎉
+            </div>
+
+            <p>
+                Chúng tôi rất vui mừng chào đón bạn đến với <strong>HiveWise KMS</strong> - nền tảng quản lý kiến thức
+                hiện đại và thông minh.
+                Tài khoản của bạn đã được tạo thành công với username: <span class="highlight">{{username}}</span>.
+            </p>
+
+            <div class="features">
+                <h3>🚀 Những gì bạn có thể làm với HiveWise KMS:</h3>
+                <ul class="feature-list">
+                    <li>Tạo và quản lý các vault kiến thức</li>
+                    <li>Chia sẻ và cộng tác với đồng nghiệp</li>
+                    <li>Tìm kiếm thông tin nhanh chóng</li>
+                    <li>Trợ lý AI thông minh hỗ trợ</li>
+                    <li>Phân tích và báo cáo chi tiết</li>
+                    <li>Bảo mật dữ liệu cao cấp</li>
+                </ul>
+            </div>
+
+            <div style="background-color: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                <h4 style="color: #1976d2; margin-top: 0;">🔐 Hướng dẫn đăng nhập:</h4>
+                <p style="margin-bottom: 10px;">
+                    <strong>Tên đăng nhập:</strong> <span class="highlight">{{username}}</span>
+                </p>
+                <p style="margin-bottom: 15px;">
+                    <strong>Phương thức đăng nhập:</strong> Sử dụng email của bạn để đăng nhập qua Google hoặc chức năng "Quên mật khẩu"
+                </p>
+            </div>
+
+            <p>
+                Để bắt đầu sử dụng hệ thống, vui lòng đăng nhập vào tài khoản của bạn:
+            </p>
+
+            <div style="text-align: center;">
+                <a href="{{loginLink}}" class="cta-button">
+                    🚀 Đăng nhập ngay
+                </a>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 14px; color: #6c757d;">
+                <strong>Lưu ý:</strong> Nếu bạn gặp bất kỳ vấn đề nào trong quá trình sử dụng,
+                đừng ngần ngại liên hệ với đội ngũ hỗ trợ của chúng tôi.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>
+                © 2024 HiveWise KMS. Tất cả quyền được bảo lưu.<br>
+                Email này được gửi tự động, vui lòng không trả lời.
+            </p>
+            <p>
+                <a href="#">Chính sách bảo mật</a> |
+                <a href="#">Điều khoản sử dụng</a> |
+                <a href="#">Hỗ trợ</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

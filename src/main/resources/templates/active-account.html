@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/css/auth.css" />
+    <link rel="icon" href="/images/logo/logo_100x100_transparent.png" type="image/x-icon">
+    <title>Active account</title>
+</head>
+
+<body>
+
+    <div class="background_login"></div>
+
+    <a class="logo" href="/">
+        <img src="/images/logo/logo_200x200_transparent.png" width="66" height="66" alt="logo_200x200_transparent">
+        <div class="brand-name">HIVEWISE</div>
+    </a>
+
+    <a href="http://localhost:8080/auth/log-in" class="btn-signup-page" style="width: 150px;">
+        <div class="signup-label">BACK TO LOG IN</div>
+    </a>
+
+    <div class="active-container">
+
+        <div class="header">Final Step!</div>
+        <p class="active_description">To complete the registration process, please click the
+            <b style="color: rgb(14, 13, 13);">ACTIVATION LINK</b>
+            in the confirmation email sent to <strong th:text="${email}">your email</strong>.
+            If you do not see the activation email in your inbox, please check your spam or junk mailbox.
+        </p>
+        <p class="active_description" style="align-self: flex-start; margin-left: 12px;"><b
+                style="color: rgb(41, 41, 41);">From</b>: hivewise.kms@gmail.com</p>
+        <p class="active_description" style="align-self: flex-start; margin-left: 12px;"><b
+                style="color: rgb(41, 41, 41);">Subject</b>: HiveWise Activation Email</p>
+        <p class="active_description" style="align-self: flex-start;">After you click the
+            <b style="color: rgb(41, 41, 41);">ACTIVATION LINK</b>, please select the HiveWise service to log in to get
+            started.
+        </p>
+
+        <!--    <form method="post" action="/auth/resend-verification"-->
+        <!--          th:if="${isActivated == null or !isActivated}">-->
+        <!--        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
+        <!--        <input type="hidden" name="email" th:value="${email}"/>-->
+        <!--        <button id="resend-btn" type="submit" class="btn-resend-email" style="width:200px;" disabled>-->
+        <!--            <span id="resend-label" class="resend-label">RESEND EMAIL</span>-->
+        <!--        </button>-->
+        <!--        <p id="resend-info" class="countdown-text"-->
+        <!--           th:if="${remainingSeconds != null and remainingSeconds > 0}">-->
+        <!--            Vui lòng đợi <span id="timer">5:00</span> để gửi lại email.-->
+        <!--        </p>-->
+        <!--    </form>-->
+
+        <form method="post" action="/auth/resend-verification" th:if="${isActivated == null or !isActivated}">
+            <th:block th:if="${_csrf != null}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            </th:block>
+            <input type="hidden" name="email" th:value="${email}" />
+            <button id="resend-btn" type="submit" class="btn-resend-email" style="width:200px;" disabled>
+                <span id="resend-label" class="resend-label">RESEND EMAIL</span>
+            </button>
+            <p id="resend-info" class="countdown-text" th:if="${remainingSeconds != null and remainingSeconds > 0}">
+                Vui lòng đợi <span id="timer">5:00</span> để gửi lại email.
+            </p>
+        </form>
+
+
+        <div th:if="${resendSuccess}" class="success-message">
+            Email xác nhận đã được gửi lại.
+        </div>
+        <div th:if="${sendSuccess}" class="success-message">
+            Email xác nhận đã được gửi.
+        </div>
+        <div th:if="${errorMessage != null}" class="error-message" th:text="${errorMessage}"></div>
+    </div>
+
+    <p class="copy_right">© 2021. - 2025 All Rights Reserved. HiveWise</p>
+
+    <script th:inline="javascript">
+
+        /*<![CDATA[*/
+        //var remaining = [[${ remainingSeconds }]] || 0;
+        var btn = document.getElementById('resend-btn');
+        var timerSpan = document.getElementById('timer');
+        var countdownWrapper = document.getElementById('resend-info');
+
+        function formatTime(seconds) {
+            var minutes = Math.floor(seconds / 60);
+            var secs = seconds % 60;
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        if (remaining > 0) {
+            timerSpan.textContent = formatTime(remaining);
+            var interval = setInterval(function () {
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    if (countdownWrapper) countdownWrapper.style.display = 'none';
+                } else {
+                    remaining--;
+                    timerSpan.textContent = formatTime(remaining);
+                }
+            }, 1000);
+        } else {
+            btn.disabled = false;
+            if (countdownWrapper) countdownWrapper.style.display = 'none';
+        }
+        /*]]>*/
+
+    </script>
+
+</body>
+
+</html>

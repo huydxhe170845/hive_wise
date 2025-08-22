@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/css/auth.css" />
+    <link rel="stylesheet" href="/css/global.css" />
+    <link rel="stylesheet" href="/css/loader.css" />
+
+    <link rel="icon" href="/images/logo/logo_100x100_transparent.png" type="image/x-icon">
+    <title>Login</title>
+    <!-- <link rel="stylesheet" href="/src/main/resources/static/css/global.css" />-->
+    <!-- <link rel="stylesheet" href="/css/global.css" /> -->
+</head>
+
+<body>
+
+    <!--<div class="loader" id="loader">-->
+    <!--    <ul class="hexagon-container">-->
+    <!--        <li class="hexagon hex_1"></li>-->
+    <!--        <li class="hexagon hex_2"></li>-->
+    <!--        <li class="hexagon hex_3"></li>-->
+    <!--        <li class="hexagon hex_4"></li>-->
+    <!--        <li class="hexagon hex_5"></li>-->
+    <!--        <li class="hexagon hex_6"></li>-->
+    <!--        <li class="hexagon hex_7"></li>-->
+    <!--    </ul>-->
+    <!--</div>-->
+
+    <!--<div id="main-content" class="fade-in main-content">-->
+
+
+    <div class="background_login"></div>
+
+    <a class="logo" href="/">
+        <img src="/images/logo/logo_200x200_transparent.png" width="66" height="66" alt="logo_200x200_transparent">
+        <div class="brand-name">HIVEWISE</div>
+    </a>
+
+    <!-- <a class="btn-signup-page" href="http://localhost:8080/auth/sign-up">
+        <div class="signup-label">SIGN UP</div>
+    </a> -->
+
+    <div class="login-container">
+
+        <h1 class="header">Welcome to HiveWise</h1>
+        <p class="description">Quick &amp; Simple way to Automate your payment</p>
+        <form th:action="@{/auth/log-in}" method="POST" th:object="${loginRequest}">
+            <div class="fields">
+                <div class="field-wrapper" th:classappend="${#fields.hasErrors('username')} ? ' error-border' : ''">
+                    <input type="text" placeholder=" " th:field="*{username}" class="input-floating">
+                    <label class="label-field floating-label">USERNAME OR EMAIL ADDRESS</label>
+                    <div class="error-text" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                </div>
+                <div class="field-wrapper" th:classappend="${#fields.hasErrors('password')} ? ' error-border' : ''">
+                    <input type="password" placeholder=" " th:field="*{password}" class="input-floating">
+                    <label class="label-field floating-label">PASSWORD</label>
+                    <div class="error-text" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                </div>
+                <div class="rem-fg-wrapper">
+                    <div class="remember-me-field">
+                        <input type="checkbox" th:field="*{rememberMe}">
+                        <div class="label-field">Remember Me</div>
+                    </div>
+                    <a class="forgot_pass_link" href="http://localhost:8080/auth/forgot-password">Forgot Password?</a>
+                </div>
+            </div>
+            <div class="error-text" th:if="${error}" th:text="${error}"></div>
+            <button class="btn-login" type="submit">
+                LOG IN
+            </button>
+        </form>
+
+        <div class="or-use">OR</div>
+
+        <a class="btn-continue-with-google" href="/oauth2/authorization/google">
+            <div class="google-wrapper"><img class="icons_google" src="/images/logo/google.png" /></div>
+            <div class="continue_with_google">Continued with Google</div>
+        </a>
+
+    </div>
+
+    <p class="copy_right">© 2025. - 2026 All Rights Reserved. HiveWise</p>
+    <!--</div>-->
+
+    <div id="toast-notification" class="toast-notification">
+        <svg xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px; margin-right: 10px;" fill="none"
+            viewBox="0 0 24 24" stroke="#065f46" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+        <span style="flex-grow: 1;" id="toast-message"></span>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            /* Thymeleaf sẽ render successMessage thành chuỗi nếu có */
+            var successMessage = /*[[${successMessage}]]*/ '';
+            if (successMessage && successMessage !== 'null' && successMessage !== '') {
+                showToast(successMessage);
+            }
+
+            function showToast(message) {
+                const toast = document.getElementById("toast-notification");
+                const toastMsg = document.getElementById("toast-message");
+                if (!toast || !toastMsg) return;
+                toastMsg.textContent = message;
+                toast.style.display = "flex";
+                toast.style.opacity = "1";
+                setTimeout(() => {
+                    toast.style.opacity = "0";
+                    setTimeout(() => {
+                        toast.style.display = "none";
+                    }, 300);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+<!--<script src="/js/loader.js"></script>-->
+
+</html>

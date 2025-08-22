@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Advanced Exam Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f9f9f9;
+      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .card-metric {
+      color: white;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 120px;
+    }
+    .card-blue { background-color: #2e66ff; }
+    .card-green { background-color: #00b86b; }
+    .card-purple { background-color: #a24cf0; }
+    .card-orange { background-color: #fc7e2f; }
+    .exam-card {
+      background-color: white;
+      border-left: 4px solid orange;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .tag {
+      background-color: #f1f1f1;
+      padding: 5px 10px;
+      margin-right: 5px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .badge-custom {
+      font-size: 13px;
+      margin-right: 5px;
+      padding: 5px 8px;
+    }
+    .search-bar {
+      background-color: white;
+      padding: 15px;
+      margin-top: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .modal-lg-question {
+      max-width: 900px;
+      width: 90vw;
+    }
+    .modal-content-question {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .dropzone-upload {
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      padding: 30px;
+      text-align: center;
+      color: #666;
+      margin-top: 15px;
+    }
+    .answer-option {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .answer-option input[type="text"] {
+      flex: 1;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+<!-- HEADER & BUTTONS -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2>Advanced Exam Management</h2>
+    <p class="text-muted">Create, manage, and analyze comprehensive assessments</p>
+  </div>
+  <div>
+    <button class="btn btn-warning text-white me-2" onclick="openCreateExamModal()">+ Create Advanced Exam</button>
+  </div>
+</div>
+
+<!-- METRICS -->
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="card-metric card-blue"><h5>Total Exams</h5><h3>4</h3><small>+12% from last month</small></div></div>
+  <div class="col-md-3"><div class="card-metric card-green"><h5>Published</h5><h3>3</h3><small>75% of total</small></div></div>
+  <div class="col-md-3"><div class="card-metric card-purple"><h5>Total Attempts</h5><h3>479</h3><small>Across all exams</small></div></div>
+  <div class="col-md-3"><div class="card-metric card-orange"><h5>Avg Pass Rate</h5><h3>76%</h3><small>+5% improvement</small></div></div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-bar row g-3 align-items-center">
+  <div class="col-md-3"><input class="form-control" type="text" placeholder="Search exams by title, description, or tags..."></div>
+  <div class="col-md-2"><select class="form-select"><option>All Status</option></select></div>
+  <div class="col-md-2"><select class="form-select"><option>All Levels</option></select></div>
+  <div class="col-md-2"><select class="form-select"><option>All Categories</option></select></div>
+  <div class="col-md-2"><button class="btn btn-outline-secondary w-100">Filter</button></div>
+</div>
+
+<!-- EXAM CARD -->
+<div class="exam-card">
+  <div class="d-flex justify-content-between">
+    <div>
+      <h5>Advanced API Documentation Assessment</h5>
+      <div class="mb-2">
+        <span class="badge bg-success badge-custom">published</span>
+        <span class="badge bg-danger badge-custom">hard</span>
+        <span class="badge bg-primary badge-custom">Proctored</span>
+      </div>
+      <p class="text-muted">Comprehensive test covering REST API design, documentation standards, and best practices for enterprise applications.</p>
+      <div class="d-flex gap-3 mb-2 text-muted small">
+        <div>API Documentation</div>
+        <div>25 questions</div>
+        <div>60 min</div>
+        <div>156 attempts</div>
+        <div>78% pass rate</div>
+      </div>
+      <div class="d-flex flex-wrap">
+        <span class="tag">API</span>
+        <span class="tag">Documentation</span>
+        <span class="tag">REST</span>
+        <span class="tag">Enterprise</span>
+      </div>
+      <div class="mt-2 text-muted small">
+        <span>Created 15/1/2024</span> · <span>Modified 20/1/2024</span> · <span>John Doe</span>
+      </div>
+    </div>
+    <div class="text-end">
+      <button class="btn btn-outline-success mb-2" onclick="openStartExamModal()">▶ Take Exam</button><br>
+      <button class="btn btn-outline-dark">📊 Analytics</button>
+    </div>
+  </div>
+  <div class="mt-2">
+    <strong class="text-success">82%</strong> Avg Score · <strong class="text-primary">78%</strong> Pass Rate
+  </div>
+</div>
+
+<!-- CREATE EXAM MODAL -->
+<!-- CREATE EXAM MODAL (CHUẨN) -->
+<div class="modal fade" id="createExamModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 98vw;">
+  <div class="modal-content" style="height: 95vh; max-height: 95vh;">
+
+      <div class="modal-header">
+        <h5 class="modal-title">📘 Advanced Exam Builder</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body d-flex p-0">
+        <!-- Sidebar -->
+        <div style="width: 320px; background-color: #f8f9fa; border-right: 1px solid #ddd; padding: 24px;">
+          <div class="mb-4">
+            <p class="mb-1">Questions</p><strong>0</strong>
+            <p class="mb-1">Total Points</p><strong>0</strong>
+            <p class="mb-1">Est. Time</p><strong>0 min</strong>
+          </div>
+          <div class="mb-4">
+            <h6>Sections</h6>
+            <div class="border rounded p-2 mb-2">
+              <div class="d-flex justify-content-between">
+                <div>Section 1</div>
+                <span class="badge bg-secondary">0 pts</span>
+              </div>
+              <small class="text-muted">0 questions</small>
+            </div>
+            <button class="btn btn-outline-primary btn-sm w-100">+ Add Section</button>
+          </div>
+          <div>
+            <h6>Add Question</h6>
+            <button class="btn btn-outline-secondary w-100 mb-2">Multiple Choice</button>
+            <button class="btn btn-outline-secondary w-100 mb-2">True/False</button>
+            <button class="btn btn-outline-secondary w-100 mb-2">Short Answer</button>
+            <button class="btn btn-outline-secondary w-100 mb-2">Essay</button>
+            <button class="btn btn-outline-secondary w-100 mb-2">Matching</button>
+            <button class="btn btn-outline-secondary w-100 mb-2">Fill in the Blank</button>
+          </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="flex-grow-1 p-4 overflow-auto">
+          <ul class="nav nav-tabs mb-3">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#overview">Overview</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#questions">Questions</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#settings">Settings</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preview">Preview</a></li>
+          </ul>
+
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="overview">
+              <div class="row mb-3">
+                <div class="col-md-8">
+                  <label class="form-label">Exam Title</label>
+                  <input type="text" class="form-control" placeholder="Enter exam title...">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Time Limit</label>
+                  <input type="number" class="form-control" value="60">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Passing Score (%)</label>
+                  <input type="number" class="form-control" value="70">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" placeholder="Describe what this exam covers..."></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Instructions</label>
+                <textarea class="form-control" placeholder="Instructions for exam takers..."></textarea>
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="form-label">Max Attempts</label>
+                  <input type="number" class="form-control" value="3">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Show Results</label>
+                  <select class="form-select">
+                    <option selected>After Submission</option>
+                    <option>Immediately</option>
+                    <option>Don't Show</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="questions">
+              <p>Questions tab content here...</p>
+            </div>
+            <div class="tab-pane fade" id="settings">
+              <p>Settings tab content here...</p>
+            </div>
+            <div class="tab-pane fade" id="preview">
+              <p>Preview tab content here...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary">Preview</button>
+        <div>
+          <button class="btn btn-light">Save Draft</button>
+          <button class="btn btn-dark">Publish Exam</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW CREATE EXAM MODAL (WOW version) -->
+<div class="modal fade" id="createExamModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">📘 Advanced Exam Builder</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0" style="display: flex; height: 85vh;">
+        <!-- Sidebar -->
+        <div style="width: 320px; background-color: #f8f9fa; border-right: 1px solid #ddd; padding: 24px;">
+          <div class="mb-4">
+            <p class="mb-1">Questions</p><strong>1</strong>
+            <p class="mb-1">Total Points</p><strong>1</strong>
+            <p class="mb-1">Est. Time</p><strong>2 min</strong>
+          </div>
+          <div class="mb-4">
+            <h6>Sections</h6>
+            <div class="border rounded p-2 mb-2">
+              <div class="d-flex justify-content-between">
+                <div>Section 1</div>
+                <span class="badge bg-secondary">1 pts</span>
+              </div>
+              <small class="text-muted">1 question</small>
+            </div>
+            <button class="btn btn-outline-primary btn-sm w-100">+ Add Section</button>
+          </div>
+          <div>
+            <h6>Add Question</h6>
+            <button class="btn btn-primary" onclick="openEditQuestionModal()">Multiple Choice</button>
+            <div class="modal fade" id="editQuestionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg-question modal-dialog-centered">
+    <div class="modal-content modal-content-question p-4">
+      <div class="modal-header">
+        <h5 class="modal-title">📝 Edit Question - Multiple Choice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Question Title</label>
+          <input type="text" class="form-control" placeholder="Enter question title...">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Question Content</label>
+          <textarea class="form-control" rows="3" placeholder="Enter your question here..."></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Answer Options</label>
+          <div id="answer-options-container">
+            <div class="answer-option">
+              <input type="text" class="form-control" placeholder="Option 1">
+              <input type="checkbox" class="form-check-input">
+            </div>
+            <div class="answer-option">
+              <input type="text" class="form-control" placeholder="Option 2">
+              <input type="checkbox" class="form-check-input">
+            </div>
+          </div>
+          <button class="btn btn-outline-secondary btn-sm mt-2" onclick="addOption()">+ Add Option</button>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Difficulty</label>
+            <select class="form-select">
+              <option>Easy</option>
+              <option selected>Medium</option>
+              <option>Hard</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Time Limit (minutes)</label>
+            <input type="number" class="form-control" placeholder="No limit">
+          </div>
+        </div>
+        <div class="mb-3 form-check form-switch">
+          <input type="checkbox" class="form-check-input" id="requiredSwitch">
+          <label class="form-check-label" for="requiredSwitch">Required</label>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Explanation (Optional)</label>
+          <textarea class="form-control" rows="2" placeholder="Explain the correct answer..."></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Media (Optional)</label>
+          <div class="dropzone-upload">
+            <div>📌 Upload image, video, or audio</div>
+            <input type="file" class="form-control mt-2" style="max-width: 300px; margin: 0 auto;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary">Save Question</button>
+      </div>
+    </div>
+  </div>
+</div>
+            <button class="btn btn-outline-secondary w-100 mb-2">True/False</button>
+            <button class="btn btn-outline-secondary w-100 mb-2">Short Answer</button>
+            <button class="btn btn-outline-secondary w-100 mb-2">Essay</button>
+            <button class="btn btn-outline-secondary w-100 mb-2">Matching</button>
+            <button class="btn btn-outline-secondary w-100 mb-2">Fill in the Blank</button>
+          </div>
+        </div>
+
+        <!-- Main Panel -->
+        <div style="flex: 1; padding: 24px; overflow-y: auto;">
+          <ul class="nav nav-tabs mb-3">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#overview">Overview</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#questions">Questions</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#settings">Settings</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#preview">Preview</a></li>
+          </ul>
+
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="overview">
+              <div class="row mb-3">
+                <div class="col-md-8">
+                  <label class="form-label">Exam Title</label>
+                  <input type="text" class="form-control" placeholder="Enter exam title...">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Time Limit</label>
+                  <input type="number" class="form-control" value="60">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Passing Score (%)</label>
+                  <input type="number" class="form-control" value="70">
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" placeholder="Describe what this exam covers..."></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Instructions</label>
+                <textarea class="form-control" placeholder="Instructions for exam takers..."></textarea>
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <label class="form-label">Max Attempts</label>
+                  <input type="number" class="form-control" value="3">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Show Results</label>
+                  <select class="form-select">
+                    <option selected>After Submission</option>
+                    <option>Immediately</option>
+                    <option>Don't Show</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="questions">
+              <p>Questions tab content here...</p>
+            </div>
+            <div class="tab-pane fade" id="settings">
+              <p>Settings tab content here...</p>
+            </div>
+            <div class="tab-pane fade" id="preview">
+              <p>Preview tab content here...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary">Preview</button>
+        <div>
+          <button class="btn btn-light">Save Draft</button>
+          <button class="btn btn-dark">Publish Exam</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD THIS SCRIPT RIGHT BEFORE </body> TAG -->
+<script>
+  function openEditQuestionModal() {
+    const modalEl = document.getElementById('editQuestionModal');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  }
+</script>
+
+
+<!-- TAKE EXAM MODAL -->
+<div class="modal fade" id="startExamModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content p-4 text-center">
+      <h4 class="mb-3">API Documentation Quiz</h4>
+      <p><strong>⏱️ 30 minutes</strong> &nbsp; | &nbsp; <strong>✔️ 3 questions</strong></p>
+      <p class="mb-2">Test your understanding of our API documentation and best practices.</p>
+      <p class="text-muted mb-4">You will have 30 minutes to complete this exam. Make sure you have a stable internet connection.</p>
+      <div class="d-grid gap-2">
+        <button class="btn btn-success">Start Exam</button>
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Back to Exams</button>
+        <!-- <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Back tojsjkskaao Exams</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function openCreateExamModal() {
+    new bootstrap.Modal(document.getElementById('createExamModal')).show();
+  }
+
+  function openStartExamModal() {
+    new bootstrap.Modal(document.getElementById('startExamModal')).show();
+  }
+
+  function openEditQuestionModal() {
+    const modalEl = document.getElementById('editQuestionModal');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  }
+
+  function addOption() {
+    const container = document.getElementById('answer-options-container');
+    const index = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = 'answer-option';
+    div.innerHTML = `<input type="text" class="form-control" placeholder="Option ${index}">
+                     <input type="checkbox" class="form-check-input">`;
+    container.appendChild(div);
+  }
+</script>
+</body>
+</html>

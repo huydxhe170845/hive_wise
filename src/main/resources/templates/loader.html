@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hexagon Loader</title>
+    <link rel="stylesheet" href="styles.css" />
+
+    <style>
+        ol,
+        ul {
+            list-style: none;
+            margin: 0;
+        }
+
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 160px;
+            height: 160px;
+            margin: -80px 0px 0px -80px;
+            background-color: transparent;
+            border-radius: 50%;
+            border: 2px solid #ffc814;
+
+        }
+
+        .loader:before {
+            content: "";
+            width: 164px;
+            height: 164px;
+            display: block;
+            position: absolute;
+            border: 2px solid #f7ef9b;
+            border-radius: 50%;
+            top: -2px;
+            left: -2px;
+            box-sizing: border-box;
+            clip: rect(0px, 35px, 35px, 0px);
+            z-index: 10;
+            animation: rotate infinite;
+            animation-duration: 3s;
+            animation-timing-function: linear;
+        }
+
+        .loader:after {
+            content: "";
+            width: 164px;
+            height: 164px;
+            display: block;
+            position: absolute;
+            border: 2px solid #faffc5;
+            border-radius: 50%;
+            top: -2px;
+            left: -2px;
+            box-sizing: border-box;
+            clip: rect(0px, 164px, 150px, 0px);
+            z-index: 9;
+            animation: rotate2 3s linear infinite;
+        }
+
+        .hexagon-container {
+            position: relative;
+            top: 33px;
+            left: 41px;
+            border-radius: 50%;
+        }
+
+        .hexagon {
+            position: absolute;
+            width: 40px;
+            height: 23px;
+            background-color: #FFD957;
+        }
+
+        .hexagon:before {
+            content: "";
+            position: absolute;
+            top: -11px;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 11.5px solid #FFD957;
+        }
+
+        .hexagon:after {
+            content: "";
+            position: absolute;
+            top: 23px;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 11.5px solid #FFD957;
+        }
+
+        .hexagon.hex_1 {
+            top: 0px;
+            left: 0px;
+            animation: Animasearch 3s ease-in-out infinite;
+            animation-delay: 0.2142857143s;
+        }
+
+        .hexagon.hex_2 {
+            top: 0px;
+            left: 42px;
+            animation: Animasearch 3s ease-in-out infinite;
+            animation-delay: 0.4285714286s;
+        }
+
+        .hexagon.hex_3 {
+            top: 36px;
+            left: 63px;
+            animation: Animasearch 3s ease-in-out infinite;
+            animation-delay: 0.6428571429s;
+        }
+
+        .hexagon.hex_4 {
+            top: 72px;
+            left: 42px;
+            animation: Animasearch 3s ease-in-out infinite;
+            animation-delay: 0.8571428571s;
+        }
+
+        .hexagon.hex_5 {
+            top: 72px;
+            left: 0px;
+            animation: Animasearch 3s ease-in-out infinite;
+            animation-delay: 1.0714285714s;
+        }
+
+        .hexagon.hex_6 {
+            top: 36px;
+            left: -21px;
+            animation: Animasearch 3s ease-in-out infinite;
+            animation-delay: 1.2857142857s;
+        }
+
+        .hexagon.hex_7 {
+            top: 36px;
+            left: 21px;
+            animation: Animasearch 3s ease-in-out infinite;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes Animasearch {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            15%,
+            50% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            65% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0);
+                clip: rect(0px, 35px, 35px, 0px);
+            }
+
+            50% {
+                clip: rect(0px, 40px, 40px, 0px);
+            }
+
+            100% {
+                transform: rotate(360deg);
+                clip: rect(0px, 35px, 35px, 0px);
+            }
+        }
+
+        @keyframes rotate2 {
+            0% {
+                transform: rotate(0deg);
+                clip: rect(0px, 164px, 150px, 0px);
+            }
+
+            50% {
+                clip: rect(0px, 164px, 0px, 0px);
+                transform: rotate(360deg);
+            }
+
+            100% {
+                transform: rotate(720deg);
+                clip: rect(0px, 164px, 150px, 0px);
+            }
+        }
+
+        @keyframes rotate3 {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Loader biến mất với scale */
+        .fade-out {
+            opacity: 0;
+            transform: scale(1.2);
+            /* hơi phóng to khi biến mất */
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        /* Main content hiện ra từ giữa */
+        .fade-in {
+            opacity: 0;
+            transform: scale(0.8);
+            /* bắt đầu nhỏ hơn một chút */
+            transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+        }
+
+        .fade-in.show {
+            opacity: 1;
+            transform: scale(1);
+            /* trở về kích thước bình thường */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loader" id="loader">
+        <ul class="hexagon-container">
+            <li class="hexagon hex_1"></li>
+            <li class="hexagon hex_2"></li>
+            <li class="hexagon hex_3"></li>
+            <li class="hexagon hex_4"></li>
+            <li class="hexagon hex_5"></li>
+            <li class="hexagon hex_6"></li>
+            <li class="hexagon hex_7"></li>
+        </ul>
+    </div>
+
+    <div class="main-content fade-in" style="display: none;">
+        style="display: none; text-align: center; padding-top: 100px; background-color: #ffdf75; height: 1000px;">
+        <h1>Chào mừng đến trang web của tôi!</h1>
+        <p>Đây là nội dung chính sau khi loader biến mất.</p>
+    </div>
+
+
+    <script>
+        const loader = document.querySelector('.loader');
+        const mainContent = document.querySelector('.main-content');
+        const MIN_LOAD_TIME = 1000;
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loader.classList.add('fade-out');
+
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    mainContent.style.display = 'block';
+                    setTimeout(() => {
+                        mainContent.classList.add('show');
+                    }, 10); // trigger reflow
+                }, 300); // khớp thời gian với transition
+            }, MIN_LOAD_TIME);
+        });
+
+    </script>
+
+</body>
+
+
+</html>

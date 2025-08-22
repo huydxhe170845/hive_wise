@@ -1,0 +1,464 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+/* //////////LOGO///////// */
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: absolute;
+    top: 30px;
+    left: 60px;
+    text-decoration: none;
+}
+
+.brand-name {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 900;
+    color: #262e33;
+    font-size: 28px;
+    line-height: 1.2;
+}
+
+/* //////////--LOGO--///////// */
+
+
+/* //////////SIGNUP PAGE BUTTON///////// */
+.btn-signup-page {
+    all: unset;
+    box-sizing: border-box;
+    position: absolute;
+    top: 30px;
+    right: 60px;
+    width: 138px;
+    height: 48px;
+    border: 1.5px solid #262e33;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+    border-radius: 40px;
+}
+
+.btn-signup-page:hover {
+    background-color: #000000;
+}
+
+.signup-label {
+    font-family: "Zen Kaku Gothic Antique-Black", Helvetica, serif;
+    font-weight: 900;
+    color: #212121;
+    font-size: 12.8px;
+    letter-spacing: 0.70px;
+    line-height: 22.5px;
+    white-space: nowrap;
+}
+
+.btn-signup-page:hover .signup-label {
+    color: #ffffff;
+}
+
+/* //////////--SIGNUP PAGE BUTTON--///////// */
+
+
+/* //////////LOGIN SECTION///////// */
+
+.login-container {
+    width: 490px;
+    height: auto;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 82px 40px -14px #64646414;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 40px 20px 30px;
+    border-radius: 20px;
+}
+
+.active-container {
+    width: 490px;
+    height: auto;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 82px 40px -14px #64646414;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 30px;
+    border-radius: 20px;
+}
+
+.header {
+    width: 380px;
+    font-family: "Zen Kaku Gothic Antique-Bold", Helvetica, serif;
+    font-weight: 700;
+    color: #000000;
+    font-size: 31.2px;
+    text-align: center;
+    letter-spacing: 0;
+    line-height: 37.5px;
+}
+
+.description {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #757575;
+    font-size: 14px;
+    letter-spacing: 0;
+    line-height: normal;
+}
+
+.active_description {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #444444;
+    font-size: 14px;
+    letter-spacing: 0;
+    line-height: normal;
+}
+
+.fields {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+}
+
+.login-container .field-wrapper {
+    width: 390px;
+    height: 60px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 40px;
+    padding: 12px 25px;
+    position: relative;
+}
+
+
+.label-field {
+    font-family: "Zen Kaku Gothic Antique-Medium", Helvetica, serif;
+    font-weight: 500;
+    color: #111111;
+    font-size: 13px;
+    letter-spacing: 0;
+    line-height: 18.1px;
+    white-space: nowrap;
+}
+
+.field-wrapper input {
+    width: 100%;
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 500;
+    color: #262e33;
+    font-size: 17px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    border: none;
+}
+
+
+.field-wrapper input::placeholder {
+    color: #b0b0b0;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.field-wrapper input:focus::placeholder {
+    opacity: 0.3;
+}
+
+.field-wrapper input:focus {
+    outline: none;
+}
+
+.rem-fg-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 370px;
+}
+
+.remember-me-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.remember-me-field input {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    border: 1px solid;
+    border-color: #262e33;
+    cursor: pointer;
+}
+
+.forgot_pass_link {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #616161;
+    font-size: 11px;
+    text-align: right;
+    letter-spacing: 0;
+    line-height: 22.5px;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+
+.btn-login {
+    margin-top: 20px;
+    width: 390px;
+    height: 60px;
+    background-color: #262e33;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Zen Kaku Gothic Antique-Medium", Helvetica, serif;
+    font-weight: 500;
+    color: #ffffff;
+    font-size: 16px;
+    text-transform: uppercase;
+    border-radius: 40px;
+}
+
+.btn-login:hover {
+    background-color: #585858;
+}
+
+.or-use {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #000000;
+    font-size: 12.8px;
+    text-align: center;
+    letter-spacing: 0;
+    line-height: 22.5px;
+    white-space: nowrap;
+    margin-top: -10px;
+}
+
+.btn-continue-with-google {
+    width: 100%;
+    max-width: 390px;
+    height: 60px;
+    border: 1px solid;
+    border-color: #e0e0e0;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: -10px;
+    border-radius: 40px;
+}
+
+.btn-continue-with-google:hover {
+    background-color: #f1f1f1;
+}
+
+.continue_with_google {
+    width: 175px;
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #424242;
+    font-size: 16px;
+    letter-spacing: 0;
+    line-height: 25.6px;
+}
+
+.google-wrapper {
+    display: flex;
+    width: 30px;
+    height: 30px;
+    background-color: #ffffff;
+    border-radius: 13px;
+    align-items: center;
+    justify-content: center;
+}
+
+.icons_google {
+    width: 20px;
+    height: 20px;
+
+}
+
+
+/* //////////COPY RIGHT///////// */
+.copy_right {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #616161;
+    font-size: 10.3px;
+    text-align: center;
+    letter-spacing: 0.70px;
+}
+
+
+.field-wrapper {
+    position: relative;
+}
+
+.input-floating {
+    background: transparent;
+    padding-top: 15px;
+}
+
+.floating-label {
+    position: absolute;
+    top: 20px;
+    left: 25px;
+    pointer-events: none;
+    transition: 0.2s ease all;
+    background: #fff;
+    padding: 0 4px;
+}
+
+.input-floating:focus+.floating-label,
+.input-floating:not(:placeholder-shown)+.floating-label {
+    top: 4px;
+    left: 25px;
+    font-size: 10px;
+    color: #777777;
+    background: #fff;
+    padding: 0 4px;
+    z-index: 1;
+}
+
+.error-text {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #d32f2f;
+    font-size: 12px;
+    letter-spacing: 0;
+    line-height: 18px;
+    margin-top: 15px;
+}
+
+.error-text-term {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #d32f2f;
+    font-size: 12px;
+    letter-spacing: 0;
+    line-height: 18px;
+    margin-top: -10px;
+
+}
+
+.field-wrapper.error-border {
+    border: 1px solid red;
+    border-radius: 40px;
+    padding: 12px 25px;
+    box-shadow: 0 0 4px rgba(255, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+input[type="checkbox"].error-checkbox {
+    border: 1px solid red;
+    box-shadow: 0 0 4px 0 rgba(255, 0, 0, 0.8);
+    border-radius: 3px;
+}
+
+.btn-resend-email {
+    margin-top: 20px;
+    height: 60px;
+    background-color: #262e33;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Zen Kaku Gothic Antique-Medium", Helvetica, serif;
+    font-weight: 500;
+    color: #ffffff;
+    font-size: 16px;
+    text-transform: uppercase;
+    border-radius: 40px;
+}
+
+.btn-resend-email:hover {
+    background-color: #585858;
+}
+
+.btn-resend-email:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.success-message {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #388e3c;
+    font-size: 12px;
+    letter-spacing: 0;
+    line-height: 18px;
+    margin-top: 15px;
+}
+
+.error-message {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #d32f2f;
+    font-size: 12px;
+    letter-spacing: 0;
+    line-height: 18px;
+    margin-top: 15px;
+}
+
+.countdown-text {
+    font-family: "Zen Kaku Gothic Antique-Regular", Helvetica, serif;
+    font-weight: 400;
+    color: #616161;
+    font-size: 12px;
+    letter-spacing: 0;
+    line-height: 18px;
+    margin-top: 15px;
+    margin-left: 10px;
+}
+
+
+.toast-notification {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: #d1fae5;
+    color: #065f46;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    display: none;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transition: opacity 0.3s ease-in-out;
+    max-width: 280px;
+    opacity: 0;
+}

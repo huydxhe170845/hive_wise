@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/vault-management.css">
+    <link rel="stylesheet" href="/css/loader.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="/images/logo/logo_100x100_transparent.png" type="image/x-icon">
+    <title>HiveWise - Vault Management</title>
+</head>
+
+<body>
+
+    <div class="loader" id="loader">
+        <ul class="hexagon-container">
+            <li class="hexagon hex_1"></li>
+            <li class="hexagon hex_2"></li>
+            <li class="hexagon hex_3"></li>
+            <li class="hexagon hex_4"></li>
+            <li class="hexagon hex_5"></li>
+            <li class="hexagon hex_6"></li>
+            <li class="hexagon hex_7"></li>
+        </ul>
+    </div>
+
+    <div id="main-content" class="fade-in main-content">
+
+        <aside class="sidebar" id="side-bar">
+            <a class="logo" href="/">
+                <img src="/images/logo/logo_100x100_transparent.png" height="40" width="40" alt="logo">
+                <span class="logo-text">HIVEWISE</span>
+            </a>
+            <div class="sidebar-links-container">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; gap: 55px; margin-bottom: 20px;">
+                    <div class="text-header-sidebar">Vault Settings</div>
+                    <div class="sidebar-toggle" data-tooltip="Collapse">
+                        <svg id="icon-collapse" class="w-6 h-6 text-gray-800 dark:text-white"
+                            xmlns="http://www.w3.org/2000/svg" width="29" height="29" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                d="M8.99994 10 7 11.9999l1.99994 2M12 5v14M5 4h14c.5523 0 1 .44772 1 1v14c0 .5523-.4477 1-1 1H5c-.55228 0-1-.4477-1-1V5c0-.55228.44772-1 1-1Z" />
+                        </svg>
+                        <svg id="icon-expand" class="w-6 h-6 text-gray-800 dark:text-white hidden"
+                            xmlns="http://www.w3.org/2000/svg" width="29" height="29" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                d="m7 10 1.99994 1.9999-1.99994 2M12 5v14M5 4h14c.5523 0 1 .44772 1 1v14c0 .5523-.4477 1-1 1H5c-.55228 0-1-.4477-1-1V5c0-.55228.44772-1 1-1Z" />
+                        </svg>
+                    </div>
+
+                </div>
+                <a class="sidebar-link " th:href="@{'/vault-management/edit-vault/general?id=' + ${vault.id}}">
+                    <div
+                        style=" width: 25px; height: 25px;  color: rgb(50, 48, 44); fill: rgb(50, 48, 44); flex-shrink: 0;">
+                        <svg viewBox="64 64 896 896" focusable="false" data-icon="appstore" width="25px" height="25px"
+                            fill="currentColor" aria-hidden="true">
+                            <path
+                                d="M464 144H160c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V160c0-8.8-7.2-16-16-16zm-52 268H212V212h200v200zm452-268H560c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V160c0-8.8-7.2-16-16-16zm-52 268H612V212h200v200zM464 544H160c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V560c0-8.8-7.2-16-16-16zm-52 268H212V612h200v200zm452-268H560c-8.8 0-16 7.2-16 16v304c0 8.8 7.2 16 16 16h304c8.8 0 16-7.2 16-16V560c0-8.8-7.2-16-16-16zm-52 268H612V612h200v200z">
+                            </path>
+                        </svg>
+                    </div>
+                    <span>General</span>
+                </a>
+
+                <a class="sidebar-link" id="open-profile-modal"
+                    th:href="@{'/vault-management/edit-vault/member?id=' + ${vault.id}}">
+                    <div
+                        style="width: 25px; height: 25px;  color: rgb(50, 48, 44); fill: rgb(50, 48, 44); flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
+                            class="bi bi-person-lock" viewBox="0 0 16 16">
+                            <path
+                                d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m0 5.996V14H3s-1 0-1-1 1-4 6-4q.845.002 1.544.107a4.5 4.5 0 0 0-.803.918A11 11 0 0 0 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664zM9 13a1 1 0 0 1 1-1v-1a2 2 0 1 1 4 0v1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zm3-3a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1" />
+                        </svg>
+                    </div>
+                    <span>Members</span>
+                </a>
+
+                <a class="sidebar-link sidebar-link-active" id="open-profile-modal"
+                    th:href="@{'/vault-management/edit-vault/notification?id=' + ${vault.id}}">
+                    <div
+                        style="width: 25px; height: 25px;  color: rgb(50, 48, 44); fill: rgb(50, 48, 44); flex-shrink: 0;">
+                        <svg aria-hidden="true" role="graphics-symbol" viewBox="0 0 20 20" class="bell"
+                            style="width: 100%; height: 100%; display: block;  flex-shrink: 0;">
+                            <path
+                                d="M10 2.355a2.35 2.35 0 0 0-2.253 1.686 5.06 5.06 0 0 0-2.803 4.527v1.189c0 .919-.334 1.806-.939 2.498l-.818.935c-.881 1.007-.166 2.583 1.173 2.583h3.02a2.65 2.65 0 0 0 5.24 0h3.02c1.339 0 2.054-1.576 1.173-2.583l-.818-.935a3.8 3.8 0 0 1-.939-2.498v-1.19a5.06 5.06 0 0 0-2.803-4.526A2.35 2.35 0 0 0 10 2.355m1.5 13.418a1.55 1.55 0 0 1-2.998 0zM8.909 4.564A1.104 1.104 0 0 1 10 3.605c.556 0 1.017.415 1.091.96l.049.353.329.138a3.81 3.81 0 0 1 2.337 3.512v1.189c0 1.221.444 2.401 1.248 3.32l.818.936a.307.307 0 0 1-.232.51H4.36a.308.308 0 0 1-.232-.51l.818-.935a5.04 5.04 0 0 0 1.248-3.321v-1.19c0-1.58.963-2.936 2.337-3.511l.33-.138z">
+                            </path>
+                        </svg>
+                    </div>
+                    <span>Notifications</span>
+                </a>
+            </div>
+        </aside>
+
+        <div class="main-section">
+            <div class="navbar">
+                <div class="num-of-vaults">
+                </div>
+                <div class="navbar-right" style="justify-content: flex-end;">
+                    <div class="notification-btn" style="margin-right: -15px; display: none;">
+                        <img src="/images/icon/Notification.svg" alt="notification icon">
+                    </div>
+                    <div style="margin-right: -1px;" class="vertical-divider"></div>
+                    <div class="user" id="user-dropdown-toggle">
+                        <div class="profile-picture">
+                            <img th:src="${user.avatar != null and !#strings.isEmpty(user.avatar) ? user.avatar : '/images/avatar/df_avatar.jpg'}"
+                                alt="profile picture">
+                        </div>
+                        <span class="profile-name" th:text="${user.username}">User</span>
+                        <img src="/images/icon/Expand_down.svg" alt="expand icon">
+
+                        <div class="dropdown-menu" id="user-dropdown">
+                            <a id="open-another-modal"
+                                style="display: flex; flex-direction: row; gap: 10px; align-items: center;">
+                                <svg aria-hidden="true" role="graphics-symbol" viewBox="0 0 20 20" class="gear"
+                                    style="width: 22px; height: 22px; display: block; fill: rgba(71, 70, 68, 0.6); flex-shrink: 0;">
+                                    <path
+                                        d="M7.29 10c0 1.5 1.22 2.71 2.71 2.71 1.5 0 2.71-1.21 2.71-2.71S11.5 7.29 10 7.29 7.29 8.5 7.29 10m1.25 0c0-.81.66-1.46 1.46-1.46.81 0 1.46.65 1.46 1.46s-.65 1.46-1.46 1.46-1.46-.65-1.46-1.46">
+                                    </path>
+                                    <path
+                                        d="M8.49 17.64q.75.15 1.53.15v-.01c.47 0 .94-.04 1.41-.13.26-.05.46-.25.5-.51l.26-1.53.15-.06 1.28.91c.21.14.49.14.71 0 .41-.28.8-.61 1.18-.98.33-.33.63-.7.9-1.09.15-.21.15-.5 0-.71l-.9-1.27.06-.15 1.55-.27c.26-.05.46-.25.51-.5a7.8 7.8 0 0 0 .02-2.94.62.62 0 0 0-.51-.5l-1.53-.26-.06-.15.91-1.28c.14-.21.14-.49 0-.71a7.9 7.9 0 0 0-2.07-2.08.62.62 0 0 0-.71 0l-1.27.9-.15-.06-.27-1.55a.64.64 0 0 0-.5-.51c-.5-.1-1-.15-1.53-.15-.47 0-.95.04-1.41.13-.26.05-.46.25-.5.51l-.26 1.53-.15.06-1.28-.91a.65.65 0 0 0-.71 0 7.9 7.9 0 0 0-2.08 2.07c-.15.21-.15.5 0 .71l.9 1.27-.06.15-1.55.27c-.26.05-.46.25-.51.5-.1.5-.15 1-.15 1.53 0 .47.04.95.13 1.41.05.26.25.46.51.5l1.53.26.06.15-.91 1.28c-.14.21-.15.49 0 .71.29.42.61.81.98 1.18.34.34.7.65 1.09.91.21.15.5.15.71 0l1.27-.9.15.06.27 1.55c.05.26.25.46.5.51m2.29-1.15c-.53.07-1.09.07-1.63 0l-.25-1.47a.62.62 0 0 0-.42-.49 6 6 0 0 1-.68-.28.63.63 0 0 0-.65.04l-1.2.85a6.8 6.8 0 0 1-1.14-1.16l.86-1.21c.13-.19.15-.43.05-.64-.11-.22-.21-.45-.28-.68a.62.62 0 0 0-.49-.43l-1.45-.25a6.7 6.7 0 0 1 0-1.63l1.47-.25c.23-.04.42-.2.49-.42.07-.23.17-.46.28-.68.11-.21.09-.46-.04-.65l-.85-1.2A6.8 6.8 0 0 1 6.01 4.8l1.21.86c.19.13.43.15.64.05.22-.11.45-.21.68-.28s.39-.26.43-.49l.25-1.45c.53-.07 1.09-.07 1.63 0l.25 1.47c.04.23.2.42.42.49.23.07.46.17.68.28.21.11.46.09.65-.04l1.2-.85A6.8 6.8 0 0 1 15.19 6l-.86 1.21c-.13.19-.15.43-.05.64.11.22.21.45.28.68s.26.39.49.43l1.45.25a6.7 6.7 0 0 1 0 1.63l-1.47.25c-.23.04-.42.2-.49.42-.07.23-.17.46-.28.68-.11.21-.09.46.04.65l.85 1.2a6.8 6.8 0 0 1-1.16 1.14l-1.21-.86a.64.64 0 0 0-.64-.05c-.22.11-.45.21-.68.28s-.39.26-.43.49z">
+                                    </path>
+                                </svg>
+                                <span>Settings</span>
+                            </a> <a href="/auth/log-out"
+                                style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"
+                                    xmlns="http://www.w3.org/2000/svg" data-rtl-flip="" class="icon" aria-hidden="true">
+                                    <path
+                                        d="M3.50171 12.6663V7.33333C3.50171 6.64424 3.50106 6.08728 3.53784 5.63704C3.57525 5.17925 3.65463 4.77342 3.84644 4.39681L3.96851 4.17806C4.2726 3.68235 4.70919 3.2785 5.23023 3.01302L5.3728 2.94661C5.7091 2.80238 6.06981 2.73717 6.47046 2.70443C6.9207 2.66764 7.47766 2.66829 8.16675 2.66829H9.16675L9.30054 2.68197C9.60367 2.7439 9.83179 3.0119 9.83179 3.33333C9.83179 3.65476 9.60367 3.92277 9.30054 3.9847L9.16675 3.99837H8.16675C7.45571 3.99837 6.96238 3.99926 6.57886 4.0306C6.297 4.05363 6.10737 4.09049 5.96362 4.14193L5.83374 4.19857C5.53148 4.35259 5.27861 4.58671 5.1023 4.87435L5.03198 5.00032C4.95147 5.15833 4.89472 5.36974 4.86401 5.74544C4.83268 6.12896 4.83179 6.6223 4.83179 7.33333V12.6663C4.83179 13.3772 4.8327 13.8707 4.86401 14.2542C4.8947 14.6298 4.95153 14.8414 5.03198 14.9993L5.1023 15.1263C5.27861 15.4137 5.53163 15.6482 5.83374 15.8021L5.96362 15.8577C6.1074 15.9092 6.29691 15.947 6.57886 15.9701C6.96238 16.0014 7.45571 16.0013 8.16675 16.0013H9.16675L9.30054 16.015C9.6036 16.0769 9.83163 16.345 9.83179 16.6663C9.83179 16.9877 9.60363 17.2558 9.30054 17.3177L9.16675 17.3314H8.16675C7.47766 17.3314 6.9207 17.332 6.47046 17.2952C6.06978 17.2625 5.70912 17.1973 5.3728 17.0531L5.23023 16.9867C4.70911 16.7211 4.27261 16.3174 3.96851 15.8216L3.84644 15.6038C3.65447 15.2271 3.57526 14.8206 3.53784 14.3626C3.50107 13.9124 3.50171 13.3553 3.50171 12.6663ZM13.8035 13.804C13.5438 14.0634 13.1226 14.0635 12.863 13.804C12.6033 13.5443 12.6033 13.1223 12.863 12.8626L13.8035 13.804ZM12.863 6.19661C13.0903 5.96939 13.4409 5.94126 13.699 6.11165L13.8035 6.19661L17.1375 9.52962C17.3969 9.78923 17.3968 10.2104 17.1375 10.4701L13.8035 13.804L13.3337 13.3333L12.863 12.8626L15.0603 10.6654H9.16675C8.79959 10.6654 8.50189 10.3674 8.50171 10.0003C8.50171 9.63306 8.79948 9.33529 9.16675 9.33529H15.0613L12.863 7.13704L12.7781 7.03255C12.6077 6.77449 12.6359 6.42386 12.863 6.19661Z">
+                                    </path>
+                                </svg>
+                                <span>Log out</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-frame">
+                <div class="content-update-vault" id="add-vault-form-content">
+                    <ol style="display: flex; flex-direction: row; padding-left: 10px; padding-top: 10px;">
+                        <li>
+                            <span>
+                                <a href="http://localhost:8080/vault-management">
+                                    <span role="img" aria-label="home">
+                                        <svg viewBox="64 64 896 896" focusable="false" data-icon="home" width="15px"
+                                            height="15px" aria-hidden="true" class="icon-home">
+                                            <path
+                                                d="M946.5 505L560.1 118.8l-25.9-25.9a31.5 31.5 0 00-44.4 0L77.5 505a63.9 63.9 0 00-18.8 46c.4 35.2 29.7 63.3 64.9 63.3h42.5V940h691.8V614.3h43.4c17.1 0 33.2-6.7 45.3-18.8a63.6 63.6 0 0018.7-45.3c0-17-6.7-33.1-18.8-45.2zM568 868H456V664h112v204zm217.9-325.7V868H632V640c0-22.1-17.9-40-40-40H432c-22.1 0-40 17.9-40 40v228H238.1V542.3h-96l370-369.7 23.1 23.1L882 542.3h-96.1z">
+                                            </path>
+                                        </svg>
+                                    </span> Vault management
+                                </a>
+                            </span>
+                            <span style="color: #9b9b9b;">/</span>
+                        </li>
+                        <li>
+                            <span>
+                                <a class="" th:href="@{'/vault-detail?id=' + ${vault.id} + '&assistant=true'}"
+                                    th:text="${vault.name}"></a>
+                            </span>
+                            <span style="color: #9b9b9b;">/</span>
+                        </li>
+                        <li>
+                            <span
+                                style="color: #2b2b2b; font-weight: 400; font-size: 14px; margin-left: 4px;
+                                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+                                Notification
+                            </span>
+                        </li>
+                    </ol>
+
+                    <h2
+                        style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; color: #5e5e5e; margin-left: 20px;">
+                        Notifications
+                    </h2>
+                    <div class="list-member-container" style=" align-items: center;">
+                        <table class="notify-table">
+                            <thead>
+                                <tr>
+                                    <th class="notify-header" style="width: 20%;">
+                                        Catalogue</th>
+                                    <th class="notify-header" style="width: 40%;">Event</th>
+                                    <th class="notify-header" style="width: 20%;">Channel</th>
+                                    <th class="notify-header" style="width: 20%; text-align: center;">Enable</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="notify-catalogue" rowspan="5">Vault Notification</td>
+                                    <td class="notify-event">A knowledge item is created successfully</td>
+                                    <td class="notify-channel">
+                                        <span class="channel-icon" title="Email">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                fill="currentColor" class="bi bi-envelope-at" viewBox="0 0 16 16">
+                                                <path
+                                                    d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2zm3.708 6.208L1 11.105V5.383zM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2z" />
+                                                <path
+                                                    d="M14.247 14.269c1.01 0 1.587-.857 1.587-2.025v-.21C15.834 10.43 14.64 9 12.52 9h-.035C10.42 9 9 10.36 9 12.432v.214C9 14.82 10.438 16 12.358 16h.044c.594 0 1.018-.074 1.237-.175v-.73c-.245.11-.673.18-1.18.18h-.044c-1.334 0-2.571-.788-2.571-2.655v-.157c0-1.657 1.058-2.724 2.64-2.724h.04c1.535 0 2.484 1.05 2.484 2.326v.118c0 .975-.324 1.39-.639 1.39-.232 0-.41-.148-.41-.42v-2.19h-.906v.569h-.03c-.084-.298-.368-.63-.954-.63-.778 0-1.259.555-1.259 1.4v.528c0 .892.49 1.434 1.26 1.434.471 0 .896-.227 1.014-.643h.043c.118.42.617.648 1.12.648m-2.453-1.588v-.227c0-.546.227-.791.573-.791.297 0 .572.192.572.708v.367c0 .573-.253.744-.564.744-.354 0-.581-.215-.581-.8Z" />
+                                            </svg>
+                                        </span>
+                                    </td>
+                                    <td class="notify-toggle">
+                                        <label class="custom-toggle">
+                                            <input type="checkbox" checked>
+                                            <span class="custom-slider"> </span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="notify-event">A vault is error</td>
+                                    <td class="notify-channel">
+                                        <span class="channel-icon" title="Email">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                fill="currentColor" class="bi bi-envelope-at" viewBox="0 0 16 16">
+                                                <path
+                                                    d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2zm3.708 6.208L1 11.105V5.383zM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2z" />
+                                                <path
+                                                    d="M14.247 14.269c1.01 0 1.587-.857 1.587-2.025v-.21C15.834 10.43 14.64 9 12.52 9h-.035C10.42 9 9 10.36 9 12.432v.214C9 14.82 10.438 16 12.358 16h.044c.594 0 1.018-.074 1.237-.175v-.73c-.245.11-.673.18-1.18.18h-.044c-1.334 0-2.571-.788-2.571-2.655v-.157c0-1.657 1.058-2.724 2.64-2.724h.04c1.535 0 2.484 1.05 2.484 2.326v.118c0 .975-.324 1.39-.639 1.39-.232 0-.41-.148-.41-.42v-2.19h-.906v.569h-.03c-.084-.298-.368-.63-.954-.63-.778 0-1.259.555-1.259 1.4v.528c0 .892.49 1.434 1.26 1.434.471 0 .896-.227 1.014-.643h.043c.118.42.617.648 1.12.648m-2.453-1.588v-.227c0-.546.227-.791.573-.791.297 0 .572.192.572.708v.367c0 .573-.253.744-.564.744-.354 0-.581-.215-.581-.8Z" />
+                                            </svg>
+                                        </span>
+                                    </td>
+                                    <td class="notify-toggle">
+                                        <label class="custom-toggle">
+                                            <input type="checkbox" checked>
+                                            <span class="custom-slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="notify-event">A vault exam is started</td>
+                                    <td class="notify-channel">
+                                        <span class="channel-icon" title="Email">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                fill="currentColor" class="bi bi-envelope-at" viewBox="0 0 16 16">
+                                                <path
+                                                    d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2zm3.708 6.208L1 11.105V5.383zM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2z" />
+                                                <path
+                                                    d="M14.247 14.269c1.01 0 1.587-.857 1.587-2.025v-.21C15.834 10.43 14.64 9 12.52 9h-.035C10.42 9 9 10.36 9 12.432v.214C9 14.82 10.438 16 12.358 16h.044c.594 0 1.018-.074 1.237-.175v-.73c-.245.11-.673.18-1.18.18h-.044c-1.334 0-2.571-.788-2.571-2.655v-.157c0-1.657 1.058-2.724 2.64-2.724h.04c1.535 0 2.484 1.05 2.484 2.326v.118c0 .975-.324 1.39-.639 1.39-.232 0-.41-.148-.41-.42v-2.19h-.906v.569h-.03c-.084-.298-.368-.63-.954-.63-.778 0-1.259.555-1.259 1.4v.528c0 .892.49 1.434 1.26 1.434.471 0 .896-.227 1.014-.643h.043c.118.42.617.648 1.12.648m-2.453-1.588v-.227c0-.546.227-.791.573-.791.297 0 .572.192.572.708v.367c0 .573-.253.744-.564.744-.354 0-.581-.215-.581-.8Z" />
+                                            </svg>
+                                        </span>
+                                    </td>
+                                    <td class="notify-toggle">
+                                        <label class="custom-toggle">
+                                            <input type="checkbox" checked>
+                                            <span class="custom-slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="notify-event">There exists the knowledge item in the vault</td>
+                                    <td class="notify-channel">
+                                        <span class="channel-icon" title="Email">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                fill="currentColor" class="bi bi-envelope-at" viewBox="0 0 16 16">
+                                                <path
+                                                    d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2zm3.708 6.208L1 11.105V5.383zM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2z" />
+                                                <path
+                                                    d="M14.247 14.269c1.01 0 1.587-.857 1.587-2.025v-.21C15.834 10.43 14.64 9 12.52 9h-.035C10.42 9 9 10.36 9 12.432v.214C9 14.82 10.438 16 12.358 16h.044c.594 0 1.018-.074 1.237-.175v-.73c-.245.11-.673.18-1.18.18h-.044c-1.334 0-2.571-.788-2.571-2.655v-.157c0-1.657 1.058-2.724 2.64-2.724h.04c1.535 0 2.484 1.05 2.484 2.326v.118c0 .975-.324 1.39-.639 1.39-.232 0-.41-.148-.41-.42v-2.19h-.906v.569h-.03c-.084-.298-.368-.63-.954-.63-.778 0-1.259.555-1.259 1.4v.528c0 .892.49 1.434 1.26 1.434.471 0 .896-.227 1.014-.643h.043c.118.42.617.648 1.12.648m-2.453-1.588v-.227c0-.546.227-.791.573-.791.297 0 .572.192.572.708v.367c0 .573-.253.744-.564.744-.354 0-.581-.215-.581-.8Z" />
+                                            </svg>
+                                        </span>
+                                    </td>
+                                    <td class="notify-toggle">
+                                        <label class="custom-toggle">
+                                            <input type="checkbox" checked>
+                                            <span class="custom-slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="notify-event">All knowledge items in your private are passed</td>
+                                    <td class="notify-channel">
+                                        <span class="channel-icon" title="Email">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                fill="currentColor" class="bi bi-envelope-at" viewBox="0 0 16 16">
+                                                <path
+                                                    d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2zm3.708 6.208L1 11.105V5.383zM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2z" />
+                                                <path
+                                                    d="M14.247 14.269c1.01 0 1.587-.857 1.587-2.025v-.21C15.834 10.43 14.64 9 12.52 9h-.035C10.42 9 9 10.36 9 12.432v.214C9 14.82 10.438 16 12.358 16h.044c.594 0 1.018-.074 1.237-.175v-.73c-.245.11-.673.18-1.18.18h-.044c-1.334 0-2.571-.788-2.571-2.655v-.157c0-1.657 1.058-2.724 2.64-2.724h.04c1.535 0 2.484 1.05 2.484 2.326v.118c0 .975-.324 1.39-.639 1.39-.232 0-.41-.148-.41-.42v-2.19h-.906v.569h-.03c-.084-.298-.368-.63-.954-.63-.778 0-1.259.555-1.259 1.4v.528c0 .892.49 1.434 1.26 1.434.471 0 .896-.227 1.014-.643h.043c.118.42.617.648 1.12.648m-2.453-1.588v-.227c0-.546.227-.791.573-.791.297 0 .572.192.572.708v.367c0 .573-.253.744-.564.744-.354 0-.581-.215-.581-.8Z" />
+                                            </svg>
+                                        </span>
+                                    </td>
+                                    <td class="notify-toggle">
+                                        <label class="custom-toggle">
+                                            <input type="checkbox" checked>
+                                            <span class="custom-slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="display: flex; justify-content: flex-end; width: 100%;">
+                            <button type=" submit" class="modal-btn modal-form-btn"
+                                style="margin-top: 20px; height: 40px;">
+                                <svg viewBox="64 64 896 896" focusable="false" data-icon="save" width="1em" height="1em"
+                                    fill="currentColor" aria-hidden="true">
+                                    <path
+                                        d="M893.3 293.3L730.7 130.7c-7.5-7.5-16.7-13-26.7-16V112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V338.5c0-17-6.7-33.2-18.7-45.2zM384 184h256v104H384V184zm456 656H184V184h136v136c0 17.7 14.3 32 32 32h320c17.7 0 32-14.3 32-32V205.8l136 136V840zM512 442c-79.5 0-144 64.5-144 144s64.5 144 144 144 144-64.5 144-144-64.5-144-144-144zm0 224c-44.2 0-80-35.8-80-80s35.8-80 80-80 80 35.8 80 80-35.8 80-80 80z">
+                                    </path>
+                                </svg>
+                                <span>Save Change</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pop up settings -->
+
+        <div id="profile-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="close-profile-modal">
+                    <div role="button" tabindex="0"
+                        style="user-select: none; transition: background 20ms ease-in; cursor: pointer; display: flex; align-items: center; height: 18px; padding: 0px; border-radius: 50%; white-space: nowrap; font-size: 14px; flex-shrink: 0; line-height: 1.2; min-width: 0px; color: rgb(50, 48, 44); margin-top: -5px; margin-right: -5px; width: 18px; background: rgba(84, 72, 49, 0.08); justify-content: center;">
+                        <svg aria-hidden="true" role="graphics-symbol" viewBox="0 0 16 16" class="closeSmall"
+                            style="width: 12px; height: 12px; display: block; fill: rgba(71, 70, 68, 0.6); flex-shrink: 0;">
+                            <path
+                                d="M3.732 11.052c-.303.308-.32.877.011 1.202.33.33.894.32 1.203.011L8 9.21l3.05 3.05c.32.325.872.32 1.197-.011a.857.857 0 00.01-1.197L9.21 8.002l3.05-3.056a.857.857 0 00-.01-1.197.857.857 0 00-1.198-.01L8 6.788 4.946 3.732c-.31-.303-.878-.32-1.203.01-.325.331-.314.895-.01 1.203l3.055 3.056-3.056 3.05z">
+                            </path>
+                        </svg>
+                    </div>
+                </span>
+                <div class="modal-body">
+                    <div class="modal-main" style="min-height: 120vh;">
+                        <div id="tab-profile" class="tab-content">
+                            <div class="label-section">Account Settings</div>
+                            <div class="devider"></div>
+
+                            <!-- Profile Photo Section -->
+                            <div class="profile-photo-section">
+                                <div class="profile-photo">
+                                    <div class="photo-placeholder">
+                                        <img th:src="${user.avatar != null and !#strings.isEmpty(user.avatar) ? user.avatar : 'https://placehold.co/400x400'}"
+                                            alt="Profile Avatar" id="profile-avatar-img">
+                                    </div>
+                                    <div class="photo-info">
+                                        <span>Preferred name</span>
+                                        <div class="input-wrapper">
+                                            <input type="text" id="profile-username" th:value="${user.name}" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="photo-upload-info">
+                                    <form id="avatar-upload-form" th:action="@{/vault-management/upload-avatar}"
+                                        method="post" enctype="multipart/form-data" style="display: inline;">
+                                        <input type="file" id="avatar-file-input" name="avatar"
+                                            accept=".png,.jpg,.jpeg,.gif" style="display: none;" />
+                                        <a class="link-add-photo" href="#"
+                                            onclick="document.getElementById('avatar-file-input').click(); return false;">Add
+                                            photo</a>
+                                    </form>
+                                    <span class="photo-format-info">We support PNGs, JPEGs and GIFs under 10MB</span>
+                                </div>
+                            </div>
+
+                            <!-- Personal Information Section -->
+                            <div class="label-section">Personal Information</div>
+                            <div class="devider"></div>
+                            <div class="personal-info-section">
+                                <div class="profile-grid">
+                                    <!-- Department (read-only) -->
+                                    <div class="profile-field">
+                                        <div class="label-field">Department</div>
+                                        <div class="value-field"
+                                            th:text="${user.department != null ? user.department : 'Not specified'}">Not
+                                            specified</div>
+                                    </div>
+
+                                    <!-- Gender (editable) -->
+                                    <div class="profile-field">
+                                        <div class="label-field">Gender</div>
+                                        <select id="profile-gender">
+                                            <option value="">Select gender</option>
+                                            <option value="Male" th:selected="${user.gender == 'Male'}">Male</option>
+                                            <option value="Female" th:selected="${user.gender == 'Female'}">Female
+                                            </option>
+                                            <option value="Other" th:selected="${user.gender == 'Other'}">Other</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Phone Number (editable) -->
+                                    <div class="profile-field">
+                                        <div class="label-field">Phone Number</div>
+                                        <input type="tel" id="profile-phone" th:value="${user.phoneNumber}"
+                                            placeholder="Enter phone number" />
+                                    </div>
+
+                                    <div class="profile-field">
+                                        <div class="label-field">Date of Birth</div>
+                                        <input type="date" id="profile-dob"
+                                            th:value="${user.dateOfBirth != null ? user.dateOfBirth.toString() : ''}" />
+                                    </div>
+                                </div>
+
+                                <div class="save-button-container">
+                                    <button type="button" id="save-profile-btn" class="modal-btn modal-form-btn"
+                                        style="border-radius: 40px !important;">
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="label-section">Account Security</div>
+                            <div class="devider"></div>
+                            <div class="security-section">
+                                <div class="account-security-field">
+                                    <div>
+                                        <div class="label-field">Email</div>
+                                        <div class="value-field" th:text="${user.email}">Email</div>
+                                    </div>
+                                </div>
+                                <div class="account-security-field">
+                                    <div>
+                                        <div class="label-field">Password</div>
+                                        <div th:if="${user.password == null}" class="value-field">Set a permanent
+                                            password to login to your account.
+                                        </div>
+                                        <div th:if="${user.password != null}" class="value-field">Change your password
+                                            to login to your account.
+                                        </div>
+                                    </div>
+                                    <div th:if="${user.password != null and !#strings.isEmpty(user.password)}"
+                                        class="modal-btn" id="changePassword" style="border-radius: 40px !important;">
+                                        Change password
+                                    </div>
+                                    <div th:if="${user.password == null or #strings.isEmpty(user.password)}"
+                                        class="modal-btn" id="addPassword" style="border-radius: 40px !important;">
+                                        Add password
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p>This is the password settings content.</p>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+
+
+    <div id="sendVerificationCodeModal" class="modal hidden">
+        <div class="modal-send-verification-code-content">
+            <!--Xử lý google-->
+            <div
+                th:if="${(step == null or step == 'google-confirm-current-email' or step == 'google-verify-current-email'
+        or step =='google-enter-new-email' or step =='google-verify-new-email') and user.authProvider.name() == 'GOOGLE'}">
+                <div class="msg">Your current email is <strong th:text="${user.email}"></strong>. We'll send a
+                    temporary
+                    verification code to this email.
+                </div>
+                <form id="current-email-form" th:action="@{/auth/send-code-gg-account}" method="post"
+                    style="margin-top: 10px">
+                    <input type="hidden" name="currentEmail" th:value="${user.email}" />
+                    <div th:if="${errorEmail}" style="font-size: 12px; color:red" th:text="${errorEmail}">
+                    </div>
+                    <button th:if="${step == null}" type="submit" class="modal-btn modal-form-btn"
+                        style="margin-top: 10px">Send verification code
+                    </button>
+                </form>
+            </div>
+
+            <div
+                th:if="${step == 'google-verify-current-email' or step =='google-enter-new-email' or step =='google-verify-new-email'}">
+                <form id="confirm-form" th:action="@{/auth/verify-email}" method="post" style="margin-top: 10px">
+                    <div class="input-container">
+                        <input type="text" name="code" placeholder="Enter verification code" class="custom-input"
+                            th:value="${code}" required />
+                    </div>
+                    <input type="hidden" name="currentEmail" th:value="${user.email}" />
+                    <div th:if="${errorVerifyEmail}" style="font-size: 12px; color:red" th:text="${errorVerifyEmail}">
+                    </div>
+                    <button th:if="${step == 'google-verify-current-email'}" type="submit"
+                        class="modal-btn modal-form-btn" style="margin-top: 10px; width: 100%;">
+                        Continue
+                    </button>
+                </form>
+            </div>
+
+            <div th:if="${step == 'google-enter-new-email' or step =='google-verify-new-email'}">
+                <div style="margin-top: 20px; font-size: 12px; color: rgb(115, 114, 110);">
+                    Please enter a new email and we will send you a verification code
+                </div>
+                <form id="new-email-form" method="post" action="/auth/send-code-new-mail">
+                    <div class="input-container">
+                        <input type="email" name="newEmail" placeholder="Enter new email" class="custom-input"
+                            th:value="${newEmail}" required />
+                    </div>
+                    <div th:if="${errorEmail}" style="font-size: 12px; color:red; margin-left: 10px;"
+                        th:text="${errorEmail}"></div>
+                    <button th:if="${step == 'google-enter-new-email'}" type="submit" class="modal-btn modal-form-btn"
+                        style="margin-top: 10px; width: 100%;">
+                        Send verification code
+                    </button>
+                </form>
+            </div>
+
+            <div th:if="${step == 'google-verify-new-email'}">
+                <div style="margin-top: 20px; font-size: 12px; color: rgb(115, 114, 110);">We sent a
+                    verification
+                    code
+                    to
+                    <strong th:text="${newEmail}"></strong>
+                </div>
+                <form id="confirm-new-form" method="post" action="/auth/confirm">
+                    <input type="hidden" name="auth" value="local" />
+                    <div class="input-container">
+                        <input type="text" name="code" placeholder="Enter verification code" class="custom-input"
+                            th:value="${code}" required />
+                    </div>
+                    <input type="hidden" name="newEmail" th:value="${newEmail}" />
+                    <div th:if="${errorVerifyCode}" style="font-size: 12px; color:red" th:text="${errorVerifyCode}">
+                    </div>
+                    <button type="submit" class="modal-btn modal-form-btn" style="margin-top: 10px; width: 100%;">
+                        Change email
+                    </button>
+                </form>
+            </div>
+
+
+            <!-- -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+            <!--Xử lý local-->
+            <div th:if="${(step == null or step == 'local-verify-password' or step == 'local-enter-new-email' or
+        step == 'local-verify-new-email') and user.authProvider.name() == 'LOCAL'}">
+                <div class="msg">Your current email is <strong th:text="${user.email}"></strong></div>
+                <div style="margin-top: 20px; font-size: 12px; color: rgb(115, 114, 110);">
+                    Please enter your password.
+                </div>
+                <form id="password-form" method="post" action="/auth/check-password">
+                    <div class="input-container">
+                        <input type="password" name="password" placeholder="Password" class="custom-input"
+                            th:value="${password}" required />
+                    </div>
+                    <div th:if="${errorCheckPass}" style="font-size: 12px; color:red" th:text="${errorCheckPass}">
+                    </div>
+                    <button th:if="${step == 'local' || local == 'local-verify-password'}" type="submit"
+                        class="modal-btn modal-form-btn" style="margin-top: 10px; width: 100%;">
+                        Continue
+                    </button>
+                </form>
+            </div>
+
+            <div th:if="${step == 'local-enter-new-email' or step == 'local-verify-new-email'}">
+                <div style="margin-top: 20px; font-size: 12px; color: rgb(115, 114, 110);">
+                    Please enter a new email and we will send you a verification code
+                </div>
+                <form id="email-form" method="post" action="/auth/send-code">
+                    <div class="input-container">
+                        <input type="email" name="newEmail" placeholder="Enter new email" class="custom-input"
+                            th:value="${newEmail}" required />
+                    </div>
+                    <div th:if="${errorEmail}" style="font-size: 12px; color:red; margin-left: 10px;"
+                        th:text="${errorEmail}"></div>
+                    <button th:if="${step == 'local-enter-new-email'}" type="submit" class="modal-btn modal-form-btn"
+                        style="margin-top: 10px; width: 100%;">
+                        Send verification code
+                    </button>
+                </form>
+            </div>
+
+            <div th:if="${step == 'local-verify-new-email'}">
+                <div style="margin-top: 20px; font-size: 12px; color: rgb(115, 114, 110);">We sent a
+                    verification
+                    code
+                    to <strong th:text="${newEmail}"></strong>
+                </div>
+                <form id="verify-form" method="post" action="/auth/confirm">
+                    <div class="input-container">
+                        <input type="text" name="code" placeholder="Enter verification code" class="custom-input"
+                            th:value="${code}" required />
+                    </div>
+                    <input type="hidden" name="newEmail" th:value="${newEmail}" />
+                    <div th:if="${errorVerifyCode}" style="font-size: 12px; color:red" th:text="${errorVerifyCode}">
+                    </div>
+                    <button type="submit" class="modal-btn modal-form-btn" style="margin-top: 10px; width: 100%;">
+                        Change email
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Pop up add-password-modal -->
+    <div id="addPasswordModal" class="modal hidden">
+        <div class="modal-add-password-content">
+            <div style="display: flex; flex-direction: row; justify-content: flex-end; width: 100%;">
+                <div role="button" tabindex="0"
+                    style="user-select: none; transition: background 20ms ease-in; cursor: pointer; display: flex; align-items: center; height: 18px; padding: 0px; border-radius: 50%; white-space: nowrap; font-size: 14px; flex-shrink: 0; line-height: 1.2; min-width: 0px; color: rgb(50, 48, 44); margin-top: -5px; margin-right: -5px; width: 18px; background: rgba(84, 72, 49, 0.08); justify-content: center;">
+                    <svg aria-hidden="true" role="graphics-symbol" viewBox="0 0 16 16" class="closeSmall"
+                        style="width: 12px; height: 12px; display: block; fill: rgba(71, 70, 68, 0.6); flex-shrink: 0;">
+                        <path
+                            d="M3.732 11.052c-.303.308-.32.877.011 1.202.33.33.894.32 1.203.011L8 9.21l3.05 3.05c.32.325.872.32 1.197-.011a.857.857 0 00.01-1.197L9.21 8.002l3.05-3.056a.857.857 0 00-.01-1.197.857.857 0 00-1.198-.01L8 6.788 4.946 3.732c-.31-.303-.878-.32-1.203.01-.325.331-.314.895-.01 1.203l3.055 3.056-3.056 3.05z">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center;">
+                <svg aria-hidden="true" role="graphics-symbol" viewBox="0 0 31 21" class="setPassword"
+                    style="width: 27px; height: 27px; display: block; fill: rgb(50, 48, 44); flex-shrink: 0;">
+                    <path
+                        d="M29.4746 3.43945L30.1777 2.7168C30.5684 2.32617 30.5781 1.7793 30.1973 1.39844L29.9336 1.14453C29.6016 0.802734 29.0352 0.851562 28.6641 1.22266L27.9609 1.91602L29.4746 3.43945ZM18.2441 13.4883L20.3047 12.5996L28.7227 4.18164L27.209 2.6875L18.8008 11.0957L17.8633 13.0977C17.7656 13.3223 18.0195 13.5859 18.2441 13.4883ZM3.40039 20.0508H23.6543C25.5 20.0508 26.5254 19.0547 26.5254 17.2188V8.88867L24.5918 10.8223V17.0625C24.5918 17.8242 24.1621 18.2637 23.3906 18.2637H3.6543C2.88281 18.2637 2.45312 17.8242 2.45312 17.0625V8.91797C2.45312 8.14648 2.88281 7.7168 3.6543 7.7168H19.6504L21.4375 5.93945H3.40039C1.54492 5.93945 0.519531 6.92578 0.519531 8.77148V17.2188C0.519531 19.0547 1.54492 20.0508 3.40039 20.0508ZM6.06641 14.4453C6.85742 14.4453 7.51172 13.791 7.51172 12.9902C7.51172 12.1895 6.85742 11.5449 6.06641 11.5449C5.25586 11.5449 4.61133 12.1895 4.61133 12.9902C4.61133 13.791 5.25586 14.4453 6.06641 14.4453ZM10.373 14.4453C11.1738 14.4453 11.8184 13.791 11.8184 12.9902C11.8184 12.1895 11.1738 11.5449 10.373 11.5449C9.57227 11.5449 8.91797 12.1895 8.91797 12.9902C8.91797 13.791 9.57227 14.4453 10.373 14.4453ZM14.6797 14.4453C15.4805 14.4453 16.1348 13.791 16.1348 12.9902C16.1348 12.1895 15.4805 11.5449 14.6797 11.5449C13.8789 11.5449 13.2344 12.1895 13.2344 12.9902C13.2344 13.791 13.8789 14.4453 14.6797 14.4453Z">
+                    </path>
+                </svg>
+            </div>
+            <div style="margin: 10px 0px; text-align: center;">
+                <div class="tx-uiregular-14-semi" color="primary">Set a password</div>
+            </div>
+            <div class="msg">
+                Use a password at least 15 letters long, or at least 8 characters long with both letters and
+                numbers.
+            </div>
+            <form th:action="@{/auth/add-password}" method="post" th:object="${addPasswordRequest}"
+                id="add-password-form">
+                <div style="margin-top: 10px;">
+                    <label class="input-label">Enter a new password</label>
+                    <div class="input-wrapper">
+                        <input class="input-field" placeholder="Enter new password" autocomplete="new-password"
+                            type="password" th:field="*{newPassword}" required>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label class="input-label">Confirm your new password</label>
+                    <div class="input-wrapper">
+                        <input class="input-field" placeholder="Confirm new password" autocomplete="new-password"
+                            type="password" th:field="*{confirmNewPassword}" required>
+                    </div>
+                </div>
+                <button type="submit" class="modal-btn modal-form-btn" style="width: auto; margin-top: 15px;">
+                    Set a password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pop up changePasswordModal -->
+    <div id="changePasswordModal" class="modal hidden">
+        <div class="modal-add-password-content">
+            <div style="display: flex; flex-direction: row; justify-content: flex-end; width: 100%;">
+                <div role="button" tabindex="0"
+                    style="user-select: none; transition: background 20ms ease-in; cursor: pointer; display: flex; align-items: center; height: 18px; padding: 0px; border-radius: 50%; white-space: nowrap; font-size: 14px; flex-shrink: 0; line-height: 1.2; min-width: 0px; color: rgb(50, 48, 44); margin-top: -5px; margin-right: -5px; width: 18px; background: rgba(84, 72, 49, 0.08); justify-content: center;">
+                    <svg aria-hidden="true" role="graphics-symbol" viewBox="0 0 16 16" class="closeSmall"
+                        style="width: 12px; height: 12px; display: block; fill: rgba(71, 70, 68, 0.6); flex-shrink: 0;">
+                        <path
+                            d="M3.732 11.052c-.303.308-.32.877.011 1.202.33.33.894.32 1.203.011L8 9.21l3.05 3.05c.32.325.872.32 1.197-.011a.857.857 0 00.01-1.197L9.21 8.002l3.05-3.056a.857.857 0 00-.01-1.197.857.857 0 00-1.198-.01L8 6.788 4.946 3.732c-.31-.303-.878-.32-1.203.01-.325.331-.314.895-.01 1.203l3.055 3.056-3.056 3.05z">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center;">
+                <svg aria-hidden="true" role="graphics-symbol" viewBox="0 0 31 21" class="setPassword"
+                    style="width: 27px; height: 27px; display: block; fill: rgb(50, 48, 44); flex-shrink: 0;">
+                    <path
+                        d="M29.4746 3.43945L30.1777 2.7168C30.5684 2.32617 30.5781 1.7793 30.1973 1.39844L29.9336 1.14453C29.6016 0.802734 29.0352 0.851562 28.6641 1.22266L27.9609 1.91602L29.4746 3.43945ZM18.2441 13.4883L20.3047 12.5996L28.7227 4.18164L27.209 2.6875L18.8008 11.0957L17.8633 13.0977C17.7656 13.3223 18.0195 13.5859 18.2441 13.4883ZM3.40039 20.0508H23.6543C25.5 20.0508 26.5254 19.0547 26.5254 17.2188V8.88867L24.5918 10.8223V17.0625C24.5918 17.8242 24.1621 18.2637 23.3906 18.2637H3.6543C2.88281 18.2637 2.45312 17.8242 2.45312 17.0625V8.91797C2.45312 8.14648 2.88281 7.7168 3.6543 7.7168H19.6504L21.4375 5.93945H3.40039C1.54492 5.93945 0.519531 6.92578 0.519531 8.77148V17.2188C0.519531 19.0547 1.54492 20.0508 3.40039 20.0508ZM6.06641 14.4453C6.85742 14.4453 7.51172 13.791 7.51172 12.9902C7.51172 12.1895 6.85742 11.5449 6.06641 11.5449C5.25586 11.5449 4.61133 12.1895 4.61133 12.9902C4.61133 13.791 5.25586 14.4453 6.06641 14.4453ZM10.373 14.4453C11.1738 14.4453 11.8184 13.791 11.8184 12.9902C11.8184 12.1895 11.1738 11.5449 10.373 11.5449C9.57227 11.5449 8.91797 12.1895 8.91797 12.9902C8.91797 13.791 9.57227 14.4453 10.373 14.4453ZM14.6797 14.4453C15.4805 14.4453 16.1348 13.791 16.1348 12.9902C16.1348 12.1895 15.4805 11.5449 14.6797 11.5449C13.8789 11.5449 13.2344 12.1895 13.2344 12.9902C13.2344 13.791 13.8789 14.4453 14.6797 14.4453Z">
+                    </path>
+                </svg>
+            </div>
+            <div style="margin: 10px 0px; text-align: center;">
+                <div class="tx-uiregular-14-semi" color="primary">Change password</div>
+            </div>
+            <div class="msg">
+                Use a password at least 15 letters long, or at least 8 characters long with both letters and
+                numbers.
+            </div>
+            <form th:action="@{/auth/change-password}" method="post" th:object="${changePasswordRequest}"
+                id="change-password-form">
+                <div style="margin-top: 10px;">
+                    <label class="input-label">Enter your current password</label>
+                    <div class="input-wrapper">
+                        <input class="input-field" placeholder="New current password" autocomplete="new-password"
+                            type="password" th:field="*{currentPassword}" required>
+                    </div>
+                    <div th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"
+                        class="error-msg"></div>
+
+                </div>
+                <div style="margin-top: 10px;">
+                    <label class="input-label">Enter a new password</label>
+                    <div class="input-wrapper">
+                        <input class="input-field" placeholder="Enter new password" autocomplete="new-password"
+                            type="password" th:field="*{newPassword}" required>
+                    </div>
+                    <div th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}" class="error-msg">
+                    </div>
+
+                </div>
+                <div style="margin-top: 10px;">
+                    <label class="input-label">Confirm your new password</label>
+                    <div class="input-wrapper">
+                        <input class="input-field" placeholder="Confirm new password" autocomplete="new-password"
+                            type="password" th:field="*{confirmNewPassword}" required>
+                    </div>
+                    <div th:if="${#fields.hasErrors('confirmNewPassword')}" th:errors="*{confirmNewPassword}"
+                        class="error-msg"></div>
+                </div>
+                <button class="modal-btn modal-form-btn" type="submit" style="width: 100%; margin-top: 15px;">
+                    Change password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pop up delete account -->
+    <div id="deleteAccountModal" class="modal hidden">
+        <div class="delete-account-content">
+            <svg aria-hidden="true" role="graphics-symbol" viewBox="0 0 20 20" class="exclamationMarkCircle">
+                <path
+                    d="M9.875 6.25c.345 0 .625.28.625.625v3.5a.625.625 0 1 1-1.25 0v-3.5c0-.345.28-.625.625-.625m0 7.375a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5">
+                </path>
+                <path
+                    d="M2.375 10a7.625 7.625 0 1 1 15.25 0 7.625 7.625 0 0 1-15.25 0M10 3.625a6.375 6.375 0 1 0 0 12.75 6.375 6.375 0 0 0 0-12.75">
+                </path>
+            </svg>
+            <div class="delete-account-text">
+                Deactivate your account?
+            </div>
+            <p class="msg">
+                Your account will be temporarily deactivated. You won't be able to access your private
+                workspaces,
+                and
+                you'll be removed from all shared workspaces until you reactivate your account. You can
+                reactivate
+                anytime
+                by signing in again.
+            </p>
+            <div class="vault-container">
+                <ul class="vault-list">
+                    <div class="vault-item-wrapper">
+                        <div class="vault-item">
+                            <div class="vault-icon">
+                                <div class="vault-icon-letter" role="img" aria-label="H">
+                                    <div class="vault-letter">H</div>
+                                </div>
+                            </div>
+                            <div class="vault-info">
+                                <div class="vault-title">Huy Đặng’s Vault</div>
+                                <div class="vault-members">1 member</div>
+                            </div>
+                        </div>
+                    </div>
+                </ul>
+            </div>
+            <div style="margin-top: 10px; font-size: 14px; color: rgb(50, 48, 44); align-self: flex-start;">
+                Please type in your email to confirm.
+            </div>
+            <div class="input-container">
+                <input type="text" th:placeholder="${user.email}" class="custom-input" />
+            </div>
+            <div role="button" class="modal-btn modal-delete-btn" style="width: 100%; margin-top: 15px;">
+                Temporarily deactivate account and 1 vault
+            </div>
+            <div role="button" tabindex="0" class="button-cancel">
+                Cancel
+            </div>
+        </div>
+    </div>
+    <!-- Pop up add user -->
+    <div id="addUserModal" class="modal hidden">
+        <div class="modal-add-user-content">
+            <h3><span style="color: #c82333;"><svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 12h4m-2 2v-4M4 18v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Zm8-10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                </span> Add User</h3>
+            <hr>
+            <form>
+                <label><span style="color: red">*</span> User:</label>
+                <input type="text" placeholder="Search user" required>
+
+                <label><span style="color: red">*</span> Role:</label>
+                <select required>
+                    <option value="">Select Role</option>
+                    <option>Tester</option>
+                    <option>Admin</option>
+                    <option>Viewer</option>
+                </select>
+            </form>
+            <hr>
+            <div class="modal-footer">
+                <button type="button" class="cancel-btn" id="cancelModal">Cancel</button>
+                <button type="submit" class="confirm-btn">
+                    <svg width="14" height="14" ...>...</svg>
+                    Add
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Toast notification -->
+    <div id="toast-notification" class="toast-notification">
+        <svg xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px; margin-right: 10px;" fill="none"
+            viewBox="0 0 24 24" stroke="#065f46" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+        <span style="flex-grow: 1;" id="toast-message"></span>
+    </div>
+
+</body>
+<script src="/js/vault_management.js"></script>
+<script src="/js/loader.js"></script>
+
+</html>

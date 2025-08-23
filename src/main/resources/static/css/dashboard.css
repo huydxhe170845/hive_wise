@@ -2541,8 +2541,8 @@ label.required::before {
 }
 
 #editModal .custom-control-input:checked~.custom-control-label::before {
-    background-color: #007bff;
-    border-color: #007bff;
+    background-color: #ffc400;
+    border-color: #ffc400;
 }
 
 /* Profile Settings Modal Specific Styles */
@@ -2933,9 +2933,9 @@ label.required::before {
 
 /* File upload button styling for edit modal */
 #editModal .file-upload-btn {
-    border: 2px dashed #007bff;
+    border: 2px dashed #ffae00;
     background: #f8f9ff;
-    color: #007bff;
+    color: #ffae00;
     border-radius: 4px;
     padding: 12px 20px;
     font-weight: 500;
@@ -2949,9 +2949,9 @@ label.required::before {
 }
 
 #editModal .file-upload-btn:hover {
-    background: #007bff;
+    background: #ffae00;
     color: white;
-    border-color: #007bff;
+    border-color: #ffae00;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
@@ -3211,7 +3211,7 @@ label.required::before {
 }
 
 .form-group label {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     color: #111827;
     margin: 0;
@@ -3869,5 +3869,74 @@ label.required::before {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
+    }
+}
+
+/* Date Range Filter Styles */
+.date-range-filter {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+}
+
+.date-range-filter .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.date-range-filter input[type="date"] {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.date-range-filter input[type="date"]:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.date-range-filter input[type="date"]:hover {
+    border-color: #9ca3af;
+}
+
+.date-range-filter .form-group label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.date-range-filter .form-group label i {
+    color: #6b7280;
+}
+
+/* Date filter validation styles */
+.date-range-filter input[type="date"].error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.date-range-filter .error-message {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 4px;
+    display: none;
+}
+
+.date-range-filter .error-message.show {
+    display: block;
+}
+
+/* Responsive date range filter */
+@media (max-width: 768px) {
+    .date-range-filter {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .date-range-filter .form-group {
+        margin-bottom: 0;
     }
 }

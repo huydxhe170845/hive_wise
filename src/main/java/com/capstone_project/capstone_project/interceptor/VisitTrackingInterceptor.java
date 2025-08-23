@@ -1,5 +1,6 @@
 package com.capstone_project.capstone_project.interceptor;
 
+import com.capstone_project.capstone_project.security.CustomUserDetails;
 import com.capstone_project.capstone_project.service.VisitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
@@ -10,12 +11,20 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @RequiredArgsConstructor
 public class VisitTrackingInterceptor implements HandlerInterceptor {
 
     private final VisitService visitService;
+
+    // In-memory cache to track visits per user per day
+    // Key: userId_date, Value: last visit timestamp
+    private final ConcurrentHashMap<String, LocalDateTime> userVisitCache = new ConcurrentHashMap<>();
 
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -35,19 +44,28 @@ public class VisitTrackingInterceptor implements HandlerInterceptor {
 
             if (authentication != null && authentication.isAuthenticated()
                     && !authentication.getName().equals("anonymousUser")) {
-                // Get user ID from authentication - you might need to adjust this based on your
-                // auth implementation
-                userId = authentication.getName(); // or extract from principal
+
+                // Properly extract userId from CustomUserDetails
+                if (authentication.getPrincipal() instanceof CustomUserDetails) {
+                    CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                    userId = userDetails.getId();
+                } else {
+                    // Fallback to username if CustomUserDetails is not available
+                    userId = authentication.getName();
+                }
 
                 // Check if this is a login action
                 isLogin = requestURI.contains("/auth/log-in") && "POST".equals(request.getMethod());
             }
 
-            // Record the visit
-            if (isLogin) {
-                visitService.recordLoginVisit(userId, request);
-            } else {
-                visitService.recordVisit(userId, requestURI, request, false);
+            // Check if we should record this visit (avoid duplicate visits in same day)
+            if (shouldRecordVisit(request, userId, isLogin)) {
+                // Record the visit
+                if (isLogin) {
+                    visitService.recordLoginVisit(userId, request);
+                } else {
+                    visitService.recordVisit(userId, requestURI, request, false);
+                }
             }
 
         } catch (Exception e) {
@@ -56,6 +74,81 @@ public class VisitTrackingInterceptor implements HandlerInterceptor {
         }
 
         return true;
+    }
+
+    private boolean shouldRecordVisit(HttpServletRequest request, String userId, boolean isLogin) {
+        // Clean up old cache entries periodically
+        cleanupOldCacheEntries();
+
+        // For login visits, always record
+        if (isLogin) {
+            return true;
+        }
+
+        // For anonymous users, use IP-based tracking with time limit
+        if (userId == null) {
+            String ipAddress = getClientIpAddress(request);
+            String ipKey = "ip_" + ipAddress + "_" + LocalDate.now();
+
+            LocalDateTime lastVisit = userVisitCache.get(ipKey);
+            LocalDateTime now = LocalDateTime.now();
+
+            // Allow visit if no previous visit today or if more than 30 minutes have passed
+            if (lastVisit == null || now.isAfter(lastVisit.plusMinutes(30))) {
+                userVisitCache.put(ipKey, now);
+                return true;
+            }
+
+            return false;
+        }
+
+        // For authenticated users, use user-based tracking with time limit
+        String userKey = userId + "_" + LocalDate.now();
+        LocalDateTime lastVisit = userVisitCache.get(userKey);
+        LocalDateTime now = LocalDateTime.now();
+
+        // Allow visit if no previous visit today or if more than 30 minutes have passed
+        if (lastVisit == null || now.isAfter(lastVisit.plusMinutes(30))) {
+            userVisitCache.put(userKey, now);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void cleanupOldCacheEntries() {
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
+
+        // Remove entries from yesterday and earlier
+        userVisitCache.entrySet().removeIf(entry -> {
+            String key = entry.getKey();
+            if (key.contains("_")) {
+                String datePart = key.substring(key.lastIndexOf("_") + 1);
+                try {
+                    LocalDate entryDate = LocalDate.parse(datePart);
+                    return entryDate.isBefore(today);
+                } catch (Exception e) {
+                    // If we can't parse the date, remove the entry
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty()) {
+            return xRealIp;
+        }
+
+        return request.getRemoteAddr();
     }
 
     private boolean shouldSkipTracking(String requestURI) {

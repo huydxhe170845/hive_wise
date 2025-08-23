@@ -2053,7 +2053,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusFilter = document.getElementById('statusFilter');
     const ownerFilter = document.getElementById('ownerFilter');
     const memberCountFilter = document.getElementById('memberCountFilter');
-    const dateRangeFilter = document.getElementById('dateRangeFilter');
+    const vaultDateFromFilter = document.getElementById('vaultDateFromFilter');
+    const vaultDateToFilter = document.getElementById('vaultDateToFilter');
     const applyFiltersBtn = document.getElementById('applyFilters');
     const clearFiltersBtn = document.getElementById('clearFilters');
     const clearAllFiltersBtn = document.getElementById('clearAllFilters');
@@ -2085,6 +2086,28 @@ document.addEventListener('DOMContentLoaded', function () {
     // Filter functionality
     if (applyFiltersBtn) {
         applyFiltersBtn.addEventListener('click', function () {
+            // Clear previous error states
+            if (vaultDateFromFilter) vaultDateFromFilter.classList.remove('error');
+            if (vaultDateToFilter) vaultDateToFilter.classList.remove('error');
+
+            // Validate date range
+            if (vaultDateFromFilter && vaultDateToFilter && vaultDateFromFilter.value && vaultDateToFilter.value) {
+                const fromDate = new Date(vaultDateFromFilter.value);
+                const toDate = new Date(vaultDateToFilter.value);
+                if (fromDate > toDate) {
+                    showToast('Ngày bắt đầu không thể sau ngày kết thúc', 'error');
+                    vaultDateFromFilter.classList.add('error');
+                    vaultDateToFilter.classList.add('error');
+                    return;
+                }
+            }
+
+            // Auto-set today's date for "To" field if only "From" is set
+            if (vaultDateFromFilter && vaultDateToFilter && vaultDateFromFilter.value && !vaultDateToFilter.value) {
+                const today = new Date().toISOString().split('T')[0];
+                vaultDateToFilter.value = today;
+            }
+
             applyFilters();
         });
     }
@@ -2175,10 +2198,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            // Date range filter (simplified - you may want to implement more complex date filtering)
-            if (dateRangeFilter.value && dateRangeFilter.value !== '') {
-                // This would need more complex date comparison logic
-                // For now, just a placeholder
+            // Date range filter
+            if (vaultDateFromFilter && vaultDateToFilter && (vaultDateFromFilter.value || vaultDateToFilter.value)) {
+                const createdDateCell = row.cells[4]; // Created At column
+                const createdDateText = createdDateCell.textContent.trim();
+
+                if (createdDateText && createdDateText !== 'Date') {
+                    // Parse the date from format yyyy/MM/dd
+                    const dateParts = createdDateText.split('/');
+                    if (dateParts.length === 3) {
+                        const createdDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+
+                        // Check from date
+                        if (vaultDateFromFilter.value) {
+                            const fromDate = new Date(vaultDateFromFilter.value);
+                            // Set time to start of day for accurate comparison
+                            fromDate.setHours(0, 0, 0, 0);
+                            if (createdDate < fromDate) {
+                                isVisible = false;
+                            }
+                        }
+
+                        // Check to date
+                        if (vaultDateToFilter.value) {
+                            const toDate = new Date(vaultDateToFilter.value);
+                            // Set time to end of day for accurate comparison
+                            toDate.setHours(23, 59, 59, 999);
+                            if (createdDate > toDate) {
+                                isVisible = false;
+                            }
+                        }
+                    }
+                }
             }
 
             row.style.display = isVisible ? '' : 'none';
@@ -2189,7 +2240,21 @@ document.addEventListener('DOMContentLoaded', function () {
         if (statusFilter.value) activeFilters.push(`Status: ${statusFilter.value}`);
         if (ownerFilter.value) activeFilters.push(`Owner: ${ownerFilter.value}`);
         if (memberCountFilter.value) activeFilters.push(`Members: ${memberCountFilter.value}`);
-        if (dateRangeFilter.value) activeFilters.push(`Date: ${dateRangeFilter.value}`);
+        if (vaultDateFromFilter && vaultDateToFilter && (vaultDateFromFilter.value || vaultDateToFilter.value)) {
+            let dateFilterText = 'Created Date: ';
+            if (vaultDateFromFilter.value && vaultDateToFilter.value) {
+                const fromDate = new Date(vaultDateFromFilter.value).toLocaleDateString('vi-VN');
+                const toDate = new Date(vaultDateToFilter.value).toLocaleDateString('vi-VN');
+                dateFilterText += `${fromDate} đến ${toDate}`;
+            } else if (vaultDateFromFilter.value) {
+                const fromDate = new Date(vaultDateFromFilter.value).toLocaleDateString('vi-VN');
+                dateFilterText += `từ ${fromDate}`;
+            } else if (vaultDateToFilter.value) {
+                const toDate = new Date(vaultDateToFilter.value).toLocaleDateString('vi-VN');
+                dateFilterText += `đến ${toDate}`;
+            }
+            activeFilters.push(dateFilterText);
+        }
 
         updateFilterInfo(activeFilters.join(', '), visibleCount);
 
@@ -2201,7 +2266,8 @@ document.addEventListener('DOMContentLoaded', function () {
         statusFilter.value = '';
         ownerFilter.value = '';
         memberCountFilter.value = '';
-        dateRangeFilter.value = '';
+        if (vaultDateFromFilter) vaultDateFromFilter.value = '';
+        if (vaultDateToFilter) vaultDateToFilter.value = '';
 
         // Show all rows
         const rows = vaultTable.querySelectorAll('tbody tr');
@@ -2223,7 +2289,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateFilterInfo(filterText, visibleCount) {
         if (filterText && filterText.trim() !== '') {
-            filterResultsText.textContent = `Showing ${visibleCount} results with filters: ${filterText}`;
+            filterResultsText.textContent = `Hiển thị ${visibleCount} kết quả với bộ lọc: ${filterText}`;
             filterResultsInfo.style.display = 'block';
         } else {
             filterResultsInfo.style.display = 'none';
@@ -2242,7 +2308,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const userStatusFilter = document.getElementById('userStatusFilter');
     const userRoleFilter = document.getElementById('userRoleFilter');
     const userProviderFilter = document.getElementById('userProviderFilter');
-    const userDateFilter = document.getElementById('userDateFilter');
+    const userDateFromFilter = document.getElementById('userDateFromFilter');
+    const userDateToFilter = document.getElementById('userDateToFilter');
     const applyUserFiltersBtn = document.getElementById('applyUserFilters');
     const clearUserFiltersBtn = document.getElementById('clearUserFilters');
     const clearAllUserFiltersBtn = document.getElementById('clearAllUserFilters');
@@ -2274,6 +2341,28 @@ document.addEventListener('DOMContentLoaded', function () {
     // User filter functionality
     if (applyUserFiltersBtn) {
         applyUserFiltersBtn.addEventListener('click', function () {
+            // Clear previous error states
+            userDateFromFilter.classList.remove('error');
+            userDateToFilter.classList.remove('error');
+
+            // Validate date range
+            if (userDateFromFilter.value && userDateToFilter.value) {
+                const fromDate = new Date(userDateFromFilter.value);
+                const toDate = new Date(userDateToFilter.value);
+                if (fromDate > toDate) {
+                    showToast('Ngày bắt đầu không thể sau ngày kết thúc', 'error');
+                    userDateFromFilter.classList.add('error');
+                    userDateToFilter.classList.add('error');
+                    return;
+                }
+            }
+
+            // Auto-set today's date for "To" field if only "From" is set
+            if (userDateFromFilter.value && !userDateToFilter.value) {
+                const today = new Date().toISOString().split('T')[0];
+                userDateToFilter.value = today;
+            }
+
             applyUserFilters();
         });
     }
@@ -2349,10 +2438,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            // Date filter (simplified - you may want to implement more complex date filtering)
-            if (userDateFilter.value && userDateFilter.value !== '') {
-                // This would need more complex date comparison logic
-                // For now, just a placeholder
+            // Date range filter
+            if (userDateFromFilter.value || userDateToFilter.value) {
+                const joinDateCell = row.cells[7]; // Join Date column
+                const joinDateText = joinDateCell.textContent.trim();
+
+                if (joinDateText && joinDateText !== 'Join Date') {
+                    // Parse the date from format yyyy/MM/dd
+                    const dateParts = joinDateText.split('/');
+                    if (dateParts.length === 3) {
+                        const joinDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+
+                        // Check from date
+                        if (userDateFromFilter.value) {
+                            const fromDate = new Date(userDateFromFilter.value);
+                            // Set time to start of day for accurate comparison
+                            fromDate.setHours(0, 0, 0, 0);
+                            if (joinDate < fromDate) {
+                                isVisible = false;
+                            }
+                        }
+
+                        // Check to date
+                        if (userDateToFilter.value) {
+                            const toDate = new Date(userDateToFilter.value);
+                            // Set time to end of day for accurate comparison
+                            toDate.setHours(23, 59, 59, 999);
+                            if (joinDate > toDate) {
+                                isVisible = false;
+                            }
+                        }
+                    }
+                }
             }
 
             row.style.display = isVisible ? '' : 'none';
@@ -2363,7 +2480,21 @@ document.addEventListener('DOMContentLoaded', function () {
         if (userStatusFilter.value) activeFilters.push(`Status: ${userStatusFilter.value}`);
         if (userRoleFilter.value) activeFilters.push(`Role: ${userRoleFilter.value}`);
         if (userProviderFilter.value) activeFilters.push(`Provider: ${userProviderFilter.value}`);
-        if (userDateFilter.value) activeFilters.push(`Date: ${userDateFilter.value}`);
+        if (userDateFromFilter.value || userDateToFilter.value) {
+            let dateFilterText = 'Join Date: ';
+            if (userDateFromFilter.value && userDateToFilter.value) {
+                const fromDate = new Date(userDateFromFilter.value).toLocaleDateString('vi-VN');
+                const toDate = new Date(userDateToFilter.value).toLocaleDateString('vi-VN');
+                dateFilterText += `${fromDate} đến ${toDate}`;
+            } else if (userDateFromFilter.value) {
+                const fromDate = new Date(userDateFromFilter.value).toLocaleDateString('vi-VN');
+                dateFilterText += `từ ${fromDate}`;
+            } else if (userDateToFilter.value) {
+                const toDate = new Date(userDateToFilter.value).toLocaleDateString('vi-VN');
+                dateFilterText += `đến ${toDate}`;
+            }
+            activeFilters.push(dateFilterText);
+        }
 
         updateUserFilterInfo(activeFilters.join(', '), visibleCount);
 
@@ -2375,7 +2506,8 @@ document.addEventListener('DOMContentLoaded', function () {
         userStatusFilter.value = '';
         userRoleFilter.value = '';
         userProviderFilter.value = '';
-        userDateFilter.value = '';
+        userDateFromFilter.value = '';
+        userDateToFilter.value = '';
 
         // Show all rows
         const rows = userTable.querySelectorAll('tbody tr');

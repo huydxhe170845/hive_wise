@@ -563,10 +563,12 @@
                                                 <div class="flex-grow-1">
                                                     <div class="d-flex justify-content-between">
                                                         <span class="font-weight-bold"
-                                                            th:text="${builder.name != null ? builder.name : builder.username}">John
-                                                            Doe</span>
-                                                        <span class="badge badge-success"
-                                                            th:text="${builder.approvedKnowledgeCount}">24</span>
+                                                            th:text="${builder.name != null ? builder.name : builder.username}">
+                                                            John Doe
+                                                        </span>
+                                                        <span class="badge badge-success" style="margin-top: 10px;"
+                                                            th:text="${builder.approvedKnowledgeCount}">24
+                                                        </span>
                                                     </div>
                                                     <small class="text-muted">Approved Knowledge Items</small>
                                                 </div>
@@ -1211,18 +1213,23 @@
                                                             <option value="GOOGLE">Google</option>
                                                         </select>
                                                     </div>
-                                                    <div class="form-group">
-                                                        <label for="userDateFilter" class="small">Join
-                                                            Date
-                                                        </label>
-                                                        <select class="form-control form-control-sm"
-                                                            id="userDateFilter">
-                                                            <option value="">All time</option>
-                                                            <option value="today">Today</option>
-                                                            <option value="week">This week</option>
-                                                            <option value="month">This month</option>
-                                                            <option value="year">This year</option>
-                                                        </select>
+                                                    <div class="date-range-filter">
+                                                        <div class="form-group">
+                                                            <label for="userDateFromFilter" class="small">
+                                                                <i class="fas fa-calendar-alt mr-1"></i>Join Date From
+                                                            </label>
+                                                            <input type="date" class="form-control form-control-sm"
+                                                                id="userDateFromFilter" placeholder="Select start date"
+                                                                title="Select the start date for filtering join dates">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="userDateToFilter" class="small">
+                                                                <i class="fas fa-calendar-alt mr-1"></i>Join Date To
+                                                            </label>
+                                                            <input type="date" class="form-control form-control-sm"
+                                                                id="userDateToFilter" placeholder="Select end date"
+                                                                title="Select the end date for filtering join dates">
+                                                        </div>
                                                     </div>
                                                     <div class="dropdown-divider"></div>
                                                     <div class="d-flex justify-content-between">
@@ -1999,16 +2006,24 @@
                                                             <option value="20+">20+ members</option>
                                                         </select>
                                                     </div>
-                                                    <div class="form-group">
-                                                        <label for="dateRangeFilter" class="small">Created Date</label>
-                                                        <select class="form-control form-control-sm"
-                                                            id="dateRangeFilter">
-                                                            <option value="">All time</option>
-                                                            <option value="today">Today</option>
-                                                            <option value="week">This week</option>
-                                                            <option value="month">This month</option>
-                                                            <option value="year">This year</option>
-                                                        </select>
+                                                    <div class="date-range-filter">
+                                                        <div class="form-group">
+                                                            <label for="vaultDateFromFilter" class="small">
+                                                                <i class="fas fa-calendar-alt mr-1"></i>Created Date
+                                                                From
+                                                            </label>
+                                                            <input type="date" class="form-control form-control-sm"
+                                                                id="vaultDateFromFilter" placeholder="Select start date"
+                                                                title="Select the start date for filtering created dates">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="vaultDateToFilter" class="small">
+                                                                <i class="fas fa-calendar-alt mr-1"></i>Created Date To
+                                                            </label>
+                                                            <input type="date" class="form-control form-control-sm"
+                                                                id="vaultDateToFilter" placeholder="Select end date"
+                                                                title="Select the end date for filtering created dates">
+                                                        </div>
                                                     </div>
                                                     <div class="dropdown-divider"></div>
                                                     <div class="d-flex justify-content-between">

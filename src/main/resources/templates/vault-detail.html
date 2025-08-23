@@ -797,40 +797,7 @@
                                                                     style="font-size: 1.25rem; font-weight: 600; color: #1f2937;"
                                                                     th:text="${upcomingSession.title}">
                                                                     React Best Practices Workshop</h5>
-                                                                <!-- <div class="dropdown">
-                                                                    <button class="btn btn-sm" type="button"
-                                                                        data-toggle="dropdown"
-                                                                        style="background: none; border: none; color: #6b7280; padding: 2px;">
-                                                                        <svg width="18" height="18" fill="currentColor"
-                                                                            viewBox="0 0 24 24">
-                                                                            <path
-                                                                                d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                                                                        </svg>
-                                                                    </button>
-                                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                                        <a class="dropdown-item edit-session-btn"
-                                                                            href="#" style="color: #059669;"
-                                                                            th:data-session-id="${upcomingSession.id}"
-                                                                            th:data-session-title="${upcomingSession.title}"
-                                                                            th:data-session-description="${upcomingSession.description}"
-                                                                            th:data-session-start-date="${#temporals.format(upcomingSession.startTime, 'yyyy-MM-dd')}"
-                                                                            th:data-session-start-time="${#temporals.format(upcomingSession.startTime, 'HH:mm')}"
-                                                                            th:data-session-end-date="${upcomingSession.endTime != null ? #temporals.format(upcomingSession.endTime, 'yyyy-MM-dd') : #temporals.format(upcomingSession.startTime, 'yyyy-MM-dd')}"
-                                                                            th:data-session-end-time="${upcomingSession.endTime != null ? #temporals.format(upcomingSession.endTime, 'HH:mm') : ''}"
-                                                                            th:data-session-duration="${upcomingSession.duration}"
-                                                                            th:data-session-instructor-id="${upcomingSession.instructor != null ? upcomingSession.instructor.id : ''}"
-                                                                            th:data-session-instructor-name="${upcomingSession.instructor != null ? (upcomingSession.instructor.email != null and !#strings.isEmpty(upcomingSession.instructor.email) ? upcomingSession.instructor.email : (upcomingSession.instructor.name != null and !#strings.isEmpty(upcomingSession.instructor.name) ? upcomingSession.instructor.name : (upcomingSession.instructor.googleFirstName != null and upcomingSession.instructor.googleFamilyName != null ? upcomingSession.instructor.googleFirstName + ' ' + upcomingSession.instructor.googleFamilyName : upcomingSession.instructor.username))) : 'Unknown'}"
-                                                                            th:data-session-meeting-link="${upcomingSession.meetingLink}">
-                                                                            <i class="las la-edit mr-2"></i>Edit
-                                                                        </a>
-                                                                        <a class="dropdown-item delete-session-btn"
-                                                                            href="#" style="color: #ef4444;"
-                                                                            th:data-session-id="${upcomingSession.id}"
-                                                                            th:data-session-title="${upcomingSession.title}">
-                                                                            <i class="las la-trash mr-2"></i>Delete
-                                                                        </a>
-                                                                    </div>
-                                                                </div> -->
+
                                                             </div>
                                                             <p class="card-text mb-2"
                                                                 style="color: #6b7280; font-size: 14px; line-height: 1.4;"

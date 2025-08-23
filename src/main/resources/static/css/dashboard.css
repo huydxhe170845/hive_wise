@@ -887,6 +887,11 @@ input:checked+.slider:before {
      margin-left: 15px; 
     border-radius: 10px; */
     transition: all 0.3s ease;
+    display: none;
+}
+
+#vaultManagementSubmenu.show {
+    display: block;
 }
 
 #vaultManagementSubmenu .nav-item {
@@ -950,6 +955,11 @@ input:checked+.slider:before {
     margin-left: 15px; 
     border-radius: 10px; */
     transition: all 0.3s ease;
+    display: none;
+}
+
+#accountManagementSubmenu.show {
+    display: block;
 }
 
 #accountManagementSubmenu .nav-item {
@@ -979,7 +989,6 @@ input:checked+.slider:before {
     text-align: center;
 }
 
-/* Required field indicator for all forms */
 label.required::before {
     content: "*";
     color: #e74c3c;
@@ -989,6 +998,7 @@ label.required::before {
 /* Add Vault Page Styles */
 #add-vault-page .add-vault-form-container {
     display: flex;
+    width: 900px;
     flex-direction: column;
     padding: 20px;
     background: #fff;
@@ -1024,8 +1034,8 @@ label.required::before {
 }
 
 #add-vault-page .form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    border-color: #eabc66;
+    box-shadow: 0 0 0 0.2rem rgba(234, 210, 102, 0.25);
     background-color: white;
 }
 
@@ -1039,21 +1049,20 @@ label.required::before {
     resize: vertical;
 }
 
-/* Photo Upload Styles for Add Vault Page */
 #add-vault-page .photo-upload-container {
     display: flex;
     align-items: flex-start;
     gap: 20px;
-    background: #f8f9fa;
+    background: #faf9f8;
     border-radius: 12px;
     padding: 20px;
-    border: 2px dashed #dee2e6;
+    border: 2px dashed #e6e5de;
     transition: all 0.3s ease;
 }
 
 #add-vault-page .photo-upload-container:hover {
-    border-color: #667eea;
-    background: #f0f2ff;
+    border-color: #eacb66;
+    background: #fffbf0;
 }
 
 #add-vault-page .photo-preview {
@@ -1090,9 +1099,9 @@ label.required::before {
 
 #add-vault-page .vault-file-upload-btn {
     transition: all 0.3s ease;
-    border: 2px dashed #667eea;
-    background: #f0f2ff;
-    color: #667eea;
+    border: 2px dashed #eacb66;
+    background: #fffcf0;
+    color: #eac066;
     border-radius: 8px;
     padding: 12px 20px;
     font-weight: 500;
@@ -1106,11 +1115,11 @@ label.required::before {
 }
 
 #add-vault-page .vault-file-upload-btn:hover {
-    background: #667eea;
+    background: #eac066;
     color: white;
-    border-color: #667eea;
+    border-color: #eab566;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(234, 188, 102, 0.3);
 }
 
 #add-vault-page .vault-file-upload-btn.file-selected {
@@ -1161,9 +1170,7 @@ label.required::before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #dee2e6;
+
 }
 
 #add-vault-page .btn {
@@ -1268,7 +1275,7 @@ label.required::before {
     height: 100%;
     max-height: 500px;
     max-width: 480px;
-    margin: 130px auto;
+    margin: 60px auto;
     border-radius: 12px;
     overflow: hidden;
 }
@@ -1304,12 +1311,12 @@ label.required::before {
 
 .vault-owner-dropdown {
     position: absolute;
-    top: 100%;
+    top: 60px;
     left: 0;
     right: 0;
     background: white;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     max-height: 300px;
@@ -1392,10 +1399,11 @@ label.required::before {
 .vault-owner-item .user-role {
     font-size: 11px;
     font-weight: 600;
+    line-height: 20px;
     color: #6c757d;
     background: #f8f9fa;
     padding: 2px 8px;
-    border-radius: 12px;
+    border-radius: 20px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border: 1px solid #e9ecef;
@@ -1404,32 +1412,26 @@ label.required::before {
 .vault-owner-item .user-role.admin-role {
     color: #fff;
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    border-color: #dc3545;
-    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+    /* box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2); */
 }
 
 .vault-owner-item .user-role.user-role {
     color: #faac03;
     background: linear-gradient(135deg, #f0ead9 0%, #f5ede3 100%);
-    border-color: #6c757d;
-    box-shadow: 0 1px 4px rgba(125, 119, 108, 0.2);
 }
 
 
-/* Search input focus styles */
 .vault-owner-search-wrapper input:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    border-color: #f1a22a;
+    box-shadow: 0 0 0 0.2rem rgba(234, 192, 102, 0.25);
 }
 
-/* User selected state */
 .vault-owner-search-wrapper input.user-selected {
     background-color: #f8f9fa;
-    color: #495057;
+    color: #575349;
     font-weight: 500;
 }
 
-/* Clear button styles */
 .vault-owner-clear-btn {
     position: absolute;
     right: 8px;
@@ -1450,7 +1452,6 @@ label.required::before {
     color: #dc3545;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .vault-owner-dropdown {
         max-height: 250px;
@@ -2070,8 +2071,14 @@ label.required::before {
     right: auto !important;
 }
 
-/* Specific positioning for vault admin profile menu */
-#vaultAdminProfileMenu {
+
+
+#adminProfileMenu2,
+#vaultAdminProfileMenu,
+#registerAccountProfileMenu,
+#createVaultProfileMenu,
+#myVaultsProfileMenu,
+#trashProfileMenu {
     left: -70px !important;
     right: auto !important;
     position: absolute !important;
@@ -2079,16 +2086,6 @@ label.required::before {
     transform: none !important;
 }
 
-/* Specific positioning for admin profile menu 2 (account list) */
-#adminProfileMenu2 {
-    left: -70px !important;
-    right: auto !important;
-    position: absolute !important;
-    top: 100% !important;
-    transform: none !important;
-}
-
-/* Profile and Notification Button Styles */
 .nav-icon-1 {
     display: flex;
     align-items: center;

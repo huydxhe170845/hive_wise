@@ -174,10 +174,44 @@ function initializePageNavigation() {
         // Get current page from hash or localStorage
         const currentPage = window.location.hash.substring(1) || localStorage.getItem('currentPage') || 'dashboard-analytics';
 
+        // Clear all submenu active states first
+        const accountManagementLink = document.querySelector('.account-management-link');
+        const vaultManagementLink = document.querySelector('.vault-management-link');
+
+        if (accountManagementLink) {
+            accountManagementLink.classList.remove('active');
+            const accountNavItem = accountManagementLink.closest('.nav-item');
+            if (accountNavItem) {
+                accountNavItem.classList.remove('active');
+            }
+        }
+
+        if (vaultManagementLink) {
+            vaultManagementLink.classList.remove('active');
+            const vaultNavItem = vaultManagementLink.closest('.nav-item');
+            if (vaultNavItem) {
+                vaultNavItem.classList.remove('active');
+            }
+        }
+
         // Only open submenus based on current page
         if (currentPage === 'account-management' || currentPage === 'register-account') {
+            if (accountManagementLink) {
+                accountManagementLink.classList.add('active');
+                const accountNavItem = accountManagementLink.closest('.nav-item');
+                if (accountNavItem) {
+                    accountNavItem.classList.add('active');
+                }
+            }
             ensureAccountSubmenuOpen();
-        } else if (currentPage === 'vault-management' || currentPage === 'add-vault' || currentPage === 'vault-permissions' || currentPage === 'vault-storage') {
+        } else if (currentPage === 'vault-management' || currentPage === 'add-vault' || currentPage === 'vault-permissions' || currentPage === 'vault-storage' || currentPage === 'vault-backup' || currentPage === 'vault-security' || currentPage === 'vault-analytics') {
+            if (vaultManagementLink) {
+                vaultManagementLink.classList.add('active');
+                const vaultNavItem = vaultManagementLink.closest('.nav-item');
+                if (vaultNavItem) {
+                    vaultNavItem.classList.add('active');
+                }
+            }
             ensureVaultSubmenuOpen();
         }
     }
@@ -248,20 +282,44 @@ function initializePageNavigation() {
             }
         });
 
+        // Clear all submenu active states first
         const submenuItems = document.querySelectorAll('.submenu-item');
         submenuItems.forEach(subItem => {
             subItem.classList.remove('active');
+        });
+
+        // Clear all main navigation active states
+        const accountManagementLink = document.querySelector('.account-management-link');
+        const vaultManagementLink = document.querySelector('.vault-management-link');
+
+        if (accountManagementLink) {
+            accountManagementLink.classList.remove('active');
+            const accountNavItem = accountManagementLink.closest('.nav-item');
+            if (accountNavItem) {
+                accountNavItem.classList.remove('active');
+            }
+        }
+
+        if (vaultManagementLink) {
+            vaultManagementLink.classList.remove('active');
+            const vaultNavItem = vaultManagementLink.closest('.nav-item');
+            if (vaultNavItem) {
+                vaultNavItem.classList.remove('active');
+            }
+        }
+
+        // Set active state for current page
+        submenuItems.forEach(subItem => {
             if (subItem.getAttribute('data-page') === pageId) {
                 subItem.classList.add('active');
 
                 // Handle vault management submenu
-                if (pageId === 'vault-management' || pageId === 'add-vault' || pageId === 'vault-permissions' || pageId === 'vault-storage') {
-                    const vaultManagementLink = document.querySelector('.vault-management-link');
+                if (pageId === 'vault-management' || pageId === 'add-vault' || pageId === 'vault-permissions' || pageId === 'vault-storage' || pageId === 'vault-backup' || pageId === 'vault-security' || pageId === 'vault-analytics') {
                     if (vaultManagementLink) {
                         vaultManagementLink.classList.add('active');
-                        const navItem = vaultManagementLink.closest('.nav-item');
-                        if (navItem) {
-                            navItem.classList.add('active');
+                        const vaultNavItem = vaultManagementLink.closest('.nav-item');
+                        if (vaultNavItem) {
+                            vaultNavItem.classList.add('active');
                         }
                         ensureVaultSubmenuOpen();
                     }
@@ -269,13 +327,11 @@ function initializePageNavigation() {
 
                 // Handle account management submenu
                 if (pageId === 'account-management' || pageId === 'register-account') {
-                    const accountManagementLink = document.querySelector('.account-management-link');
-
                     if (accountManagementLink) {
                         accountManagementLink.classList.add('active');
-                        const navItem = accountManagementLink.closest('.nav-item');
-                        if (navItem) {
-                            navItem.classList.add('active');
+                        const accountNavItem = accountManagementLink.closest('.nav-item');
+                        if (accountNavItem) {
+                            accountNavItem.classList.add('active');
                         }
                         ensureAccountSubmenuOpen();
                     }
@@ -1683,10 +1739,32 @@ function initializeSubmenuItemClicks() {
             e.preventDefault();
             const pageId = this.getAttribute('data-page');
 
-            // Update submenu active states
+            // Clear all submenu active states first
             submenuItems.forEach(subItem => {
                 subItem.classList.remove('active');
             });
+
+            // Clear all main navigation active states
+            const accountManagementLink = document.querySelector('.account-management-link');
+            const vaultManagementLink = document.querySelector('.vault-management-link');
+
+            if (accountManagementLink) {
+                accountManagementLink.classList.remove('active');
+                const accountNavItem = accountManagementLink.closest('.nav-item');
+                if (accountNavItem) {
+                    accountNavItem.classList.remove('active');
+                }
+            }
+
+            if (vaultManagementLink) {
+                vaultManagementLink.classList.remove('active');
+                const vaultNavItem = vaultManagementLink.closest('.nav-item');
+                if (vaultNavItem) {
+                    vaultNavItem.classList.remove('active');
+                }
+            }
+
+            // Set active state for clicked item
             this.classList.add('active');
 
             // Navigate to the selected page
@@ -4108,9 +4186,7 @@ function initializePasswordToggleButtons() {
 
 // Admin Profile Menu Functions
 function initializeProfileMenu() {
-    console.log('Initializing profile menu...');
 
-    // Initialize each profile button individually
     const adminProfileBtn = document.getElementById('adminProfileBtn');
     const adminProfileMenu = document.getElementById('adminProfileMenu');
 
@@ -4120,42 +4196,33 @@ function initializeProfileMenu() {
     const vaultAdminProfileBtn = document.getElementById('vaultAdminProfileBtn');
     const vaultAdminProfileMenu = document.getElementById('vaultAdminProfileMenu');
 
-    console.log('Admin profile button:', adminProfileBtn);
-    console.log('Admin profile menu:', adminProfileMenu);
-    console.log('Admin profile button 2:', adminProfileBtn2);
-    console.log('Admin profile menu 2:', adminProfileMenu2);
-    console.log('Vault admin profile button:', vaultAdminProfileBtn);
-    console.log('Vault admin profile menu:', vaultAdminProfileMenu);
+    const registerAccountProfileBtn = document.getElementById('registerAccountProfileBtn');
+    const registerAccountProfileMenu = document.getElementById('registerAccountProfileMenu');
 
-    // Debug: Check if elements exist in DOM
-    console.log('All profile buttons in DOM:', document.querySelectorAll('[id*="ProfileBtn"]'));
-    console.log('All profile menus in DOM:', document.querySelectorAll('[id*="ProfileMenu"]'));
+    const createVaultProfileBtn = document.getElementById('createVaultProfileBtn');
+    const createVaultProfileMenu = document.getElementById('createVaultProfileMenu');
 
-    // Initialize admin profile menu (Account list and Dashboard)
+    const myVaultsProfileBtn = document.getElementById('myVaultsProfileBtn');
+    const myVaultsProfileMenu = document.getElementById('myVaultsProfileMenu');
+
+    const trashProfileBtn = document.getElementById('trashProfileBtn');
+    const trashProfileMenu = document.getElementById('trashProfileMenu');
+
+
     if (adminProfileBtn && adminProfileMenu) {
-        console.log('Initializing admin profile menu');
-        console.log('Admin profile button element:', adminProfileBtn);
-        console.log('Admin profile menu element:', adminProfileMenu);
-
-        // Remove any existing Bootstrap dropdown functionality
         adminProfileBtn.removeAttribute('data-toggle');
         adminProfileBtn.removeAttribute('data-bs-toggle');
 
-        // Remove any existing event listeners by cloning
         const newAdminProfileBtn = adminProfileBtn.cloneNode(true);
         adminProfileBtn.parentNode.replaceChild(newAdminProfileBtn, adminProfileBtn);
 
-        // Get the new button reference
         const freshAdminProfileBtn = document.getElementById('adminProfileBtn');
         const freshAdminProfileMenu = document.getElementById('adminProfileMenu');
 
-        // Toggle profile menu
         freshAdminProfileBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Admin profile button clicked - Event triggered!');
 
-            // Close other dropdowns first
             const otherDropdowns = document.querySelectorAll('.dropdown-menu.show');
             otherDropdowns.forEach(dropdown => {
                 if (dropdown !== freshAdminProfileMenu) {
@@ -4163,11 +4230,8 @@ function initializeProfileMenu() {
                 }
             });
 
-            // Toggle current menu
             freshAdminProfileMenu.classList.toggle('show');
-            console.log('Admin profile menu toggled, show class:', freshAdminProfileMenu.classList.contains('show'));
 
-            // Add/remove active state to button
             if (freshAdminProfileMenu.classList.contains('show')) {
                 freshAdminProfileBtn.classList.add('active');
             } else {
@@ -4175,23 +4239,17 @@ function initializeProfileMenu() {
             }
         });
 
-        // Handle profile menu item clicks
         const profileMenuItems = freshAdminProfileMenu.querySelectorAll('.profile-menu-item');
-        console.log('Found profile menu items:', profileMenuItems.length);
 
         profileMenuItems.forEach((item, index) => {
-            console.log(`Adding click listener to profile menu item ${index}:`, item);
             item.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Admin profile menu item clicked:', this.getAttribute('data-action'));
-                console.log('Item element:', this);
+
 
                 const action = this.getAttribute('data-action');
-                console.log('Action:', action);
 
                 if (action === 'profile') {
-                    console.log('Calling openProfileSettings...');
                     openProfileSettings();
                 }
 
@@ -4385,10 +4443,322 @@ function initializeProfileMenu() {
         }
     }
 
+    // Initialize Register Account Profile Menu
+    if (registerAccountProfileBtn && registerAccountProfileMenu) {
+        console.log('Initializing register account profile menu');
+
+        // Remove any existing Bootstrap dropdown functionality
+        registerAccountProfileBtn.removeAttribute('data-toggle');
+        registerAccountProfileBtn.removeAttribute('data-bs-toggle');
+
+        // Remove any existing event listeners by cloning
+        const newRegisterAccountProfileBtn = registerAccountProfileBtn.cloneNode(true);
+        registerAccountProfileBtn.parentNode.replaceChild(newRegisterAccountProfileBtn, registerAccountProfileBtn);
+
+        // Get the new button reference
+        const freshRegisterAccountProfileBtn = document.getElementById('registerAccountProfileBtn');
+        const freshRegisterAccountProfileMenu = document.getElementById('registerAccountProfileMenu');
+
+        // Toggle profile menu
+        freshRegisterAccountProfileBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Register account profile button clicked');
+
+            // Close other dropdowns first
+            const otherDropdowns = document.querySelectorAll('.dropdown-menu.show');
+            otherDropdowns.forEach(dropdown => {
+                if (dropdown !== freshRegisterAccountProfileMenu) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Toggle current menu
+            freshRegisterAccountProfileMenu.classList.toggle('show');
+            console.log('Register account profile menu toggled, show class:', freshRegisterAccountProfileMenu.classList.contains('show'));
+
+            // Add/remove active state to button
+            if (freshRegisterAccountProfileMenu.classList.contains('show')) {
+                freshRegisterAccountProfileBtn.classList.add('active');
+            } else {
+                freshRegisterAccountProfileBtn.classList.remove('active');
+            }
+        });
+
+        // Handle profile menu item clicks
+        const registerAccountProfileMenuItems = freshRegisterAccountProfileMenu.querySelectorAll('.profile-menu-item');
+        registerAccountProfileMenuItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                console.log('Register account profile menu item clicked:', this.getAttribute('data-action'));
+
+                const action = this.getAttribute('data-action');
+                if (action === 'profile') {
+                    openProfileSettings();
+                }
+
+                // Close dropdown menu
+                freshRegisterAccountProfileMenu.classList.remove('show');
+                freshRegisterAccountProfileBtn.classList.remove('active');
+            });
+        });
+
+        // Handle logout form submission
+        const registerAccountLogoutForm = freshRegisterAccountProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        if (registerAccountLogoutForm) {
+            registerAccountLogoutForm.addEventListener('submit', function (e) {
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="las la-spinner la-spin mr-1"></i>Đang đăng xuất...';
+                submitBtn.disabled = true;
+
+                // Clear localStorage to ensure dashboard shows on next login
+                localStorage.removeItem('currentPage');
+
+                // Form will submit normally
+            });
+        }
+    }
+
+    // Initialize Create Vault Profile Menu
+    if (createVaultProfileBtn && createVaultProfileMenu) {
+        console.log('Initializing create vault profile menu');
+
+        // Remove any existing Bootstrap dropdown functionality
+        createVaultProfileBtn.removeAttribute('data-toggle');
+        createVaultProfileBtn.removeAttribute('data-bs-toggle');
+
+        // Remove any existing event listeners by cloning
+        const newCreateVaultProfileBtn = createVaultProfileBtn.cloneNode(true);
+        createVaultProfileBtn.parentNode.replaceChild(newCreateVaultProfileBtn, createVaultProfileBtn);
+
+        // Get the new button reference
+        const freshCreateVaultProfileBtn = document.getElementById('createVaultProfileBtn');
+        const freshCreateVaultProfileMenu = document.getElementById('createVaultProfileMenu');
+
+        // Toggle profile menu
+        freshCreateVaultProfileBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Create vault profile button clicked');
+
+            // Close other dropdowns first
+            const otherDropdowns = document.querySelectorAll('.dropdown-menu.show');
+            otherDropdowns.forEach(dropdown => {
+                if (dropdown !== freshCreateVaultProfileMenu) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Toggle current menu
+            freshCreateVaultProfileMenu.classList.toggle('show');
+            console.log('Create vault profile menu toggled, show class:', freshCreateVaultProfileMenu.classList.contains('show'));
+
+            // Add/remove active state to button
+            if (freshCreateVaultProfileMenu.classList.contains('show')) {
+                freshCreateVaultProfileBtn.classList.add('active');
+            } else {
+                freshCreateVaultProfileBtn.classList.remove('active');
+            }
+        });
+
+        // Handle profile menu item clicks
+        const createVaultProfileMenuItems = freshCreateVaultProfileMenu.querySelectorAll('.profile-menu-item');
+        createVaultProfileMenuItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                console.log('Create vault profile menu item clicked:', this.getAttribute('data-action'));
+
+                const action = this.getAttribute('data-action');
+                if (action === 'profile') {
+                    openProfileSettings();
+                }
+
+                // Close dropdown menu
+                freshCreateVaultProfileMenu.classList.remove('show');
+                freshCreateVaultProfileBtn.classList.remove('active');
+            });
+        });
+
+        // Handle logout form submission
+        const createVaultLogoutForm = freshCreateVaultProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        if (createVaultLogoutForm) {
+            createVaultLogoutForm.addEventListener('submit', function (e) {
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="las la-spinner la-spin mr-1"></i>Đang đăng xuất...';
+                submitBtn.disabled = true;
+
+                // Clear localStorage to ensure dashboard shows on next login
+                localStorage.removeItem('currentPage');
+
+                // Form will submit normally
+            });
+        }
+    }
+
+    // Initialize My Vaults Profile Menu
+    if (myVaultsProfileBtn && myVaultsProfileMenu) {
+        console.log('Initializing my vaults profile menu');
+
+        // Remove any existing Bootstrap dropdown functionality
+        myVaultsProfileBtn.removeAttribute('data-toggle');
+        myVaultsProfileBtn.removeAttribute('data-bs-toggle');
+
+        // Remove any existing event listeners by cloning
+        const newMyVaultsProfileBtn = myVaultsProfileBtn.cloneNode(true);
+        myVaultsProfileBtn.parentNode.replaceChild(newMyVaultsProfileBtn, myVaultsProfileBtn);
+
+        // Get the new button reference
+        const freshMyVaultsProfileBtn = document.getElementById('myVaultsProfileBtn');
+        const freshMyVaultsProfileMenu = document.getElementById('myVaultsProfileMenu');
+
+        // Toggle profile menu
+        freshMyVaultsProfileBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('My vaults profile button clicked');
+
+            // Close other dropdowns first
+            const otherDropdowns = document.querySelectorAll('.dropdown-menu.show');
+            otherDropdowns.forEach(dropdown => {
+                if (dropdown !== freshMyVaultsProfileMenu) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Toggle current menu
+            freshMyVaultsProfileMenu.classList.toggle('show');
+            console.log('My vaults profile menu toggled, show class:', freshMyVaultsProfileMenu.classList.contains('show'));
+
+            // Add/remove active state to button
+            if (freshMyVaultsProfileMenu.classList.contains('show')) {
+                freshMyVaultsProfileBtn.classList.add('active');
+            } else {
+                freshMyVaultsProfileBtn.classList.remove('active');
+            }
+        });
+
+        // Handle profile menu item clicks
+        const myVaultsProfileMenuItems = freshMyVaultsProfileMenu.querySelectorAll('.profile-menu-item');
+        myVaultsProfileMenuItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                console.log('My vaults profile menu item clicked:', this.getAttribute('data-action'));
+
+                const action = this.getAttribute('data-action');
+                if (action === 'profile') {
+                    openProfileSettings();
+                }
+
+                // Close dropdown menu
+                freshMyVaultsProfileMenu.classList.remove('show');
+                freshMyVaultsProfileBtn.classList.remove('active');
+            });
+        });
+
+        // Handle logout form submission
+        const myVaultsLogoutForm = freshMyVaultsProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        if (myVaultsLogoutForm) {
+            myVaultsLogoutForm.addEventListener('submit', function (e) {
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="las la-spinner la-spin mr-1"></i>Đang đăng xuất...';
+                submitBtn.disabled = true;
+
+                // Clear localStorage to ensure dashboard shows on next login
+                localStorage.removeItem('currentPage');
+
+                // Form will submit normally
+            });
+        }
+    }
+
+    // Initialize Trash Profile Menu
+    if (trashProfileBtn && trashProfileMenu) {
+        console.log('Initializing trash profile menu');
+
+        // Remove any existing Bootstrap dropdown functionality
+        trashProfileBtn.removeAttribute('data-toggle');
+        trashProfileBtn.removeAttribute('data-bs-toggle');
+
+        // Remove any existing event listeners by cloning
+        const newTrashProfileBtn = trashProfileBtn.cloneNode(true);
+        trashProfileBtn.parentNode.replaceChild(newTrashProfileBtn, trashProfileBtn);
+
+        // Get the new button reference
+        const freshTrashProfileBtn = document.getElementById('trashProfileBtn');
+        const freshTrashProfileMenu = document.getElementById('trashProfileMenu');
+
+        // Toggle profile menu
+        freshTrashProfileBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Trash profile button clicked');
+
+            // Close other dropdowns first
+            const otherDropdowns = document.querySelectorAll('.dropdown-menu.show');
+            otherDropdowns.forEach(dropdown => {
+                if (dropdown !== freshTrashProfileMenu) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Toggle current menu
+            freshTrashProfileMenu.classList.toggle('show');
+            console.log('Trash profile menu toggled, show class:', freshTrashProfileMenu.classList.contains('show'));
+
+            // Add/remove active state to button
+            if (freshTrashProfileMenu.classList.contains('show')) {
+                freshTrashProfileBtn.classList.add('active');
+            } else {
+                freshTrashProfileBtn.classList.remove('active');
+            }
+        });
+
+        // Handle profile menu item clicks
+        const trashProfileMenuItems = freshTrashProfileMenu.querySelectorAll('.profile-menu-item');
+        trashProfileMenuItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                console.log('Trash profile menu item clicked:', this.getAttribute('data-action'));
+
+                const action = this.getAttribute('data-action');
+                if (action === 'profile') {
+                    openProfileSettings();
+                }
+
+                // Close dropdown menu
+                freshTrashProfileMenu.classList.remove('show');
+                freshTrashProfileBtn.classList.remove('active');
+            });
+        });
+
+        // Handle logout form submission
+        const trashLogoutForm = freshTrashProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        if (trashLogoutForm) {
+            trashLogoutForm.addEventListener('submit', function (e) {
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="las la-spinner la-spin mr-1"></i>Đang đăng xuất...';
+                submitBtn.disabled = true;
+
+                // Clear localStorage to ensure dashboard shows on next login
+                localStorage.removeItem('currentPage');
+
+                // Form will submit normally
+            });
+        }
+    }
+
     // Close menu when clicking outside (global listener)
     document.addEventListener('click', function (e) {
-        const profileBtns = document.querySelectorAll('[id="adminProfileBtn"], [id="adminProfileBtn2"], [id="vaultAdminProfileBtn"]');
-        const profileMenus = document.querySelectorAll('[id="adminProfileMenu"], [id="adminProfileMenu2"], [id="vaultAdminProfileMenu"]');
+        const profileBtns = document.querySelectorAll('[id="adminProfileBtn"], [id="adminProfileBtn2"], [id="vaultAdminProfileBtn"], [id="registerAccountProfileBtn"], [id="createVaultProfileBtn"], [id="myVaultsProfileBtn"], [id="trashProfileBtn"]');
+        const profileMenus = document.querySelectorAll('[id="adminProfileMenu"], [id="adminProfileMenu2"], [id="vaultAdminProfileMenu"], [id="registerAccountProfileMenu"], [id="createVaultProfileMenu"], [id="myVaultsProfileMenu"], [id="trashProfileMenu"]');
 
         let clickedInside = false;
 

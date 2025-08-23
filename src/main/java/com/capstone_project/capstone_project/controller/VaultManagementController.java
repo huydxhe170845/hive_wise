@@ -6,6 +6,7 @@ import com.capstone_project.capstone_project.dto.request.ChangePasswordRequest;
 import com.capstone_project.capstone_project.dto.request.UpdateProfileRequest;
 import com.capstone_project.capstone_project.dto.request.UpdateVaultRequest;
 import com.capstone_project.capstone_project.dto.response.UserVaultRoleResponse;
+import com.capstone_project.capstone_project.dto.response.UserSuggestionResponse;
 import com.capstone_project.capstone_project.exception.FieldValidationException;
 import com.capstone_project.capstone_project.model.User;
 import com.capstone_project.capstone_project.model.Vault;
@@ -348,23 +349,32 @@ public class VaultManagementController {
         System.out.println("Keyword: " + keyword);
         System.out.println("VaultId: " + vaultId);
 
-        List<User> matchedUsers;
         if (vaultId != null && !vaultId.trim().isEmpty()) {
-            // Use filtered search for vault member addition
-            matchedUsers = userService.findAvailableUsersForVault(keyword, vaultId);
+            // Use enhanced search with membership status for vault member addition
+            List<UserSuggestionResponse> matchedUsers = userService.findUsersWithMembershipStatus(keyword, vaultId);
+            System.out.println("Matched users count: " + matchedUsers.size());
+
+            for (UserSuggestionResponse user : matchedUsers) {
+                System.out.println(
+                        "- User: " + user.getUsername() + " (ID: " + user.getId() + ", Email: " + user.getEmail() +
+                                ", IsMember: " + user.isAlreadyMember() + ", Role: " + user.getCurrentRole() + ")");
+            }
+
+            model.addAttribute("matchedUsers", matchedUsers);
         } else {
             // Use regular search for other purposes
-            matchedUsers = userService.findByKeyword(keyword);
+            List<User> matchedUsers = userService.findByKeyword(keyword);
+            System.out.println("Matched users count: " + matchedUsers.size());
+
+            for (User user : matchedUsers) {
+                System.out.println(
+                        "- User: " + user.getUsername() + " (ID: " + user.getId() + ", Email: " + user.getEmail()
+                                + ")");
+            }
+
+            model.addAttribute("matchedUsers", matchedUsers);
         }
 
-        System.out.println("Matched users count: " + matchedUsers.size());
-
-        for (User user : matchedUsers) {
-            System.out.println(
-                    "- User: " + user.getUsername() + " (ID: " + user.getId() + ", Email: " + user.getEmail() + ")");
-        }
-
-        model.addAttribute("matchedUsers", matchedUsers);
         return "fragments/user-suggestion :: suggestionList";
     }
 

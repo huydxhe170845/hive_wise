@@ -1,6 +1,5 @@
 package com.capstone_project.capstone_project.service;
 
-import com.capstone_project.capstone_project.dto.request.UpdateProfileRequest;
 import com.capstone_project.capstone_project.dto.response.UserDTO;
 import com.capstone_project.capstone_project.enums.AuthProvider;
 import com.capstone_project.capstone_project.model.SystemRole;
@@ -14,11 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;

@@ -3185,22 +3185,6 @@ body.assistant-mode #assistantView {
     max-width: 120px;
 }
 
-.expand-icon {
-    width: 16px;
-    height: 16px;
-    opacity: 0.6;
-    transition: transform 0.3s ease;
-    color: #6b7280;
-}
-
-.user-profile-section:hover .expand-icon {
-    transform: rotate(90deg);
-}
-
-/* Rotate arrow when dropdown is open */
-.user-profile-section.dropdown-open .expand-icon {
-    transform: rotate(90deg);
-}
 
 /* User Dropdown Menu */
 .user-profile-section .dropdown-menu {

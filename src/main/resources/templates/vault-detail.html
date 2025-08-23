@@ -240,7 +240,8 @@
                                 <span>Insight Meeting</span>
                             </a>
                         </li>
-                        <li class="" style="margin-bottom: 0px !important;">
+                        <li class="" style="margin-bottom: 0px !important;"
+                            th:classappend="${showBin} == true ? ' active' : ''">
                             <a th:href="@{'/vault-detail?id=' + ${vault.id} + '&bin=true'}" class=""
                                 style="padding: 10px 10px;">
                                 <i>
@@ -502,14 +503,8 @@
                                             <img th:src="${currentUser.avatar != null and !#strings.isEmpty(currentUser.avatar) ? currentUser.avatar : '/images/avatar/df_avatar.jpg'}"
                                                 alt="profile picture">
                                         </div>
-                                        <!-- <span class="profile-name" th:text="${currentUser.username}">User</span> -->
-                                        <svg class="expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path d="M9 18l6-6-6-6" />
-                                        </svg>
-
                                         <div class="dropdown-menu" id="user-dropdown"
-                                            style="min-width: 100px !important; border-radius: 15px !important; left:-20px !important; z-index: 1050 !important;">
+                                            style="min-width: 100px !important; border-radius: 15px !important; left:-40px !important; z-index: 1050 !important;">
                                             <a id="open-profile-modal"
                                                 style="display: flex; flex-direction: row; gap: 10px; align-items: center;">
                                                 <svg aria-hidden="true" role="graphics-symbol" viewBox="0 0 20 20"

@@ -3,7 +3,8 @@
         No users found
     </div>
     <div th:each="user : ${matchedUsers}" class="suggestion-item"
-        th:attr="data-user-id=${user.id},data-username=${user.username}">
+        th:attr="data-user-id=${user.id},data-username=${user.username},data-is-member=${user.isAlreadyMember}"
+        th:classappend="${user.isAlreadyMember} ? 'already-member' : ''">
         <div class="suggestion-avatar">
             <img th:src="${user.avatar != null and !#strings.isEmpty(user.avatar) ? user.avatar : '/images/avatar/df_avatar.jpg'}"
                 alt="avatar" />
@@ -11,6 +12,10 @@
         <div class="suggestion-info">
             <div class="suggestion-username" th:text="${user.username}">username</div>
             <div class="suggestion-email" th:text="${user.email}">email@example.com</div>
+        </div>
+        <div class="suggestion-status" th:if="${user.isAlreadyMember}">
+            <span class="member-badge">Đã là thành viên</span>
+            <span class="member-role" th:text="${user.formattedCurrentRole}">role</span>
         </div>
     </div>
 </div>

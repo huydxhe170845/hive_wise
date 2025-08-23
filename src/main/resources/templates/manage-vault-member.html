@@ -265,7 +265,7 @@
                                             th:if="${userVaultRoleService.isVaultOwner(user.id, vaultId) and member.vaultRoleName != 'VAULT_OWNER'}">
                                             <div class="role-dropdown" th:data-user-id="${member.userId}"
                                                 th:data-current-role="${member.vaultRoleName}">
-                                                <span class="role-display" th:text="${member.vaultRoleName}">role</span>
+                                                <span class="role-display" th:text="${T(com.capstone_project.capstone_project.util.RoleFormatter).formatRoleName(member.vaultRoleName)}">role</span>
                                                 <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24"
                                                     fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2"
@@ -274,7 +274,7 @@
                                                 <div class="role-dropdown-menu">
                                                     <div th:each="role : ${allVaultRoles}" class="role-option"
                                                         th:if="${role.name != 'VAULT_OWNER'}"
-                                                        th:data-role="${role.name}" th:text="${role.name}"
+                                                        th:data-role="${role.name}" th:text="${T(com.capstone_project.capstone_project.util.RoleFormatter).formatRoleName(role.name)}"
                                                         th:classappend="${role.name == member.vaultRoleName} ? 'selected' : ''">
                                                     </div>
                                                 </div>
@@ -283,7 +283,7 @@
                                         <!-- Static role display for other cases -->
                                         <span
                                             th:if="${member.vaultRoleName == 'VAULT_OWNER' or !userVaultRoleService.isVaultOwner(user.id, vaultId)}"
-                                            th:text="${member.vaultRoleName}"
+                                            th:text="${T(com.capstone_project.capstone_project.util.RoleFormatter).formatRoleName(member.vaultRoleName)}"
                                             th:style="${member.vaultRoleName == 'VAULT_OWNER' and userVaultRoleService.isVaultOwner(user.id, vaultId)} ? 'margin-left: 65px;' : ''">role</span>
                                     </td>
                                     <td th:if="${userVaultRoleService.isVaultOwner(user.id, vaultId)}">

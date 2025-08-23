@@ -780,6 +780,13 @@ function attachSuggestionClickEvents() {
             e.preventDefault();
             e.stopPropagation();
 
+            // Check if user is already a member
+            const isAlreadyMember = this.getAttribute("data-is-member") === "true";
+            if (isAlreadyMember) {
+                showToast('User is already a member of this vault', 'warning');
+                return;
+            }
+
             const userId = this.getAttribute("data-user-id");
             const username = this.getAttribute("data-username");
 
@@ -823,6 +830,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!role || role.trim() === '') {
                 showFieldError('customSelect', 'Please select a role');
+                hasErrors = true;
+            }
+
+            // Check if selected user is already a member
+            const selectedSuggestion = document.querySelector('.suggestion-item[data-user-id="' + userId + '"]');
+            if (selectedSuggestion && selectedSuggestion.getAttribute('data-is-member') === 'true') {
+                showFieldError('searchUserInput', 'This user is already a member of this vault');
                 hasErrors = true;
             }
 
@@ -1200,7 +1214,6 @@ const VaultManager = {
         this.initSearchInput();
         this.initClearButton();
         this.initEscapeKey();
-        this.initClickOutside();
         this.initPagination();
         this.loadSearchTermFromInput();
         this.updateCurrentState();
@@ -1260,18 +1273,7 @@ const VaultManager = {
         });
     },
 
-    // Initialize click outside to close dropdown
-    initClickOutside() {
-        document.addEventListener('click', (e) => {
-            const searchContainer = document.querySelector('.search-container');
-            const dropdown = document.getElementById('search-results-dropdown');
 
-            if (dropdown && dropdown.classList.contains('show') &&
-                !searchContainer.contains(e.target)) {
-                this.hideSearchDropdown();
-            }
-        });
-    },
 
     // Load search term from input when page loads
     loadSearchTermFromInput() {
@@ -1369,13 +1371,9 @@ const VaultManager = {
         // Update clear button visibility
         this.updateClearButtonVisibility(searchTerm);
 
-        // Show/hide search dropdown
-        this.toggleSearchDropdown(searchTerm);
-
         // Debounce search
         this.searchTimeout = setTimeout(() => {
             this.performSearch();
-            this.updateSearchDropdown(searchTerm);
         }, 300);
     },
 
@@ -1387,100 +1385,7 @@ const VaultManager = {
         }
     },
 
-    // Toggle search dropdown visibility
-    toggleSearchDropdown(searchTerm) {
-        const dropdown = document.getElementById('search-results-dropdown');
-        if (dropdown) {
-            if (searchTerm.length > 0) {
-                dropdown.classList.add('show');
-            } else {
-                dropdown.classList.remove('show');
-            }
-        }
-    },
 
-    // Update search dropdown with results
-    updateSearchDropdown(searchTerm) {
-        if (!searchTerm) {
-            this.hideSearchDropdown();
-            return;
-        }
-
-        const dropdown = document.getElementById('search-results-dropdown');
-        const content = document.getElementById('search-results-content');
-
-        if (!dropdown || !content) return;
-
-        // Show loading state
-        content.innerHTML = '<div class="search-loading">Searching...</div>';
-
-        // Get all vault cards
-        const vaultCards = document.querySelectorAll('.card-vault');
-        const results = [];
-
-        vaultCards.forEach(card => {
-            const vaultName = card.querySelector('.vault-name')?.textContent || '';
-            const vaultOwner = card.querySelector('.vault-owner')?.textContent || '';
-            const vaultStatus = card.querySelector('.vault-info span:last-child')?.textContent || '';
-            const vaultId = card.getAttribute('data-vault-id') || '';
-            const vaultIcon = card.querySelector('.vault-picture img')?.alt || 'V';
-
-            // Check if vault matches search term
-            if (vaultName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                vaultOwner.toLowerCase().includes(searchTerm.toLowerCase())) {
-                results.push({
-                    id: vaultId,
-                    name: vaultName,
-                    description: vaultOwner,
-                    status: vaultStatus,
-                    icon: vaultName.charAt(0).toUpperCase()
-                });
-            }
-        });
-
-        // Limit results to 5 items
-        const limitedResults = results.slice(0, 5);
-
-        // Update dropdown content
-        if (limitedResults.length > 0) {
-            content.innerHTML = limitedResults.map(vault => {
-                const statusClass = vault.status.toLowerCase();
-                return `
-                <div class="search-result-item" onclick="VaultManager.selectSearchResult('${vault.id}')">
-                    <div class="vault-icon">${vault.icon}</div>
-                    <div class="vault-info">
-                        <div class="vault-name">${this.highlightSearchTerm(vault.name, searchTerm)}</div>
-                        <div class="vault-description">${vault.description}</div>
-                    </div>
-                    <div class="vault-status ${statusClass}">${vault.status}</div>
-                </div>
-            `;
-            }).join('');
-        } else {
-            content.innerHTML = '<div class="search-no-results">No vaults found</div>';
-        }
-    },
-
-    // Highlight search term in text
-    highlightSearchTerm(text, searchTerm) {
-        if (!searchTerm) return text;
-        const regex = new RegExp(`(${searchTerm})`, 'gi');
-        return text.replace(regex, '<mark>$1</mark>');
-    },
-
-    // Select search result
-    selectSearchResult(vaultId) {
-        // Navigate to vault detail page
-        window.location.href = `/vault-detail?id=${vaultId}`;
-    },
-
-    // Hide search dropdown
-    hideSearchDropdown() {
-        const dropdown = document.getElementById('search-results-dropdown');
-        if (dropdown) {
-            dropdown.classList.remove('show');
-        }
-    },
 
     // Clear search
     clearSearch() {
@@ -1499,7 +1404,6 @@ const VaultManager = {
         this.searchTerm = '';
         this.currentPage = 1; // Reset to first page
         this.clearAllHighlights();
-        this.hideSearchDropdown();
         this.applyCurrentFilter();
     },
 
@@ -1612,6 +1516,12 @@ const VaultManager = {
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
         const endIndex = startIndex + this.itemsPerPage;
 
+        // Show loading spinner
+        const vaultLoading = document.getElementById('vault-loading');
+        if (vaultLoading) {
+            vaultLoading.style.display = 'flex';
+        }
+
         // Hide all vaults first
         vaultCards.forEach((card, index) => {
             card.style.display = 'none';
@@ -1619,15 +1529,21 @@ const VaultManager = {
             card.style.transform = 'scale(0.95) translateY(-5px)';
         });
 
-        // Show vaults for current page with animation
-        this.visibleVaults.slice(startIndex, endIndex).forEach((card, index) => {
-            setTimeout(() => {
+        // Show vaults for current page after a short delay
+        setTimeout(() => {
+            // Hide loading spinner
+            if (vaultLoading) {
+                vaultLoading.style.display = 'none';
+            }
+
+            // Show all vaults at once
+            this.visibleVaults.slice(startIndex, endIndex).forEach((card) => {
                 card.style.display = 'block';
                 card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
                 card.style.opacity = '1';
                 card.style.transform = 'scale(1) translateY(0)';
-            }, index * 50);
-        });
+            });
+        }, 500); // 500ms delay to show loading spinner
     },
 
     // Update pagination display

@@ -11,6 +11,8 @@ import com.capstone_project.capstone_project.repository.VerificationTokenReposit
 import com.capstone_project.capstone_project.repository.KnowledgeItemRepository;
 import com.capstone_project.capstone_project.dto.response.UserDTO;
 import com.capstone_project.capstone_project.dto.response.TopBuilderResponse;
+import com.capstone_project.capstone_project.dto.response.UserSuggestionResponse;
+import com.capstone_project.capstone_project.util.RoleFormatter;
 import com.capstone_project.capstone_project.enums.AuthProvider;
 import com.capstone_project.capstone_project.enums.PurposeToken;
 import org.springframework.context.ApplicationContext;
@@ -78,6 +80,41 @@ public class UserService {
                     }
 
                     return true;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<UserSuggestionResponse> findUsersWithMembershipStatus(String keyword, String vaultId) {
+        List<User> allUsers;
+        if (keyword == null || keyword.trim().isEmpty()) {
+            allUsers = getAllUsers();
+        } else {
+            allUsers = userRepository.findByKeyword(keyword);
+        }
+
+        UserVaultRoleService userVaultRoleService = applicationContext.getBean(UserVaultRoleService.class);
+
+        return allUsers.stream()
+                .filter(user -> {
+                    // Exclude users with ADMIN system role
+                    if (user.getSystemRole() != null && "ADMIN".equals(user.getSystemRole().getName())) {
+                        return false;
+                    }
+                    return true;
+                })
+                .map(user -> {
+                    String currentRole = userVaultRoleService.getRoleInVault(user.getId(), vaultId);
+                    boolean isAlreadyMember = currentRole != null;
+
+                    return UserSuggestionResponse.builder()
+                            .id(user.getId())
+                            .username(user.getUsername())
+                            .email(user.getEmail())
+                            .avatar(user.getAvatar())
+                            .isAlreadyMember(isAlreadyMember)
+                            .currentRole(currentRole)
+                            .formattedCurrentRole(RoleFormatter.formatRoleName(currentRole))
+                            .build();
                 })
                 .collect(Collectors.toList());
     }

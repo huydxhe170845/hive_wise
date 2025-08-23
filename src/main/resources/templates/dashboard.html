@@ -70,14 +70,12 @@
                                     <span>Account Management</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                         class="bi bi-chevron-right ml-auto account-submenu-toggle"
-                                        style="transition: transform 0.3s ease; cursor: pointer; margin-left: 0px !important; transform: rotate(90deg);"
-                                        data-toggle="collapse" data-target="#accountManagementSubmenu"
-                                        aria-expanded="true" aria-controls="accountManagementSubmenu">
+                                        style="transition: transform 0.3s ease; cursor: pointer; margin-left: 0px !important; transform: rotate(90deg);">
                                         <path fill-rule="evenodd"
                                             d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
                                     </svg>
                                 </a>
-                                <div class="collapse show" id="accountManagementSubmenu">
+                                <div class="show" id="accountManagementSubmenu">
                                     <ul class="nav flex-column ml-3">
                                         <li class="nav-item">
                                             <a class="nav-link submenu-item" href="#" data-page="account-management"
@@ -123,14 +121,12 @@
                                     <span>Vault Management</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                         class="bi bi-chevron-right ml-auto vault-submenu-toggle"
-                                        style="transition: transform 0.3s ease; cursor: pointer; margin-left: 0px !important; transform: rotate(90deg);"
-                                        data-toggle="collapse" data-target="#vaultManagementSubmenu"
-                                        aria-expanded="true" aria-controls="vaultManagementSubmenu">
+                                        style="transition: transform 0.3s ease; cursor: pointer; margin-left: 0px !important; transform: rotate(90deg);">
                                         <path fill-rule="evenodd"
                                             d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
                                     </svg>
                                 </a>
-                                <div class="collapse show" id="vaultManagementSubmenu">
+                                <div class="show" id="vaultManagementSubmenu">
                                     <ul class="nav flex-column ml-3">
                                         <li class="nav-item">
                                             <a class="nav-link submenu-item" href="#" data-page="vault-management"
@@ -1007,10 +1003,10 @@
                                         </li>
 
                                         <!-- Admin Profile User -->
-                                        <li class="nav-item nav-icon dropdown" id="adminProfileDropdown2">
+                                        <li class="nav-item nav-icon dropdown" id="registerAccountProfileDropdown">
                                             <a href="#" class="search-toggle dropdown-toggle nav-icon-1 profile-trigger"
-                                                id="adminProfileBtn2" data-toggle="dropdown" aria-haspopup="true"
-                                                aria-expanded="false"
+                                                id="registerAccountProfileBtn" data-toggle="dropdown"
+                                                aria-haspopup="true" aria-expanded="false"
                                                 style="z-index: 1050 !important; padding: 0px !important;">
                                                 <div class="profile-avatar-wrapper">
                                                     <img th:if="${currentAdminAvatar != null and currentAdminAvatar != ''}"
@@ -1027,8 +1023,8 @@
                                                 <span class="bg-primary"></span>
                                             </a>
                                             <div class="iq-sub-dropdown dropdown-menu admin-profile-menu"
-                                                style="transform: none !important;" id="adminProfileMenu2"
-                                                aria-labelledby="adminProfileBtn2">
+                                                style="transform: none !important;" id="registerAccountProfileMenu"
+                                                aria-labelledby="registerAccountProfileBtn">
                                                 <div class="card shadow-none m-0 border-0">
                                                     <div class="profile-menu-list">
                                                         <a href="#" class="profile-menu-item d-flex align-items-center "
@@ -2266,7 +2262,7 @@
                                         <!-- Admin Profile User -->
                                         <li class="nav-item nav-icon dropdown" id="adminProfileDropdown2">
                                             <a href="#" class="search-toggle dropdown-toggle nav-icon-1 profile-trigger"
-                                                id="adminProfileBtn2" aria-haspopup="true" aria-expanded="false"
+                                                id="trashProfileBtn" aria-haspopup="true" aria-expanded="false"
                                                 style="z-index: 1050 !important; padding: 0px !important;">
                                                 <div class="profile-avatar-wrapper">
                                                     <img src="https://lh3.googleusercontent.com/a/ACg8ocIrSMg8eNxfknEjFqwNBklj-AaCLPq8ro0GhwqpiUg3aaIMvA=s96-c"
@@ -2276,8 +2272,8 @@
                                                 <span class="bg-primary"></span>
                                             </a>
                                             <div class="iq-sub-dropdown dropdown-menu admin-profile-menu"
-                                                style="transform: none !important;" id="adminProfileMenu2"
-                                                aria-labelledby="adminProfileBtn2">
+                                                style="transform: none !important;" id="trashProfileMenu"
+                                                aria-labelledby="trashProfileBtn">
                                                 <div class="card shadow-none m-0 border-0">
                                                     <div class="profile-menu-list">
                                                         <a href="#" class="profile-menu-item d-flex align-items-center "
@@ -2512,7 +2508,7 @@
                                         <!-- Admin Profile User -->
                                         <li class="nav-item nav-icon dropdown" id="adminProfileDropdown2">
                                             <a href="#" class="search-toggle dropdown-toggle nav-icon-1 profile-trigger"
-                                                id="adminProfileBtn2" aria-haspopup="true" aria-expanded="false"
+                                                id="myVaultsProfileBtn" aria-haspopup="true" aria-expanded="false"
                                                 style="z-index: 1050 !important; padding: 0px !important;">
                                                 <div class="profile-avatar-wrapper">
                                                     <img src="https://lh3.googleusercontent.com/a/ACg8ocIrSMg8eNxfknEjFqwNBklj-AaCLPq8ro0GhwqpiUg3aaIMvA=s96-c"
@@ -2522,8 +2518,8 @@
                                                 <span class="bg-primary"></span>
                                             </a>
                                             <div class="iq-sub-dropdown dropdown-menu admin-profile-menu"
-                                                style="transform: none !important;" id="adminProfileMenu2"
-                                                aria-labelledby="adminProfileBtn2">
+                                                style="transform: none !important;" id="myVaultsProfileMenu"
+                                                aria-labelledby="myVaultsProfileBtn">
                                                 <div class="card shadow-none m-0 border-0">
                                                     <div class="profile-menu-list">
                                                         <a href="#" class="profile-menu-item d-flex align-items-center "
@@ -2756,7 +2752,7 @@
                                         <!-- Admin Profile User -->
                                         <li class="nav-item nav-icon dropdown" id="adminProfileDropdown2">
                                             <a href="#" class="search-toggle dropdown-toggle nav-icon-1 profile-trigger"
-                                                id="adminProfileBtn2" aria-haspopup="true" aria-expanded="false"
+                                                id="createVaultProfileBtn" aria-haspopup="true" aria-expanded="false"
                                                 style="z-index: 1050 !important; padding: 0px !important;">
                                                 <div class="profile-avatar-wrapper">
                                                     <img src="https://lh3.googleusercontent.com/a/ACg8ocIrSMg8eNxfknEjFqwNBklj-AaCLPq8ro0GhwqpiUg3aaIMvA=s96-c"
@@ -2766,8 +2762,8 @@
                                                 <span class="bg-primary"></span>
                                             </a>
                                             <div class="iq-sub-dropdown dropdown-menu admin-profile-menu"
-                                                style="transform: none !important;" id="adminProfileMenu2"
-                                                aria-labelledby="adminProfileBtn2">
+                                                style="transform: none !important;" id="createVaultProfileMenu"
+                                                aria-labelledby="createVaultProfileBtn">
                                                 <div class="card shadow-none m-0 border-0">
                                                     <div class="profile-menu-list">
                                                         <a href="#" class="profile-menu-item d-flex align-items-center "
@@ -2817,9 +2813,9 @@
                         <!-- Add Vault Form -->
 
                         <div class="row">
-                            <div class="col-md-7">
+                            <div class="col-sm-12">
                                 <div class="card">
-                                    <div class="card-body">
+                                    <div class="card-body" style="display: flex; flex-direction: row; padding: 42px;">
                                         <div class="add-vault-form-container">
                                             <div class="add-vault-form">
                                                 <form id="addVaultForm" action="/dashboard/admin/add-vault"
@@ -2934,12 +2930,8 @@
                                                         </div>
                                                     </div>
                                                     <div class="form-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            onclick="goBackToVaultManagement()">
-                                                            <i class="fas fa-arrow-left mr-2"></i>Back to Vault
-                                                            Management
-                                                        </button>
-                                                        <button type="submit" class="btn btn-primary">
+                                                        <button type="submit" class="btn btn-primary"
+                                                            style="margin-left: 690px;">
                                                             <svg viewBox="64 64 896 896" focusable="false"
                                                                 data-icon="save" width="1em" height="1em"
                                                                 fill="currentColor" aria-hidden="true"
@@ -2953,15 +2945,14 @@
                                                 </form>
                                             </div>
                                         </div>
+                                        <div class="add-vault-image-container">
+                                            <img src="/images/background/add-vault-pic.png" alt="Add Vault"
+                                                class="add-vault-image">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-5">
-                                <div class="add-vault-image-container">
-                                    <img src="/images/background/add-vault-pic.png" alt="Add Vault"
-                                        class="add-vault-image">
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -3270,25 +3261,7 @@
         <span id="toast-message"></span>
     </div>
 
-    <footer class="iq-footer">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-lg-6">
-                    <ul class="list-inline mb-0">
-                        <li class="list-inline-item"><a href="../backend/privacy-policy.html">Privacy Policy</a>
-                        </li>
-                        <li class="list-inline-item"><a href="../backend/terms-of-service.html">Terms of Use</a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-lg-6 text-right">
-                    <span class="text-secondary mr-1">
-                        <script>document.write(new Date().getFullYear())</script>©
-                    </span> <a href="#" class="">HiveWise</a>.
-                </div>
-            </div>
-        </div>
-    </footer>
+
     <script src="/js/backend-bundle.min.js"></script>
     <script src="/js/flex-tree.min.js"></script>
     <script src="/js/tree.js"></script>

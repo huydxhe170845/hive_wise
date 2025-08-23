@@ -71,9 +71,13 @@ public class UserVaultRoleService {
         if (role == null) {
             throw new RuntimeException("Role not found: " + roleName);
         }
+
+        // Check if user is already a member
         if (userVaultRoleRepository.existsByUserIdAndVaultId(userId, vaultId)) {
-            throw new RuntimeException("User is already a member of this vault");
+            String currentRole = getRoleInVault(userId, vaultId);
+            throw new RuntimeException("User is already a member of this vault with role: " + currentRole);
         }
+
         UserVaultRole uvr = UserVaultRole.builder()
                 .user(user)
                 .vault(vault)

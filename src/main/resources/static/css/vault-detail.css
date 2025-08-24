@@ -2607,6 +2607,19 @@ body.assistant-mode #assistantView {
 }
 
 /* Vault Search Modal Styles */
+#vaultSearchModal {
+    background: transparent !important;
+    z-index: 1050 !important;
+}
+
+#vaultSearchModal .modal-backdrop {
+    display: none !important;
+}
+
+#vaultSearchModal.show {
+    display: block !important;
+}
+
 #vaultSearchModal .modal-dialog {
     max-width: 800px;
     margin: 1.75rem auto;
@@ -2615,6 +2628,206 @@ body.assistant-mode #assistantView {
 #vaultSearchModal .modal-content {
     height: auto;
     max-height: 90vh;
+    background: white;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+}
+
+#vaultSearchModal .close {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+#vaultSearchModal .close:hover {
+    opacity: 0.8 !important;
+}
+
+
+
+#vaultSearchModal .search-filters-container {
+    background: transparent;
+    border: none;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#vaultSearchModal .filters-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Filter Buttons */
+#vaultSearchModal .filter-btn {
+    display: flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 13px;
+    border: none;
+    border-radius: 20px;
+    background: #f3f4f6;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+#vaultSearchModal .filter-btn:hover {
+    background: #e5e7eb;
+}
+
+#vaultSearchModal .filter-btn.active {
+    background: #f6bb3b;
+    color: white;
+}
+
+/* Filter Dropdowns */
+#vaultSearchModal .filter-dropdown {
+    position: relative;
+}
+
+#vaultSearchModal .filter-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: none;
+    margin-top: 4px;
+    padding: 8px 0;
+}
+
+#vaultSearchModal .filter-dropdown-menu.show {
+    display: block;
+    animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#vaultSearchModal .dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    font-size: 14px;
+    color: #374151;
+}
+
+#vaultSearchModal .dropdown-item:hover {
+    background: #f3f4f6;
+}
+
+#vaultSearchModal .dropdown-item.selected {
+    background: #fdfcfa;
+    color: #d88d1d;
+}
+
+/* Dropdown Search */
+#vaultSearchModal .dropdown-search {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 4px;
+}
+
+#vaultSearchModal .dropdown-search-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+#vaultSearchModal .dropdown-search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Member Avatar */
+#vaultSearchModal .member-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+#vaultSearchModal .dropdown-item .member-avatar {
+    flex-shrink: 0;
+}
+
+
+
+/* Responsive design for filters */
+@media (max-width: 768px) {
+    #vaultSearchModal .filters-row {
+        flex-direction: column;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    #vaultSearchModal .filter-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+
+    #vaultSearchModal .filter-dropdown {
+        width: 100%;
+    }
+
+    #vaultSearchModal .filter-dropdown-menu {
+        width: 100%;
+        left: 0;
+    }
+
+    #vaultSearchModal .search-input-container {
+        gap: 8px;
+    }
+
+    #vaultSearchModal .filter-toggle-btn {
+        padding: 6px;
+    }
+
+    #vaultSearchModal .filter-toggle-btn svg {
+        width: 18px;
+        height: 18px;
+    }
 }
 
 /* Ensure vertical layout for search modal */
@@ -2627,6 +2840,37 @@ body.assistant-mode #assistantView {
 #vaultSearchModal .search-input-container {
     flex-shrink: 0;
     width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#vaultSearchModal .search-input-container .position-relative {
+    flex: 1;
+}
+
+#vaultSearchModal .filter-toggle-btn {
+    background: none;
+    border: none;
+    padding: 10px;
+    border-radius: 40px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+#vaultSearchModal .filter-toggle-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+#vaultSearchModal .filter-toggle-btn.active {
+    background: #f6b53b;
+    color: white;
 }
 
 #vaultSearchModal .search-results {
@@ -2639,7 +2883,7 @@ body.assistant-mode #assistantView {
 
 #vaultSearchModal .search-input-container input:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(246, 149, 59, 0.1);
     outline: none;
 }
 
@@ -3281,7 +3525,7 @@ body.assistant-mode #assistantView {
 }
 
 .modal-content {
-    width: 700px;
+    width: 800px;
     max-height: 80vh;
     background-color: white;
     border-radius: 12px;
@@ -3290,12 +3534,9 @@ body.assistant-mode #assistantView {
     flex-direction: column;
     overflow: hidden;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    /* Optimize animation for better performance */
     animation: slideIn 0.2s ease-out;
     transform-origin: center;
-    /* Add will-change for better performance */
     will-change: transform, opacity;
-    /* Optimize for better performance */
     transform: translateZ(0);
     backface-visibility: hidden;
 }

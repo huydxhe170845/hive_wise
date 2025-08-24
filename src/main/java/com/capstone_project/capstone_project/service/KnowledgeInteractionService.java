@@ -18,11 +18,9 @@ public class KnowledgeInteractionService {
     RatingService ratingService;
 
     public KnowledgeInteractionDTO getKnowledgeInteractions(String knowledgeItemId, String userId) {
-        // Get comments
         List<CommentDTO> comments = commentService.getCommentsForKnowledge(knowledgeItemId);
         long totalComments = commentService.getCommentCount(knowledgeItemId);
 
-        // Get ratings
         Double averageRating = ratingService.getAverageRating(knowledgeItemId);
         long totalRatings = ratingService.getRatingCount(knowledgeItemId);
         Integer userRating = ratingService.getUserRating(knowledgeItemId, userId);

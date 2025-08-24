@@ -5697,34 +5697,150 @@ let searchTimeout = null;
 let lastSearchQuery = '';
 
 function showVaultSearchModal() {
-    $('#vaultSearchModal').modal('show');
-    // Focus on search input when modal is shown
-    $('#vaultSearchModal').on('shown.bs.modal', function () {
-        $('#vaultSearchInput').focus();
-    });
+    const modal = document.getElementById('vaultSearchModal');
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+
+    // Focus on search input
+    setTimeout(() => {
+        const searchInput = document.getElementById('vaultSearchInput');
+        if (searchInput) {
+            searchInput.focus();
+        }
+    }, 100);
+
+    // Add click outside to close functionality
+    const handleClickOutside = (event) => {
+        if (event.target === modal) {
+            hideVaultSearchModal();
+        }
+    };
+
+    // Add escape key to close functionality
+    const handleEscapeKey = (event) => {
+        if (event.key === 'Escape') {
+            hideVaultSearchModal();
+        }
+    };
+
+    modal.addEventListener('click', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+
+    // Store event listeners for cleanup
+    modal._clickListener = handleClickOutside;
+    modal._escapeListener = handleEscapeKey;
 }
 
+function hideVaultSearchModal() {
+    const modal = document.getElementById('vaultSearchModal');
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+
+    // Hide filters when closing modal
+    hideSearchFilters();
+
+    // Remove event listeners
+    if (modal._clickListener) {
+        modal.removeEventListener('click', modal._clickListener);
+        delete modal._clickListener;
+    }
+    if (modal._escapeListener) {
+        document.removeEventListener('keydown', modal._escapeListener);
+        delete modal._escapeListener;
+    }
+}
+
+// Toggle search filters visibility
+function toggleSearchFilters() {
+    const filtersContainer = document.getElementById('searchFiltersContainer');
+    const filterBtn = document.getElementById('filterToggleBtn');
+
+    if (filtersContainer.style.display === 'none' || filtersContainer.style.display === '') {
+        showSearchFilters();
+    } else {
+        hideSearchFilters();
+    }
+}
+
+// Show search filters
+function showSearchFilters() {
+    const filtersContainer = document.getElementById('searchFiltersContainer');
+    const filterBtn = document.getElementById('filterToggleBtn');
+
+    filtersContainer.style.display = 'block';
+    filterBtn.classList.add('active');
+}
+
+// Hide search filters
+function hideSearchFilters() {
+    const filtersContainer = document.getElementById('searchFiltersContainer');
+    const filterBtn = document.getElementById('filterToggleBtn');
+
+    filtersContainer.style.display = 'none';
+    filterBtn.classList.remove('active');
+}
+
+// Clear all search filters
+// function clearSearchFilters() {
+//     // Reset sort dropdown
+//     const sortDropdownMenu = document.getElementById('sortDropdownMenu');
+//     if (sortDropdownMenu) {
+//         sortDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('selected'));
+//         sortDropdownMenu.querySelector('[data-value="relevance"]').classList.add('selected');
+//     }
+
+//     // Reset title only button
+//     const titleOnlyBtn = document.getElementById('titleOnlyBtn');
+//     if (titleOnlyBtn) {
+//         titleOnlyBtn.classList.add('active');
+//     }
+
+//     // Reset created by dropdown
+//     const createdByDropdownMenu = document.getElementById('createdByDropdownMenu');
+//     if (createdByDropdownMenu) {
+//         createdByDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('selected'));
+//         createdByDropdownMenu.querySelector('[data-value="all"]').classList.add('selected');
+//     }
+
+//     // Clear member search input
+//     const memberSearchInput = document.getElementById('memberSearchInput');
+//     if (memberSearchInput) {
+//         memberSearchInput.value = '';
+//     }
+
+//     // Re-perform search with cleared filters
+//     const searchInput = document.getElementById('vaultSearchInput');
+//     if (searchInput && searchInput.value.trim()) {
+//         performVaultSearch(searchInput.value.trim());
+//     }
+// }
+
 function initializeVaultSearch() {
+    console.log('Initializing vault search...');
+
     const searchInput = document.getElementById('vaultSearchInput');
 
-    if (!searchInput) return;
+    if (!searchInput) {
+        console.error('Search input not found!');
+        return;
+    }
 
-    // Add input event listener with debouncing
+    loadVaultMembers();
+
     searchInput.addEventListener('input', function (e) {
         const query = e.target.value.trim();
 
-        // Clear previous timeout
         if (searchTimeout) {
             clearTimeout(searchTimeout);
         }
 
-        // Debounce search to avoid too many requests
         searchTimeout = setTimeout(() => {
             performVaultSearch(query);
         }, 300);
     });
 
-    // Add enter key support
     searchInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -5732,9 +5848,216 @@ function initializeVaultSearch() {
             performVaultSearch(query);
         }
     });
+
+    console.log('Initializing filter dropdowns...');
+    initializeFilterDropdowns();
+    console.log('Initializing title only button...');
+    initializeTitleOnlyButton();
+    console.log('Vault search initialization complete!');
+}
+
+function initializeFilterDropdowns() {
+    const sortDropdownBtn = document.getElementById('sortDropdownBtn');
+    const sortDropdownMenu = document.getElementById('sortDropdownMenu');
+    let currentSortValue = 'relevance';
+
+    if (sortDropdownMenu) {
+        const defaultSortItem = sortDropdownMenu.querySelector('[data-value="relevance"]');
+        if (defaultSortItem) {
+            defaultSortItem.classList.add('selected');
+        }
+    }
+
+    if (sortDropdownBtn && sortDropdownMenu) {
+        sortDropdownBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            sortDropdownMenu.classList.toggle('show');
+
+            document.getElementById('createdByDropdownMenu').classList.remove('show');
+        });
+
+        sortDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function () {
+                const value = this.getAttribute('data-value');
+                currentSortValue = value;
+
+                sortDropdownMenu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+
+                sortDropdownMenu.classList.remove('show');
+
+                const searchInput = document.getElementById('vaultSearchInput');
+                if (searchInput && searchInput.value.trim()) {
+                    performVaultSearch(searchInput.value.trim());
+                }
+            });
+        });
+    }
+
+    const createdByDropdownBtn = document.getElementById('createdByDropdownBtn');
+    const createdByDropdownMenu = document.getElementById('createdByDropdownMenu');
+    const memberSearchInput = document.getElementById('memberSearchInput');
+    let currentCreatedByValue = 'all';
+
+    if (createdByDropdownMenu) {
+        const defaultCreatedByItem = createdByDropdownMenu.querySelector('[data-value="all"]');
+        if (defaultCreatedByItem) {
+            defaultCreatedByItem.classList.add('selected');
+        }
+    }
+
+    if (createdByDropdownBtn && createdByDropdownMenu) {
+        createdByDropdownBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            createdByDropdownMenu.classList.toggle('show');
+
+            document.getElementById('sortDropdownMenu').classList.remove('show');
+
+            setTimeout(() => {
+                if (memberSearchInput) {
+                    memberSearchInput.focus();
+                }
+            }, 100);
+        });
+
+        if (memberSearchInput) {
+            memberSearchInput.addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                const memberItems = createdByDropdownMenu.querySelectorAll('.dropdown-item:not([data-value="all"])');
+
+                memberItems.forEach(item => {
+                    const memberName = item.querySelector('span').textContent.toLowerCase();
+                    if (memberName.includes(query)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        createdByDropdownMenu.addEventListener('click', function (e) {
+            if (e.target.closest('.dropdown-item')) {
+                const item = e.target.closest('.dropdown-item');
+                const value = item.getAttribute('data-value');
+                currentCreatedByValue = value;
+
+                createdByDropdownMenu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+
+                createdByDropdownMenu.classList.remove('show');
+
+                if (memberSearchInput) {
+                    memberSearchInput.value = '';
+                }
+
+                const searchInput = document.getElementById('vaultSearchInput');
+                if (searchInput && searchInput.value.trim()) {
+                    performVaultSearch(searchInput.value.trim());
+                }
+            }
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.filter-dropdown')) {
+            document.querySelectorAll('.filter-dropdown-menu').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
+}
+
+// Initialize title only button
+function initializeTitleOnlyButton() {
+    const titleOnlyBtn = document.getElementById('titleOnlyBtn');
+    let titleOnlyActive = true;
+
+    // Set default active state for title only button
+    if (titleOnlyBtn) {
+        titleOnlyBtn.classList.add('active');
+    }
+
+    if (titleOnlyBtn) {
+        titleOnlyBtn.addEventListener('click', function () {
+            titleOnlyActive = !titleOnlyActive;
+
+            if (titleOnlyActive) {
+                this.classList.add('active');
+            } else {
+                this.classList.remove('active');
+            }
+
+            // Perform search
+            const searchInput = document.getElementById('vaultSearchInput');
+            if (searchInput && searchInput.value.trim()) {
+                performVaultSearch(searchInput.value.trim());
+            }
+        });
+    }
+}
+
+// Helper functions to get current filter values
+function getCurrentSortValue() {
+    const selectedItem = document.querySelector('#sortDropdownMenu .dropdown-item.selected');
+    return selectedItem ? selectedItem.getAttribute('data-value') : 'relevance';
+}
+
+function isTitleOnlyActive() {
+    const titleOnlyBtn = document.getElementById('titleOnlyBtn');
+    return titleOnlyBtn ? titleOnlyBtn.classList.contains('active') : true;
+}
+
+function getCurrentCreatedByValue() {
+    const selectedItem = document.querySelector('#createdByDropdownMenu .dropdown-item.selected');
+    return selectedItem ? selectedItem.getAttribute('data-value') : 'all';
+}
+
+// Load vault members for "Created by" filter
+function loadVaultMembers() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const vaultId = urlParams.get('id');
+
+    if (!vaultId) return;
+
+    $.ajax({
+        url: '/vault-detail/experts',
+        method: 'GET',
+        data: { vaultId: vaultId },
+        success: function (response) {
+            const memberList = document.getElementById('memberList');
+            if (memberList && response) {
+                // Clear existing member list
+                memberList.innerHTML = '';
+
+                // Add member options
+                response.forEach(member => {
+                    const memberItem = document.createElement('div');
+                    memberItem.className = 'dropdown-item';
+                    memberItem.setAttribute('data-value', member.id);
+
+                    const avatar = document.createElement('div');
+                    avatar.className = 'member-avatar';
+                    avatar.textContent = member.name.charAt(0).toUpperCase();
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = member.name;
+
+                    memberItem.appendChild(avatar);
+                    memberItem.appendChild(nameSpan);
+                    memberList.appendChild(memberItem);
+                });
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error loading vault members:', error);
+        }
+    });
 }
 
 function performVaultSearch(query) {
+    console.log('Performing search with query:', query);
+
     const searchResults = document.getElementById('searchResults');
     const searchEmpty = document.getElementById('searchEmpty');
     const searchNoResults = document.getElementById('searchNoResults');
@@ -5756,30 +6079,43 @@ function performVaultSearch(query) {
     searchLoading.style.display = 'block';
     searchResultsContent.style.display = 'none';
 
-    // Always search all types (folders, knowledge, sessions)
-    const searchFolders = true;
-    const searchKnowledge = true;
-    const searchSessions = true;
+    // Get filter values from new UI
+    const sortBy = getCurrentSortValue();
+    const searchTitleOnly = isTitleOnlyActive();
+    const createdBy = getCurrentCreatedByValue();
+
+    console.log('Filter values:', { sortBy, searchTitleOnly, createdBy });
 
     const urlParams = new URLSearchParams(window.location.search);
     const vaultId = urlParams.get('id');
 
     // Perform AJAX search
+    console.log('Making AJAX request with data:', {
+        vaultId: vaultId,
+        query: query,
+        sortBy: sortBy,
+        searchTitleOnly: searchTitleOnly,
+        createdBy: createdBy
+    });
+
     $.ajax({
         url: '/vault-detail/search',
         method: 'GET',
         data: {
             vaultId: vaultId,
             query: query,
-            searchFolders: searchFolders,
-            searchKnowledge: searchKnowledge,
-            searchSessions: searchSessions
+            sortBy: sortBy,
+            searchTitleOnly: searchTitleOnly,
+            createdBy: createdBy
         },
         success: function (response) {
+            console.log('Search response:', response);
             displaySearchResults(response, query);
         },
         error: function (xhr, status, error) {
             console.error('Search error:', error);
+            console.error('Status:', status);
+            console.error('Response:', xhr.responseText);
             searchLoading.style.display = 'none';
             searchNoResults.style.display = 'block';
         }
@@ -5934,7 +6270,7 @@ function formatDateTime(dateString) {
 
 // Navigation functions
 function navigateToFolder(folderId, folderType) {
-    $('#vaultSearchModal').modal('hide');
+    hideVaultSearchModal();
     const urlParams = new URLSearchParams(window.location.search);
     const vaultId = urlParams.get('id');
 
@@ -5943,7 +6279,7 @@ function navigateToFolder(folderId, folderType) {
 }
 
 function viewKnowledge(knowledgeId) {
-    $('#vaultSearchModal').modal('hide');
+    hideVaultSearchModal();
     // Trigger the existing view knowledge functionality
     const knowledgeElement = document.querySelector(`[data-knowledge-id="${knowledgeId}"]`);
     if (knowledgeElement) {
@@ -5955,7 +6291,7 @@ function viewKnowledge(knowledgeId) {
 }
 
 function viewSession(sessionId) {
-    $('#vaultSearchModal').modal('hide');
+    hideVaultSearchModal();
     const urlParams = new URLSearchParams(window.location.search);
     const vaultId = urlParams.get('id');
     window.location.href = `/vault-detail?id=${vaultId}&sessions=true#session-${sessionId}`;

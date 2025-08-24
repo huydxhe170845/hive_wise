@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -1492,9 +1493,9 @@ public class VaultDetailController {
     public ResponseEntity<?> searchVault(
             @RequestParam("vaultId") String vaultId,
             @RequestParam("query") String query,
-            @RequestParam(value = "searchFolders", defaultValue = "true") boolean searchFolders,
-            @RequestParam(value = "searchKnowledge", defaultValue = "true") boolean searchKnowledge,
-            @RequestParam(value = "searchSessions", defaultValue = "true") boolean searchSessions,
+            @RequestParam(value = "sortBy", defaultValue = "relevance") String sortBy,
+            @RequestParam(value = "searchTitleOnly", defaultValue = "true") boolean searchTitleOnly,
+            @RequestParam(value = "createdBy", defaultValue = "all") String createdBy,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         try {
@@ -1502,110 +1503,136 @@ public class VaultDetailController {
             String lowerQuery = query.toLowerCase();
 
             // Search folders (including subfolders)
-            if (searchFolders) {
-                List<Map<String, Object>> folders = new ArrayList<>();
+            List<Map<String, Object>> folders = new ArrayList<>();
 
-                // Search personal folders and their subfolders
-                List<Folder> personalFolders = folderService.getFolderTreeByParentIdAndVaultId(null,
-                        userDetails.getId(), vaultId);
-                searchInFolderTree(personalFolders, lowerQuery, folders, "personal");
+            // Search personal folders and their subfolders
+            List<Folder> personalFolders = folderService.getFolderTreeByParentIdAndVaultId(null,
+                    userDetails.getId(), vaultId);
+            searchInFolderTree(personalFolders, lowerQuery, folders, "personal");
 
-                // Search public folders and their subfolders
-                List<Folder> publicFolders = folderService.getPublicFolderTreeByVaultId(vaultId);
-                searchInFolderTree(publicFolders, lowerQuery, folders, "public");
+            // Search public folders and their subfolders
+            List<Folder> publicFolders = folderService.getPublicFolderTreeByVaultId(vaultId);
+            searchInFolderTree(publicFolders, lowerQuery, folders, "public");
 
-                results.put("folders", folders);
-            }
+            // Apply sorting to folders
+            sortResults(folders, sortBy);
+
+            results.put("folders", folders);
 
             // Search knowledge items
-            if (searchKnowledge) {
-                List<Map<String, Object>> knowledge = new ArrayList<>();
+            List<Map<String, Object>> knowledge = new ArrayList<>();
 
-                // Get all knowledge items in the vault
-                List<KnowledgeItem> allKnowledge = knowledgeItemService.getKnowledgeItemsByVaultId(vaultId);
+            // Get all knowledge items in the vault
+            List<KnowledgeItem> allKnowledge = knowledgeItemService.getKnowledgeItemsByVaultId(vaultId);
 
-                for (KnowledgeItem item : allKnowledge) {
-                    if (item.getName().toLowerCase().contains(lowerQuery) ||
-                            (item.getDescription() != null && item.getDescription().toLowerCase().contains(lowerQuery))
-                            ||
-                            (item.getContent() != null && item.getContent().toLowerCase().contains(lowerQuery))) {
-
-                        Map<String, Object> knowledgeData = new HashMap<>();
-                        knowledgeData.put("id", item.getId());
-                        knowledgeData.put("title", item.getName());
-                        knowledgeData.put("description", item.getDescription());
-                        knowledgeData.put("status", item.getApprovalStatus());
-                        knowledgeData.put("createdAt", item.getCreatedAt());
-
-                        // Get folder info
-                        if (item.getFolder() != null) {
-                            knowledgeData.put("folderId", item.getFolder().getId());
-                            knowledgeData.put("folderName", item.getFolder().getName());
-                            knowledgeData.put("folderType", item.getFolder().getIsPublic() ? "public" : "personal");
-                        } else {
-                            knowledgeData.put("folderId", null);
-                            knowledgeData.put("folderName", "Unknown folder");
-                            knowledgeData.put("folderType", "unknown");
-                        }
-
-                        // Get creator name
-                        try {
-                            User creator = userService.findById(item.getCreatedBy());
-                            knowledgeData.put("creatorName", creator.getUsername());
-                        } catch (Exception e) {
-                            knowledgeData.put("creatorName", "Unknown");
-                        }
-
-                        knowledge.add(knowledgeData);
-                    }
+            for (KnowledgeItem item : allKnowledge) {
+                // Apply created by filter
+                if (!"all".equals(createdBy) && !createdBy.equals(String.valueOf(item.getCreatedBy()))) {
+                    continue;
                 }
 
-                results.put("knowledgeItems", knowledge);
+                // Apply search filter (title only or full content)
+                boolean matchesQuery = false;
+                if (searchTitleOnly) {
+                    matchesQuery = item.getName().toLowerCase().contains(lowerQuery);
+                } else {
+                    matchesQuery = item.getName().toLowerCase().contains(lowerQuery) ||
+                            (item.getDescription() != null
+                                    && item.getDescription().toLowerCase().contains(lowerQuery))
+                            ||
+                            (item.getContent() != null && item.getContent().toLowerCase().contains(lowerQuery));
+                }
+
+                if (matchesQuery) {
+
+                    Map<String, Object> knowledgeData = new HashMap<>();
+                    knowledgeData.put("id", item.getId());
+                    knowledgeData.put("title", item.getName());
+                    knowledgeData.put("description", item.getDescription());
+                    knowledgeData.put("status", item.getApprovalStatus());
+                    knowledgeData.put("createdAt", item.getCreatedAt());
+                    knowledgeData.put("updatedAt", item.getUpdatedAt());
+
+                    // Get folder info
+                    if (item.getFolder() != null) {
+                        knowledgeData.put("folderId", item.getFolder().getId());
+                        knowledgeData.put("folderName", item.getFolder().getName());
+                        knowledgeData.put("folderType", item.getFolder().getIsPublic() ? "public" : "personal");
+                    } else {
+                        knowledgeData.put("folderId", null);
+                        knowledgeData.put("folderName", "Unknown folder");
+                        knowledgeData.put("folderType", "unknown");
+                    }
+
+                    // Get creator name
+                    try {
+                        User creator = userService.findById(item.getCreatedBy());
+                        knowledgeData.put("creatorName", creator.getUsername());
+                    } catch (Exception e) {
+                        knowledgeData.put("creatorName", "Unknown");
+                    }
+
+                    knowledge.add(knowledgeData);
+                }
             }
+
+            // Apply sorting
+            sortResults(knowledge, sortBy);
+
+            results.put("knowledgeItems", knowledge);
 
             // Search sessions
-            if (searchSessions) {
-                List<Map<String, Object>> sessionsData = new ArrayList<>();
+            List<Map<String, Object>> sessionsData = new ArrayList<>();
 
-                // Get all sessions in the vault
-                List<KnowledgeSession> allSessions = knowledgeSessionService.getKnowledgeSessionsByVault(vaultId);
+            // Get all sessions in the vault
+            List<KnowledgeSession> allSessions = knowledgeSessionService.getKnowledgeSessionsByVault(vaultId);
 
-                for (KnowledgeSession session : allSessions) {
-                    if (session.getTitle().toLowerCase().contains(lowerQuery) ||
+            for (KnowledgeSession session : allSessions) {
+                // Apply search filter (title only or full content)
+                boolean matchesQuery = false;
+                if (searchTitleOnly) {
+                    matchesQuery = session.getTitle().toLowerCase().contains(lowerQuery);
+                } else {
+                    matchesQuery = session.getTitle().toLowerCase().contains(lowerQuery) ||
                             (session.getDescription() != null
-                                    && session.getDescription().toLowerCase().contains(lowerQuery))) {
-
-                        Map<String, Object> sessionData = new HashMap<>();
-                        sessionData.put("id", session.getId());
-                        sessionData.put("title", session.getTitle());
-                        sessionData.put("description", session.getDescription());
-                        sessionData.put("date", session.getStartTime());
-                        sessionData.put("endDate", session.getEndTime());
-                        sessionData.put("duration", session.getDuration());
-                        sessionData.put("meetingLink", session.getMeetingLink());
-                        sessionData.put("status", session.getStatus());
-
-                        // Get instructor name
-                        if (session.getInstructor() != null) {
-                            sessionData.put("instructorName", session.getInstructor().getUsername());
-                        } else {
-                            sessionData.put("instructorName", "Unknown");
-                        }
-
-                        // Get creator name
-                        try {
-                            User creator = userService.findById(session.getCreatedBy());
-                            sessionData.put("creatorName", creator.getUsername());
-                        } catch (Exception e) {
-                            sessionData.put("creatorName", "Unknown");
-                        }
-
-                        sessionsData.add(sessionData);
-                    }
+                                    && session.getDescription().toLowerCase().contains(lowerQuery));
                 }
 
-                results.put("sessions", sessionsData);
+                if (matchesQuery) {
+
+                    Map<String, Object> sessionData = new HashMap<>();
+                    sessionData.put("id", session.getId());
+                    sessionData.put("title", session.getTitle());
+                    sessionData.put("description", session.getDescription());
+                    sessionData.put("date", session.getStartTime());
+                    sessionData.put("endDate", session.getEndTime());
+                    sessionData.put("duration", session.getDuration());
+                    sessionData.put("meetingLink", session.getMeetingLink());
+                    sessionData.put("status", session.getStatus());
+
+                    // Get instructor name
+                    if (session.getInstructor() != null) {
+                        sessionData.put("instructorName", session.getInstructor().getUsername());
+                    } else {
+                        sessionData.put("instructorName", "Unknown");
+                    }
+
+                    // Get creator name
+                    try {
+                        User creator = userService.findById(session.getCreatedBy());
+                        sessionData.put("creatorName", creator.getUsername());
+                    } catch (Exception e) {
+                        sessionData.put("creatorName", "Unknown");
+                    }
+
+                    sessionsData.add(sessionData);
+                }
             }
+
+            // Apply sorting to sessions
+            sortResults(sessionsData, sortBy);
+
+            results.put("sessions", sessionsData);
 
             return ResponseEntity.ok(results);
 
@@ -1665,6 +1692,101 @@ public class VaultDetailController {
             System.err.println("Error getting calendar sessions by week: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    // Helper method to sort search results
+    private void sortResults(List<Map<String, Object>> results, String sortBy) {
+        switch (sortBy) {
+            case "last_edited_newest":
+                results.sort((a, b) -> {
+                    LocalDateTime dateA = getItemModifiedDate(a);
+                    LocalDateTime dateB = getItemModifiedDate(b);
+                    if (dateA == null)
+                        return 1;
+                    if (dateB == null)
+                        return -1;
+                    return dateB.compareTo(dateA); // Newest first
+                });
+                break;
+            case "last_edited_oldest":
+                results.sort((a, b) -> {
+                    LocalDateTime dateA = getItemModifiedDate(a);
+                    LocalDateTime dateB = getItemModifiedDate(b);
+                    if (dateA == null)
+                        return 1;
+                    if (dateB == null)
+                        return -1;
+                    return dateA.compareTo(dateB); // Oldest first
+                });
+                break;
+            case "created_newest":
+                results.sort((a, b) -> {
+                    LocalDateTime dateA = getItemCreatedDate(a);
+                    LocalDateTime dateB = getItemCreatedDate(b);
+                    if (dateA == null)
+                        return 1;
+                    if (dateB == null)
+                        return -1;
+                    return dateB.compareTo(dateA); // Newest first
+                });
+                break;
+            case "created_oldest":
+                results.sort((a, b) -> {
+                    LocalDateTime dateA = getItemCreatedDate(a);
+                    LocalDateTime dateB = getItemCreatedDate(b);
+                    if (dateA == null)
+                        return 1;
+                    if (dateB == null)
+                        return -1;
+                    return dateA.compareTo(dateB); // Oldest first
+                });
+                break;
+            // "relevance" is default, no sorting needed
+        }
+    }
+
+    // Helper methods to get item properties for sorting
+    private String getItemName(Map<String, Object> item) {
+        return (String) (item.get("title") != null ? item.get("title") : item.get("name"));
+    }
+
+    private LocalDateTime getItemCreatedDate(Map<String, Object> item) {
+        Object date = item.get("createdAt");
+        if (date instanceof LocalDateTime) {
+            return (LocalDateTime) date;
+        } else if (date instanceof String) {
+            try {
+                return LocalDateTime.parse((String) date);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private LocalDateTime getItemModifiedDate(Map<String, Object> item) {
+        Object date = item.get("updatedAt");
+        if (date instanceof LocalDateTime) {
+            return (LocalDateTime) date;
+        } else if (date instanceof String) {
+            try {
+                return LocalDateTime.parse((String) date);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private String getItemType(Map<String, Object> item) {
+        // For folders, use folderType; for knowledge items, use folderType; for
+        // sessions, use "session"
+        if (item.containsKey("folderType")) {
+            return (String) item.get("folderType");
+        } else if (item.containsKey("date")) {
+            return "session";
+        }
+        return "unknown";
     }
 
     // Helper method to search in folder tree (including subfolders)

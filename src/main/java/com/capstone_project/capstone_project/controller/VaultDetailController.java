@@ -169,6 +169,7 @@ public class VaultDetailController {
 
             User currentUser = userService.findById(userDetails.getId());
             model.addAttribute("currentUser", currentUser);
+            model.addAttribute("userSystemRole", userDetails.getSystemRoleName());
 
             List<KnowledgeItem> pendingKnowledge;
             boolean canViewPendingApproval = false;

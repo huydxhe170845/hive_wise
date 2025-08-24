@@ -73,6 +73,16 @@ public class VaultManagementController {
         if (vault == null) {
             return "redirect:/error";
         }
+
+        // Check if user is vault owner or admin
+        boolean isVaultOwner = userVaultRoleService.isVaultOwner(userDetails.getId(), id);
+        boolean isAdmin = "ADMIN".equals(userDetails.getSystemRoleName());
+
+        // Only allow access if user is vault owner or admin
+        if (!isVaultOwner && !isAdmin) {
+            return "redirect:/error";
+        }
+
         UpdateVaultRequest updateVaultRequest = UpdateVaultRequest.builder()
                 .name(vault.getName())
                 .description(vault.getDescription())
@@ -84,8 +94,9 @@ public class VaultManagementController {
         model.addAttribute("changePasswordRequest", new ChangePasswordRequest());
         model.addAttribute("updateProfileRequest", new UpdateProfileRequest());
         model.addAttribute("updateProfileRequest", new UpdateProfileRequest());
-        boolean isVaultOwner = userVaultRoleService.isVaultOwner(userDetails.getId(), id);
         model.addAttribute("isVaultOwner", isVaultOwner);
+        model.addAttribute("isAdmin", isAdmin);
+        model.addAttribute("canEditVault", isVaultOwner || isAdmin);
         return "edit-vault";
     }
 
@@ -96,6 +107,16 @@ public class VaultManagementController {
         if (vault == null) {
             return "redirect:/error";
         }
+
+        // Check if user is vault owner or admin
+        boolean isVaultOwner = userVaultRoleService.isVaultOwner(userDetails.getId(), vaultId);
+        boolean isAdmin = "ADMIN".equals(userDetails.getSystemRoleName());
+
+        // Only allow access if user is vault owner or admin
+        if (!isVaultOwner && !isAdmin) {
+            return "redirect:/error";
+        }
+
         model.addAttribute("user", userDetails);
         model.addAttribute("vault", vault);
         model.addAttribute("vaultId", vaultId);
@@ -111,6 +132,11 @@ public class VaultManagementController {
         List<VaultRole> allVaultRoles = userVaultRoleService.getAllVaultRoles();
         model.addAttribute("allVaultRoles", allVaultRoles);
 
+        // Add flags for UI control
+        model.addAttribute("isVaultOwner", isVaultOwner);
+        model.addAttribute("isAdmin", isAdmin);
+        model.addAttribute("canManageMembers", isVaultOwner || isAdmin);
+
         return "manage-vault-member";
     }
 
@@ -121,6 +147,16 @@ public class VaultManagementController {
         if (vault == null) {
             return "redirect:/error";
         }
+
+        // Check if user is vault owner or admin
+        boolean isVaultOwner = userVaultRoleService.isVaultOwner(userDetails.getId(), vaultId);
+        boolean isAdmin = "ADMIN".equals(userDetails.getSystemRoleName());
+
+        // Only allow access if user is vault owner or admin
+        if (!isVaultOwner && !isAdmin) {
+            return "redirect:/error";
+        }
+
         model.addAttribute("user", userDetails);
         model.addAttribute("vault", vault);
         model.addAttribute("vaultId", vaultId);
@@ -128,6 +164,9 @@ public class VaultManagementController {
         model.addAttribute("changePasswordRequest", new ChangePasswordRequest());
         model.addAttribute("updateProfileRequest", new UpdateProfileRequest());
         model.addAttribute("updateProfileRequest", new UpdateProfileRequest());
+        model.addAttribute("isVaultOwner", isVaultOwner);
+        model.addAttribute("isAdmin", isAdmin);
+        model.addAttribute("canManageNotifications", isVaultOwner || isAdmin);
         return "manage-vault-notification";
     }
 
@@ -242,19 +281,19 @@ public class VaultManagementController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getLatestVault(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        
+
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             // Get the most recently created vault for this user
             VaultDashboardResponse latestVault = vaultService.getLatestVaultByUserId(userDetails.getId());
-            
+
             if (latestVault == null) {
                 response.put("success", false);
                 response.put("message", "No vault found");
                 return ResponseEntity.ok(response);
             }
-            
+
             // Convert to map format for JSON response
             Map<String, Object> vaultInfo = new HashMap<>();
             vaultInfo.put("id", latestVault.getId());
@@ -269,13 +308,13 @@ public class VaultManagementController {
             vaultInfo.put("documentCount", latestVault.getDocumentCount());
             vaultInfo.put("isActivated", latestVault.getIsActivated());
             vaultInfo.put("isDeleted", latestVault.getIsDeleted());
-            
+
             response.put("success", true);
             response.put("vault", vaultInfo);
             response.put("message", "Latest vault retrieved successfully");
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Failed to get latest vault: " + e.getMessage());
@@ -290,8 +329,25 @@ public class VaultManagementController {
             @RequestParam("vaultId") String vaultId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+
+        System.out.println("=== UPDATE VAULT ENDPOINT CALLED ===");
+        System.out.println("Vault ID: " + vaultId);
+        System.out.println("Request name: " + request.getName());
+        System.out.println("Request description: " + request.getDescription());
+        System.out.println("User ID: " + userDetails.getId());
+        System.out.println("User role: " + userDetails.getSystemRoleName());
         Vault vault = vaultService.getVaultDetailById(vaultId);
         if (vault == null) {
+            return "redirect:/error";
+        }
+
+        // Check if user is vault owner or admin
+        boolean isVaultOwner = userVaultRoleService.isVaultOwner(userDetails.getId(), vaultId);
+        boolean isAdmin = "ADMIN".equals(userDetails.getSystemRoleName());
+
+        // Only allow access if user is vault owner or admin
+        if (!isVaultOwner && !isAdmin) {
+            redirectAttributes.addFlashAttribute("error", "You don't have permission to update this vault");
             return "redirect:/error";
         }
         if (bindingResult.hasErrors()) {
@@ -305,28 +361,93 @@ public class VaultManagementController {
             return "edit-vault";
         }
         try {
-            vaultService.updateVault(request, userDetails.getId(), vaultId);
+            vaultService.updateVault(request, userDetails.getId(), vaultId, userDetails.getSystemRoleName());
         } catch (FieldValidationException ex) {
             bindingResult.rejectValue(ex.getField(), "", ex.getMessage());
             model.addAttribute("vault", vault);
-            model.addAttribute("addVaultRequest", request);
+            model.addAttribute("updateVaultRequest", request);
             model.addAttribute("user", userDetails);
             model.addAttribute("addPasswordRequest", new AddPasswordRequest());
             model.addAttribute("changePasswordRequest", new ChangePasswordRequest());
             model.addAttribute("updateProfileRequest", new UpdateProfileRequest());
-            model.addAttribute("org.springframework.validation.BindingResult.addVaultRequest", bindingResult);
+            model.addAttribute("org.springframework.validation.BindingResult.updateVaultRequest", bindingResult);
             return "edit-vault";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("user", userDetails);
+            model.addAttribute("updateVaultRequest", request);
             model.addAttribute("addPasswordRequest", new AddPasswordRequest());
             model.addAttribute("changePasswordRequest", new ChangePasswordRequest());
             model.addAttribute("updateProfileRequest", new UpdateProfileRequest());
             model.addAttribute("vault", vault);
             return "edit-vault";
         }
+        System.out.println("=== VAULT UPDATE SUCCESSFUL ===");
         redirectAttributes.addFlashAttribute("successUpdateVaultMessage", "Vault updated successfully!");
         return "redirect:/vault-management/edit-vault/general?id=" + vaultId;
+    }
+
+    @PostMapping("/update-vault-ajax")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateVaultAjax(
+            @Valid @ModelAttribute("updateVaultRequest") UpdateVaultRequest request,
+            BindingResult bindingResult,
+            @RequestParam("vaultId") String vaultId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        System.out.println("=== UPDATE VAULT AJAX ENDPOINT CALLED ===");
+        System.out.println("Vault ID: " + vaultId);
+        System.out.println("Request name: " + request.getName());
+        System.out.println("Request description: " + request.getDescription());
+
+        Vault vault = vaultService.getVaultDetailById(vaultId);
+        if (vault == null) {
+            response.put("success", false);
+            response.put("message", "Vault not found");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Check if user is vault owner or admin
+        boolean isVaultOwner = userVaultRoleService.isVaultOwner(userDetails.getId(), vaultId);
+        boolean isAdmin = "ADMIN".equals(userDetails.getSystemRoleName());
+
+        // Only allow access if user is vault owner or admin
+        if (!isVaultOwner && !isAdmin) {
+            response.put("success", false);
+            response.put("message", "You don't have permission to update this vault");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> {
+                errors.put(error.getField(), error.getDefaultMessage());
+            });
+            response.put("success", false);
+            response.put("errors", errors);
+            response.put("message", "Validation failed");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {
+            vaultService.updateVault(request, userDetails.getId(), vaultId, userDetails.getSystemRoleName());
+            response.put("success", true);
+            response.put("message", "Vault updated successfully!");
+            return ResponseEntity.ok(response);
+        } catch (FieldValidationException ex) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put(ex.getField(), ex.getMessage());
+            response.put("success", false);
+            response.put("errors", errors);
+            response.put("message", "Validation failed");
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "An error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/delete-vault")
@@ -494,6 +615,17 @@ public class VaultManagementController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             RedirectAttributes redirectAttributes) {
         try {
+            // Check if user is vault owner or admin
+            boolean isVaultOwner = userVaultRoleService.isVaultOwner(userDetails.getId(), vaultId);
+            boolean isAdmin = "ADMIN".equals(userDetails.getSystemRoleName());
+
+            if (!isVaultOwner && !isAdmin) {
+                redirectAttributes.addFlashAttribute("toastMessage",
+                        "You don't have permission to add members to this vault");
+                redirectAttributes.addFlashAttribute("toastType", "error");
+                return "redirect:/vault-management/edit-vault/member?id=" + vaultId;
+            }
+
             // Validation
             if (vaultId == null || vaultId.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("toastMessage", "Vault ID is required");
@@ -516,7 +648,8 @@ public class VaultManagementController {
             System.out.println("Controller: Adding member - vaultId: " + vaultId + ", userId: " + userId
                     + ", roleName: " + roleName);
 
-            userVaultRoleService.addMemberToVault(vaultId, userId, roleName, userDetails.getId());
+            userVaultRoleService.addMemberToVault(vaultId, userId, roleName, userDetails.getId(),
+                    userDetails.getSystemRoleName());
             redirectAttributes.addFlashAttribute("toastMessage", "Member added successfully!");
             redirectAttributes.addFlashAttribute("toastType", "success");
         } catch (Exception e) {
@@ -535,7 +668,19 @@ public class VaultManagementController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             RedirectAttributes redirectAttributes) {
         try {
-            userVaultRoleService.removeMemberFromVault(vaultId, userId, userDetails.getId());
+            // Check if user is vault owner or admin
+            boolean isVaultOwner = userVaultRoleService.isVaultOwner(userDetails.getId(), vaultId);
+            boolean isAdmin = "ADMIN".equals(userDetails.getSystemRoleName());
+
+            if (!isVaultOwner && !isAdmin) {
+                redirectAttributes.addFlashAttribute("toastMessage",
+                        "You don't have permission to remove members from this vault");
+                redirectAttributes.addFlashAttribute("toastType", "error");
+                return "redirect:/vault-management/edit-vault/member?id=" + vaultId;
+            }
+
+            userVaultRoleService.removeMemberFromVault(vaultId, userId, userDetails.getId(),
+                    userDetails.getSystemRoleName());
             redirectAttributes.addFlashAttribute("toastMessage", "Member removed successfully!");
             redirectAttributes.addFlashAttribute("toastType", "success");
         } catch (Exception e) {
@@ -568,6 +713,17 @@ public class VaultManagementController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             RedirectAttributes redirectAttributes) {
         try {
+            // Check if user is vault owner or admin
+            boolean isVaultOwner = userVaultRoleService.isVaultOwner(userDetails.getId(), vaultId);
+            boolean isAdmin = "ADMIN".equals(userDetails.getSystemRoleName());
+
+            if (!isVaultOwner && !isAdmin) {
+                redirectAttributes.addFlashAttribute("toastMessage",
+                        "You don't have permission to update member roles in this vault");
+                redirectAttributes.addFlashAttribute("toastType", "error");
+                return "redirect:/vault-management/edit-vault/member?id=" + vaultId;
+            }
+
             // Validation
             if (vaultId == null || vaultId.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("toastMessage", "Vault ID is required");
@@ -590,7 +746,8 @@ public class VaultManagementController {
             System.out.println("Controller: Updating member role - vaultId: " + vaultId + ", userId: " + userId
                     + ", newRoleName: " + newRoleName);
 
-            userVaultRoleService.updateMemberRole(vaultId, userId, newRoleName, userDetails.getId());
+            userVaultRoleService.updateMemberRole(vaultId, userId, newRoleName, userDetails.getId(),
+                    userDetails.getSystemRoleName());
             redirectAttributes.addFlashAttribute("toastMessage", "Member role updated successfully!");
             redirectAttributes.addFlashAttribute("toastType", "success");
         } catch (Exception e) {

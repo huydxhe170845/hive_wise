@@ -2094,9 +2094,9 @@
                                                             <i class="fas fa-sort sort-icon"
                                                                 data-sort-direction="none"></i>
                                                         </th>
-                                                        <th
-                                                            style="display: flex; justify-content: center; border-top: none;">
-                                                            Action</th>
+                                                        <th><span
+                                                                style="margin-left: 30px; color: #131313;">Action</span>
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -2151,7 +2151,8 @@
                                                         <td>
                                                             <div
                                                                 class="d-flex align-items-center justify-content-center">
-                                                                <a th:href="@{/vault-detail(id=${vault.id},assistant=true)}"
+                                                                <a th:if="${vault.isActivated}"
+                                                                    th:href="@{/vault-detail(id=${vault.id},assistant=true)}"
                                                                     style="background-color: black; border-radius: 20px; padding: 5px 10px; margin-right: 5px;"
                                                                     title="View Vault">
                                                                     <svg class="w-6 h-6 text-gray-800 dark:text-white"

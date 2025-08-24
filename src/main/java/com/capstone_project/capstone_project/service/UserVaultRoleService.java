@@ -40,6 +40,13 @@ public class UserVaultRoleService {
                 .orElse(false);
     }
 
+    public boolean canManageVaultMembers(String userId, String vaultId, String userRole) {
+        // Check if user is vault owner or admin
+        boolean isVaultOwner = isVaultOwner(userId, vaultId);
+        boolean isAdmin = "ADMIN".equals(userRole);
+        return isVaultOwner || isAdmin;
+    }
+
     public String getVaultOwnerId(String vaultId) {
         List<UserVaultRoleResponse> userRoles = userVaultRoleRepository.findUserRoleInfoByVaultId(vaultId);
         return userRoles.stream()
@@ -55,9 +62,10 @@ public class UserVaultRoleService {
                 .orElse(null);
     }
 
-    public void addMemberToVault(String vaultId, String userId, String roleName, String currentUserId) {
-        if (!isVaultOwner(currentUserId, vaultId)) {
-            throw new RuntimeException("Only vault owner can add members to this vault");
+    public void addMemberToVault(String vaultId, String userId, String roleName, String currentUserId,
+            String currentUserRole) {
+        if (!canManageVaultMembers(currentUserId, vaultId, currentUserRole)) {
+            throw new RuntimeException("Only vault owner or admin can add members to this vault");
         }
 
         // Prevent adding member with VAULT_OWNER role
@@ -87,9 +95,9 @@ public class UserVaultRoleService {
         System.out.println("Member added successfully to database");
     }
 
-    public void removeMemberFromVault(String vaultId, String userId, String currentUserId) {
-        if (!isVaultOwner(currentUserId, vaultId)) {
-            throw new RuntimeException("Only vault owner can remove members from this vault");
+    public void removeMemberFromVault(String vaultId, String userId, String currentUserId, String currentUserRole) {
+        if (!canManageVaultMembers(currentUserId, vaultId, currentUserRole)) {
+            throw new RuntimeException("Only vault owner or admin can remove members from this vault");
         }
         if (userId.equals(currentUserId)) {
             throw new RuntimeException("Vault owner cannot remove themselves from the vault");
@@ -171,9 +179,10 @@ public class UserVaultRoleService {
         return allUserVaults;
     }
 
-    public void updateMemberRole(String vaultId, String userId, String newRoleName, String currentUserId) {
-        if (!isVaultOwner(currentUserId, vaultId)) {
-            throw new RuntimeException("Only vault owner can update member roles in this vault");
+    public void updateMemberRole(String vaultId, String userId, String newRoleName, String currentUserId,
+            String currentUserRole) {
+        if (!canManageVaultMembers(currentUserId, vaultId, currentUserRole)) {
+            throw new RuntimeException("Only vault owner or admin can update member roles in this vault");
         }
 
         if (userId.equals(currentUserId)) {

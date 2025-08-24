@@ -142,7 +142,7 @@
                     <ol style="display: flex; flex-direction: row; padding-left: 10px; padding-top: 10px;">
                         <li>
                             <span>
-                                <a href="http://localhost:8080/vault-management">
+                                <a th:if="${user.systemRoleName == 'ADMIN'}" href="/dashboard#vault-management">
                                     <span role="img" aria-label="home">
                                         <svg viewBox="64 64 896 896" focusable="false" data-icon="home" width="15px"
                                             height="15px" aria-hidden="true" class="icon-home">
@@ -150,7 +150,17 @@
                                                 d="M946.5 505L560.1 118.8l-25.9-25.9a31.5 31.5 0 00-44.4 0L77.5 505a63.9 63.9 0 00-18.8 46c.4 35.2 29.7 63.3 64.9 63.3h42.5V940h691.8V614.3h43.4c17.1 0 33.2-6.7 45.3-18.8a63.6 63.6 0 0018.7-45.3c0-17-6.7-33.1-18.8-45.2zM568 868H456V664h112v204zm217.9-325.7V868H632V640c0-22.1-17.9-40-40-40H432c-22.1 0-40 17.9-40 40v228H238.1V542.3h-96l370-369.7 23.1 23.1L882 542.3h-96.1z">
                                             </path>
                                         </svg>
-                                    </span> Vault management
+                                    </span> Vault List
+                                </a>
+                                <a th:unless="${user.systemRoleName == 'ADMIN'}" href="/vault-management">
+                                    <span role="img" aria-label="home">
+                                        <svg viewBox="64 64 896 896" focusable="false" data-icon="home" width="15px"
+                                            height="15px" aria-hidden="true" class="icon-home">
+                                            <path
+                                                d="M946.5 505L560.1 118.8l-25.9-25.9a31.5 31.5 0 00-44.4 0L77.5 505a63.9 63.9 0 00-18.8 46c.4 35.2 29.7 63.3 64.9 63.3h42.5V940h691.8V614.3h43.4c17.1 0 33.2-6.7 45.3-18.8a63.6 63.6 0 0018.7-45.3c0-17-6.7-33.1-18.8-45.2zM568 868H456V664h112v204zm217.9-325.7V868H632V640c0-22.1-17.9-40-40-40H432c-22.1 0-40 17.9-40 40v228H238.1V542.3h-96l370-369.7 23.1 23.1L882 542.3h-96.1z">
+                                            </path>
+                                        </svg>
+                                    </span> Vault Management
                                 </a>
                             </span>
                             <span style="color: #9b9b9b;">/</span>
@@ -171,17 +181,36 @@
                         </li>
                     </ol>
 
-                    <h2 style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 
-                        Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; color: #464646; margin-left: 20px; ">
+                    <h2
+                        style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 
+                        Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; color: #464646; margin-left: 20px; display: flex; align-items: center; gap: 10px;">
                         General
+                        <span th:if="${isAdmin}"
+                            style="font-size: 12px; background-color: #007bff; color: white; padding: 4px 8px; border-radius: 12px;">
+                            Admin Access
+                        </span>
                     </h2>
+
+                    <!-- Admin notification -->
+                    <div th:if="${isAdmin}"
+                        style="margin: 0 20px 20px 20px; padding: 12px 16px; background-color: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; color: #1976d2; font-size: 14px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                            <strong>Admin Access:</strong> You are editing this vault with administrative privileges.
+                            You can modify vault information but cannot delete the vault.
+                        </div>
+                    </div>
 
                     <div class="update-vault-form-container" style="gap: 180px; align-items: center;">
                         <div class="add-vault-form" style="flex: 1; min-width: 350px; max-width: 800px; margin: 0;">
-                            <form id="add-vault-form" th:action="@{/vault-management/update-vault}" method="post"
-                                th:object="${updateVaultRequest}" class="no-loader" enctype="multipart/form-data">
+                            <form id="update-vault-form" th:action="@{/vault-management/update-vault-ajax}"
+                                method="post" th:object="${updateVaultRequest}" class="no-loader"
+                                enctype="multipart/form-data">
 
-                                <div class="form-group" th:if="${isVaultOwner}">
+                                <div class="form-group" th:if="${canEditVault}">
                                     <label for="editVaultPhoto">Vault Photo:</label>
                                     <div class="photo-upload-container"
                                         style="display: flex; align-items: center; gap: 15px;">
@@ -227,7 +256,7 @@
                                     <div class="input-vaultname-wrapper">
                                         <input type="text" id="vaultName" placeholder="Enter name" th:field="*{name}"
                                             th:classappend="${#fields.hasErrors('name')} ? 'input-error' : ''"
-                                            th:readonly="${!isVaultOwner}" required>
+                                            th:readonly="${!canEditVault}" required>
                                         <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
                                             style="margin-bottom: -15px; margin-top: 0px;" class="text-danger"></div>
                                     </div>
@@ -246,11 +275,10 @@
                                 <div class="form-group">
                                     <label for="description">Description: </label>
                                     <textarea id="description" name="description" rows="5" style="resize: vertical;"
-                                        th:field="*{description}" th:readonly="${!isVaultOwner}"></textarea>
+                                        th:field="*{description}" th:readonly="${!canEditVault}"></textarea>
                                 </div>
-                                <div class="form-footer">
-                                    <button type="submit" class="modal-btn modal-form-btn" style="margin-right: -200px;"
-                                        th:if="${isVaultOwner}">
+                                <div class="form-footer" style="display: flex; justify-content: flex-end;">
+                                    <button type="submit" class="modal-btn modal-form-btn" th:if="${canEditVault}">
                                         <svg viewBox="64 64 896 896" focusable="false" data-icon="save" width="1em"
                                             height="1em" fill="currentColor" aria-hidden="true">
                                             <path
@@ -266,7 +294,8 @@
                                 style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; font-weight: 500; color: #262e33; font-size: 14px; margin-top: 10px;">
                                 <span th:if="${isVaultOwner and vault.isActivated}">Delete vault</span>
                                 <span th:if="${isVaultOwner and !vault.isActivated}">Reactivate vault</span>
-                                <span th:if="${!isVaultOwner}">Leave vault</span>
+                                <span th:if="${!isVaultOwner and !isAdmin}">Leave vault</span>
+                                <span th:if="${isAdmin}">Admin Access - View Only</span>
                             </div>
                             <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; font-weight: 400; color: #858585;
                                 font-size: 14px; letter-spacing: 0; line-height: normal; margin-top: 5px;">
@@ -274,8 +303,10 @@
                                     members of this vault.</span>
                                 <span th:if="${isVaultOwner and !vault.isActivated}">This will reactivate the vault and
                                     restore access to all members.</span>
-                                <span th:if="${!isVaultOwner}">You will lose access to this vault and its
+                                <span th:if="${!isVaultOwner and !isAdmin}">You will lose access to this vault and its
                                     contents.</span>
+                                <span th:if="${isAdmin}">You have administrative access to view and edit this vault's
+                                    information.</span>
                             </div>
 
                             <!-- Delete button for active vaults -->
@@ -308,13 +339,13 @@
                                         style="font-size: 14px; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; margin-left: 5px;">Reactivate</span>
                                 </button>
                             </form>
-                            <form th:action="@{/vault-management/leave-vault}" method="post" th:if="${!isVaultOwner}"
-                                style="display: none;" id="leaveVaultForm">
+                            <form th:action="@{/vault-management/leave-vault}" method="post"
+                                th:if="${!isVaultOwner and !isAdmin}" style="display: none;" id="leaveVaultForm">
                                 <input type="hidden" name="vaultId" th:value="${vault.id}" />
                             </form>
                             <button class="modal-btn modal-delete-btn" id="leaveVaultBtn"
                                 style="padding-left: 20px; padding-right: 20px; margin-top: 10px;"
-                                th:if="${!isVaultOwner}">
+                                th:if="${!isVaultOwner and !isAdmin}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor"
                                     stroke="red" stroke-width="0.3" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd"
@@ -882,6 +913,144 @@
             // Reset to current vault photo or default
             const currentVaultPhoto = /*[[${vault.photoUrl != null and !#strings.isEmpty(vault.photoUrl) ? vault.photoUrl : '/images/vault/vault_df.webp'}]]*/ '/images/vault/vault_df.webp';
             preview.src = currentVaultPhoto;
+        }
+
+        // Handle update vault form submission with AJAX
+        document.addEventListener('DOMContentLoaded', function () {
+            const updateVaultForm = document.getElementById('update-vault-form');
+            if (updateVaultForm) {
+                updateVaultForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    handleUpdateVaultAjax(this);
+                });
+            }
+        });
+
+        function handleUpdateVaultAjax(form) {
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                        <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+                        <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+                    </svg>
+                    <span>Saving...</span>
+                `;
+            submitBtn.disabled = true;
+
+            // Clear previous errors
+            clearFormErrors(form);
+
+            const formData = new FormData(form);
+
+            fetch('/vault-management/update-vault-ajax', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    return response.json().then(data => {
+                        if (!response.ok) {
+                            throw new Error(JSON.stringify(data));
+                        }
+                        return data;
+                    });
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        showToast(data.message, 'success');
+
+                        // Reset button
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    } else {
+                        // Display field errors if any
+                        if (data.errors && Object.keys(data.errors).length > 0) {
+                            displayFormErrors(form, data.errors);
+                        } else {
+                            showToast(data.message, 'error');
+                        }
+
+                        // Reset button
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('An error occurred while updating the vault', 'error');
+
+                    // Reset button
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+        }
+
+        function clearFormErrors(form) {
+            form.querySelectorAll('.text-danger, .error-msg, .alert-danger').forEach(function (el) {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
+        }
+
+        function displayFormErrors(form, errors) {
+            Object.keys(errors).forEach(fieldName => {
+                const field = form.querySelector(`[name="${fieldName}"]`);
+                if (field) {
+                    // Remove existing error
+                    const existingError = field.parentNode.querySelector('.text-danger');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+
+                    // Add new error
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'text-danger';
+                    errorDiv.style.color = '#dc3545';
+                    errorDiv.style.fontSize = '12px';
+                    errorDiv.style.marginTop = '5px';
+                    errorDiv.textContent = errors[fieldName];
+
+                    field.parentNode.appendChild(errorDiv);
+                }
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast-notification');
+            const toastMessage = document.getElementById('toast-message');
+
+            if (toast && toastMessage) {
+                toastMessage.textContent = message;
+
+                // Set background color based on type
+                if (type === 'success') {
+                    toast.style.backgroundColor = '#d4edda';
+                    toast.style.borderColor = '#c3e6cb';
+                    toast.style.color = '#155724';
+                } else if (type === 'error') {
+                    toast.style.backgroundColor = '#f8d7da';
+                    toast.style.borderColor = '#f5c6cb';
+                    toast.style.color = '#721c24';
+                }
+
+                // Show toast
+                toast.style.display = 'flex';
+                toast.style.opacity = '1';
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => {
+                        toast.style.display = 'none';
+                    }, 300);
+                }, 3000);
+            }
         }
     </script>
 

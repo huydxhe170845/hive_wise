@@ -40,11 +40,39 @@ function confirmVaultStatusToggle() {
                 currentToggleCheckbox.checked = data.newStatus;
                 statusLabel.textContent = data.statusText;
                 statusLabel.className = `status-label ${data.newStatus ? 'active' : 'inactive'}`;
+
+                // Update View Vault action visibility
+                const vaultRow = currentToggleCheckbox.closest('tr');
+                const viewVaultLink = vaultRow.querySelector('a[title="View Vault"]');
+                if (viewVaultLink) {
+                    if (data.newStatus) {
+                        // Show View Vault action when vault becomes active
+                        viewVaultLink.style.display = 'inline-block';
+                    } else {
+                        // Hide View Vault action when vault becomes inactive
+                        viewVaultLink.style.display = 'none';
+                    }
+                }
+
                 showToast(`Vault status updated to ${data.statusText}`, 'success');
             } else {
                 currentToggleCheckbox.checked = !currentToggleCheckbox.checked;
                 statusLabel.textContent = currentToggleCheckbox.checked ? 'Active' : 'Inactive';
                 statusLabel.className = `status-label ${currentToggleCheckbox.checked ? 'active' : 'inactive'}`;
+
+                // Update View Vault action visibility on API error (revert to original state)
+                const vaultRow = currentToggleCheckbox.closest('tr');
+                const viewVaultLink = vaultRow.querySelector('a[title="View Vault"]');
+                if (viewVaultLink) {
+                    if (currentToggleCheckbox.checked) {
+                        // Show View Vault action when vault is active
+                        viewVaultLink.style.display = 'inline-block';
+                    } else {
+                        // Hide View Vault action when vault is inactive
+                        viewVaultLink.style.display = 'none';
+                    }
+                }
+
                 showToast(data.message || 'Failed to update vault status', 'error');
             }
         })
@@ -52,6 +80,20 @@ function confirmVaultStatusToggle() {
             currentToggleCheckbox.checked = !currentToggleCheckbox.checked;
             statusLabel.textContent = currentToggleCheckbox.checked ? 'Active' : 'Inactive';
             statusLabel.className = `status-label ${currentToggleCheckbox.checked ? 'active' : 'inactive'}`;
+
+            // Update View Vault action visibility on error (revert to original state)
+            const vaultRow = currentToggleCheckbox.closest('tr');
+            const viewVaultLink = vaultRow.querySelector('a[title="View Vault"]');
+            if (viewVaultLink) {
+                if (currentToggleCheckbox.checked) {
+                    // Show View Vault action when vault is active
+                    viewVaultLink.style.display = 'inline-block';
+                } else {
+                    // Hide View Vault action when vault is inactive
+                    viewVaultLink.style.display = 'none';
+                }
+            }
+
             showToast('An error occurred while updating vault status', 'error');
         })
         .finally(() => {
@@ -3140,7 +3182,7 @@ function updateVaultTable(vaults) {
             </td>
             <td>
                 <div class="d-flex align-items-center justify-content-center">
-                    
+                    ${vault.isActivated ? `
                     <a href="/vault-detail?id=${vault.id}&assistant=true" 
                        style="background-color: black; border-radius: 20px; padding: 5px 10px; margin-right: 5px;" 
                        title="View Vault">
@@ -3150,6 +3192,7 @@ function updateVaultTable(vaults) {
                                   d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"></path>
                         </svg>
                     </a>
+                    ` : ''}
                 </div>
             </td>
         `;
@@ -3214,6 +3257,7 @@ function updateMyVaultTable(vaults) {
                                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
                     </button>
+                    ${vault.isActivated ? `
                     <a href="/vault-detail?id=${vault.id}&assistant=true" 
                        style="background-color: black; border-radius: 20px; padding: 5px 10px; margin-right: 5px;" 
                        title="View Vault">
@@ -3223,6 +3267,7 @@ function updateMyVaultTable(vaults) {
                                   d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"></path>
                         </svg>
                     </a>
+                    ` : ''}
                 </div>
             </td>
         `;

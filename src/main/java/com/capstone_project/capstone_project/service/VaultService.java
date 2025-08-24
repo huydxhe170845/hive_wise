@@ -149,11 +149,27 @@ public class VaultService {
         return "/images/vault/" + filename;
     }
 
-    public Vault updateVault(UpdateVaultRequest request, String userId, String vaultId) {
+    public Vault updateVault(UpdateVaultRequest request, String userId, String vaultId, String userRole) {
         Vault vault = vaultRepository.findById(vaultId)
                 .orElseThrow(() -> new RuntimeException("Vault not found"));
-        if (!vault.getCreatedByUserId().equals(userId)) {
+
+        // Check if user is vault owner or admin
+        boolean isVaultOwner = vault.getCreatedByUserId().equals(userId);
+        boolean isAdmin = "ADMIN".equals(userRole);
+
+        if (!isVaultOwner && !isAdmin) {
             throw new RuntimeException("You are not authorized to update this vault");
+        }
+
+        // Check if the new name conflicts with other vaults (excluding current vault)
+        if (!request.getName().equals(vault.getName())) {
+            // Check if vault name already exists for the same user (excluding current
+            // vault)
+            Vault existingVault = vaultRepository.findByNameAndCreatedByUserId(request.getName(),
+                    vault.getCreatedByUserId());
+            if (existingVault != null && !existingVault.getId().equals(vaultId)) {
+                throw new FieldValidationException("name", "Vault with this name already exists in your list");
+            }
         }
 
         if (request.getPhoto() != null && !request.getPhoto().isEmpty()) {

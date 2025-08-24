@@ -143,7 +143,7 @@
                     <ol style="display: flex; flex-direction: row; padding-left: 10px; padding-top: 10px;">
                         <li>
                             <span>
-                                <a href="http://localhost:8080/vault-management">
+                                <a th:if="${user.systemRoleName == 'ADMIN'}" href="/dashboard#vault-management">
                                     <span role="img" aria-label="home">
                                         <svg viewBox="64 64 896 896" focusable="false" data-icon="home" width="15px"
                                             height="15px" aria-hidden="true" class="icon-home">
@@ -151,7 +151,17 @@
                                                 d="M946.5 505L560.1 118.8l-25.9-25.9a31.5 31.5 0 00-44.4 0L77.5 505a63.9 63.9 0 00-18.8 46c.4 35.2 29.7 63.3 64.9 63.3h42.5V940h691.8V614.3h43.4c17.1 0 33.2-6.7 45.3-18.8a63.6 63.6 0 0018.7-45.3c0-17-6.7-33.1-18.8-45.2zM568 868H456V664h112v204zm217.9-325.7V868H632V640c0-22.1-17.9-40-40-40H432c-22.1 0-40 17.9-40 40v228H238.1V542.3h-96l370-369.7 23.1 23.1L882 542.3h-96.1z">
                                             </path>
                                         </svg>
-                                    </span> Vault management
+                                    </span> Vault List
+                                </a>
+                                <a th:unless="${user.systemRoleName == 'ADMIN'}" href="/vault-management">
+                                    <span role="img" aria-label="home">
+                                        <svg viewBox="64 64 896 896" focusable="false" data-icon="home" width="15px"
+                                            height="15px" aria-hidden="true" class="icon-home">
+                                            <path
+                                                d="M946.5 505L560.1 118.8l-25.9-25.9a31.5 31.5 0 00-44.4 0L77.5 505a63.9 63.9 0 00-18.8 46c.4 35.2 29.7 63.3 64.9 63.3h42.5V940h691.8V614.3h43.4c17.1 0 33.2-6.7 45.3-18.8a63.6 63.6 0 0018.7-45.3c0-17-6.7-33.1-18.8-45.2zM568 868H456V664h112v204zm217.9-325.7V868H632V640c0-22.1-17.9-40-40-40H432c-22.1 0-40 17.9-40 40v228H238.1V542.3h-96l370-369.7 23.1 23.1L882 542.3h-96.1z">
+                                            </path>
+                                        </svg>
+                                    </span> Vault Management
                                 </a>
                             </span>
                             <span style="color: #9b9b9b;">/</span>
@@ -177,7 +187,24 @@
                             (<span id="visibleCount" th:text="${#lists.size(members)}"></span> of <span id="totalCount"
                                 th:text="${#lists.size(members)}"></span>)
                         </span>
+                        <span th:if="${isAdmin}"
+                            style="font-size: 12px; background-color: #007bff; color: white; padding: 4px 8px; border-radius: 12px; margin-left: 10px;">
+                            Admin Access
+                        </span>
                     </h2>
+
+                    <!-- Admin notification -->
+                    <div th:if="${isAdmin}"
+                        style="margin: 0 20px 20px 20px; padding: 12px 16px; background-color: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; color: #1976d2; font-size: 14px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                            <strong>Admin Access:</strong> You are managing this vault with administrative privileges.
+                            You can add, remove, and modify member roles.
+                        </div>
+                    </div>
 
                     <div class="list-member-container" style=" align-items: center;">
 
@@ -203,8 +230,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <div class="add-member-btn custom-tooltip" id="addMember"
-                                th:if="${userVaultRoleService.isVaultOwner(user.id, vaultId)}">
+                            <div class="add-member-btn custom-tooltip" id="addMember" th:if="${canManageMembers}">
                                 <svg width="20" height="20" aria-hidden="true" focusable="false" role="img"
                                     viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path
@@ -216,14 +242,14 @@
                         </div>
 
                         <table class="member-table">
-                            <colgroup th:if="${userVaultRoleService.isVaultOwner(user.id, vaultId)}">
+                            <colgroup th:if="${canManageMembers}">
                                 <col style="width: 30%;">
                                 <col style="width: 25%;">
                                 <col style="width: 20%;">
                                 <col style="width: 15%;">
                                 <col style="width: 10%;">
                             </colgroup>
-                            <colgroup th:unless="${userVaultRoleService.isVaultOwner(user.id, vaultId)}">
+                            <colgroup th:unless="${canManageMembers}">
                                 <col style="width: 33.33%;">
                                 <col style="width: 33.33%;">
                                 <col style="width: 33.33%;">
@@ -234,10 +260,9 @@
                                     <th>Username</th>
                                     <th>Email</th>
                                     <th>
-                                        <span
-                                            th:style="${userVaultRoleService.isVaultOwner(user.id, vaultId)} ? 'margin-left: 95px;' : ''">Role</span>
+                                        <span th:style="${canManageMembers} ? 'margin-left: 95px;' : ''">Role</span>
                                     </th>
-                                    <th th:if="${userVaultRoleService.isVaultOwner(user.id, vaultId)}">
+                                    <th th:if="${canManageMembers}">
                                         <span style="margin-left: 40px;">Action</span>
                                     </th>
                                 </tr>
@@ -260,12 +285,13 @@
                                     <td th:text="${member.userName}">username</td>
                                     <td th:text="${member.email}">email</td>
                                     <td>
-                                        <!-- Role dropdown for non-owner members when user is owner -->
+                                        <!-- Role dropdown for non-owner members when user can manage -->
                                         <div class="role-dropdown-container"
-                                            th:if="${userVaultRoleService.isVaultOwner(user.id, vaultId) and member.vaultRoleName != 'VAULT_OWNER'}">
+                                            th:if="${canManageMembers and member.vaultRoleName != 'VAULT_OWNER'}">
                                             <div class="role-dropdown" th:data-user-id="${member.userId}"
                                                 th:data-current-role="${member.vaultRoleName}">
-                                                <span class="role-display" th:text="${T(com.capstone_project.capstone_project.util.RoleFormatter).formatRoleName(member.vaultRoleName)}">role</span>
+                                                <span class="role-display"
+                                                    th:text="${T(com.capstone_project.capstone_project.util.RoleFormatter).formatRoleName(member.vaultRoleName)}">role</span>
                                                 <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24"
                                                     fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2"
@@ -274,19 +300,19 @@
                                                 <div class="role-dropdown-menu">
                                                     <div th:each="role : ${allVaultRoles}" class="role-option"
                                                         th:if="${role.name != 'VAULT_OWNER'}"
-                                                        th:data-role="${role.name}" th:text="${T(com.capstone_project.capstone_project.util.RoleFormatter).formatRoleName(role.name)}"
+                                                        th:data-role="${role.name}"
+                                                        th:text="${T(com.capstone_project.capstone_project.util.RoleFormatter).formatRoleName(role.name)}"
                                                         th:classappend="${role.name == member.vaultRoleName} ? 'selected' : ''">
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <!-- Static role display for other cases -->
-                                        <span
-                                            th:if="${member.vaultRoleName == 'VAULT_OWNER' or !userVaultRoleService.isVaultOwner(user.id, vaultId)}"
+                                        <span th:if="${member.vaultRoleName == 'VAULT_OWNER' or !canManageMembers}"
                                             th:text="${T(com.capstone_project.capstone_project.util.RoleFormatter).formatRoleName(member.vaultRoleName)}"
-                                            th:style="${member.vaultRoleName == 'VAULT_OWNER' and userVaultRoleService.isVaultOwner(user.id, vaultId)} ? 'margin-left: 65px;' : ''">role</span>
+                                            th:style="${member.vaultRoleName == 'VAULT_OWNER' and canManageMembers} ? 'margin-left: 65px;' : ''">role</span>
                                     </td>
-                                    <td th:if="${userVaultRoleService.isVaultOwner(user.id, vaultId)}">
+                                    <td th:if="${canManageMembers}">
                                         <div class="delete-member-container"
                                             th:if="${member.vaultRoleName != 'VAULT_OWNER'}">
                                             <a class="delete-member-btn custom-tooltip" style="margin-left: 55px;"

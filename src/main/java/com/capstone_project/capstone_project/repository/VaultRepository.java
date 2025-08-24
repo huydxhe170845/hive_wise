@@ -13,6 +13,8 @@ public interface VaultRepository extends JpaRepository<Vault, String> {
 
     boolean existsByNameAndCreatedByUserId(String name, String createdByUserId);
 
+    Vault findByNameAndCreatedByUserId(String name, String createdByUserId);
+
     long countByIsActivated(boolean isActivated);
 
     List<Vault> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);

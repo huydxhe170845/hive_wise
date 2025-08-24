@@ -317,27 +317,67 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener('DOMContentLoaded', function () {
     const addVaultBtn = document.querySelector('.add-vault-btn');
-    const vaultListContent = document.getElementById('vault-list-content');
-    const addVaultFormContent = document.getElementById('add-vault-form-content');
     const cancelAddVaultBtn = document.getElementById('cancel-add-vault');
     const backToListBtn = document.getElementById('back-to-list-btn');
 
     if (addVaultBtn) {
         addVaultBtn.addEventListener('click', function () {
-            vaultListContent.classList.add('hidden');
-            addVaultFormContent.classList.remove('hidden');
+            // Clear any existing form data when starting fresh
+            clearFormData();
+
+            // Reset form
+            const addVaultForm = document.getElementById('add-vault-form');
+            if (addVaultForm) {
+                addVaultForm.reset();
+
+                // Reset photo preview
+                const photoPreview = document.getElementById('photoPreview');
+                if (photoPreview) {
+                    photoPreview.src = '/images/vault/vault_df.webp';
+                }
+            }
+
+            showAddVaultForm();
         });
     }
     if (cancelAddVaultBtn) {
         cancelAddVaultBtn.addEventListener('click', function () {
-            addVaultFormContent.classList.add('hidden');
-            vaultListContent.classList.remove('hidden');
+            // Clear saved form data
+            clearFormData();
+
+            // Reset form
+            const addVaultForm = document.getElementById('add-vault-form');
+            if (addVaultForm) {
+                addVaultForm.reset();
+
+                // Reset photo preview
+                const photoPreview = document.getElementById('photoPreview');
+                if (photoPreview) {
+                    photoPreview.src = '/images/vault/vault_df.webp';
+                }
+            }
+
+            hideAddVaultForm();
         });
     }
     if (backToListBtn) {
         backToListBtn.addEventListener('click', function () {
-            addVaultFormContent.classList.add('hidden');
-            vaultListContent.classList.remove('hidden');
+            // Clear saved form data
+            clearFormData();
+
+            // Reset form
+            const addVaultForm = document.getElementById('add-vault-form');
+            if (addVaultForm) {
+                addVaultForm.reset();
+
+                // Reset photo preview
+                const photoPreview = document.getElementById('photoPreview');
+                if (photoPreview) {
+                    photoPreview.src = '/images/vault/vault_df.webp';
+                }
+            }
+
+            hideAddVaultForm();
         });
     }
 });
@@ -1225,6 +1265,17 @@ const VaultManager = {
 
             if (loader && mainContent && loader.style.display === 'none' && mainContent.style.display === 'flex') {
                 clearInterval(checkLoaderInterval);
+
+                // Hide pagination if form is showing
+                const shouldShowAddVaultForm = sessionStorage.getItem('showAddVaultForm') === 'true';
+                if (shouldShowAddVaultForm) {
+                    const paginationContainer = document.getElementById('vault-pagination');
+                    if (paginationContainer) {
+                        paginationContainer.style.display = 'none';
+                    }
+                    return;
+                }
+
                 // Perform initial search to set up pagination
                 this.performSearch();
 
@@ -1236,6 +1287,12 @@ const VaultManager = {
                         this.isInInitialDelay = false;
                         this.updatePaginationDisplay();
                     }, 1000);
+                }
+            } else {
+                // If loader is still showing, hide pagination
+                const paginationContainer = document.getElementById('vault-pagination');
+                if (paginationContainer) {
+                    paginationContainer.style.display = 'none';
                 }
             }
         }, 100);
@@ -1287,14 +1344,29 @@ const VaultManager = {
 
     // Initialize pagination
     initPagination() {
-        this.createPaginationContainer();
-        this.updatePaginationDisplay();
+        // Don't create pagination if form is showing
+        const shouldShowAddVaultForm = sessionStorage.getItem('showAddVaultForm') === 'true';
+        if (!shouldShowAddVaultForm) {
+            this.createPaginationContainer();
+            this.updatePaginationDisplay();
+        }
     },
 
     // Create pagination container
     createPaginationContainer() {
         // Check if pagination already exists
         if (document.getElementById('vault-pagination')) return;
+
+        // Check if loader is currently showing
+        const loader = document.getElementById('loader');
+        const mainContent = document.getElementById('main-content');
+        const isLoaderShowing = loader && loader.style.display === 'flex';
+        const isMainContentHidden = mainContent && mainContent.style.display === 'none';
+
+        // Don't create pagination if loader is showing or main content is hidden
+        if (isLoaderShowing || isMainContentHidden) {
+            return;
+        }
 
         const paginationContainer = document.createElement('div');
         paginationContainer.id = 'vault-pagination';
@@ -1561,8 +1633,11 @@ const VaultManager = {
         const isLoaderShowing = loader && loader.style.display === 'flex';
         const isMainContentHidden = mainContent && mainContent.style.display === 'none';
 
-        // Don't show pagination if loader is showing or main content is hidden
-        if (isLoaderShowing || isMainContentHidden) {
+        // Check if add vault form is currently showing
+        const isAddVaultFormShowing = sessionStorage.getItem('showAddVaultForm') === 'true';
+
+        // Don't show pagination if loader is showing, main content is hidden, or add vault form is showing
+        if (isLoaderShowing || isMainContentHidden || isAddVaultFormShowing) {
             paginationContainer.style.display = 'none';
             return;
         }
@@ -1582,9 +1657,28 @@ const VaultManager = {
         if (endElement) endElement.textContent = endIndex;
         if (totalElement) totalElement.textContent = totalVaults;
 
+        // Hide pagination info if only 1 page
+        const paginationInfo = document.querySelector('.pagination-info');
+        if (paginationInfo) {
+            if (this.totalPages <= 1) {
+                paginationInfo.style.display = 'none';
+            } else {
+                paginationInfo.style.display = 'block';
+            }
+        }
+
         // Update pagination buttons
         const prevBtn = document.getElementById('pagination-prev');
         const nextBtn = document.getElementById('pagination-next');
+        const paginationControls = document.querySelector('.pagination-controls');
+
+        if (paginationControls) {
+            if (this.totalPages <= 1) {
+                paginationControls.style.display = 'none';
+            } else {
+                paginationControls.style.display = 'flex';
+            }
+        }
 
         if (prevBtn) {
             prevBtn.disabled = this.currentPage <= 1;
@@ -1599,15 +1693,15 @@ const VaultManager = {
         // Update page numbers
         this.updatePageNumbers();
 
-        // Show pagination if there are vaults to display (even if only 1 page)
-        // Only show if not in initial delay period
-        if (this.visibleVaults.length > 0 && !this.isInInitialDelay) {
+        // Show pagination only if there are multiple pages (more than 1 page)
+        // Only show if not in initial delay period and add vault form is not showing
+        if (this.totalPages > 1 && !this.isInInitialDelay && !isAddVaultFormShowing) {
             paginationContainer.style.display = 'flex';
         } else {
             paginationContainer.style.display = 'none';
         }
 
-        console.log(`Pagination display: ${paginationContainer.style.display}, Visible vaults: ${this.visibleVaults.length}, In delay: ${this.isInInitialDelay}`);
+        console.log(`Pagination display: ${paginationContainer.style.display}, Visible vaults: ${this.visibleVaults.length}, In delay: ${this.isInInitialDelay}, Form showing: ${isAddVaultFormShowing}`);
     },
 
     // Update page numbers
@@ -1617,7 +1711,10 @@ const VaultManager = {
 
         numbersContainer.innerHTML = '';
 
-        if (this.totalPages <= 1) return;
+        // Don't show pagination numbers if only 1 page or less
+        if (this.totalPages <= 1) {
+            return;
+        }
 
         const maxVisiblePages = 5;
         let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
@@ -1731,7 +1828,37 @@ const VaultManager = {
 // Initialize vault manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', function () {
     VaultManager.init();
+
+    // Force hide pagination if form is showing on page load
+    const shouldShowAddVaultForm = sessionStorage.getItem('showAddVaultForm') === 'true';
+    if (shouldShowAddVaultForm) {
+        setTimeout(() => {
+            const pagination = document.getElementById('vault-pagination');
+            if (pagination) {
+                pagination.style.display = 'none';
+            }
+        }, 300);
+    }
+
+    // Check and hide pagination if loader is showing
+    checkAndHidePaginationForLoader();
 });
+
+// Function to check and hide pagination when loader is showing
+function checkAndHidePaginationForLoader() {
+    const loader = document.getElementById('loader');
+    const mainContent = document.getElementById('main-content');
+    const pagination = document.getElementById('vault-pagination');
+
+    if (loader && mainContent && pagination) {
+        const isLoaderShowing = loader.style.display === 'flex';
+        const isMainContentHidden = mainContent.style.display === 'none';
+
+        if (isLoaderShowing || isMainContentHidden) {
+            pagination.style.display = 'none';
+        }
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     const saveProfileBtn = document.getElementById('save-profile-btn');
@@ -1779,6 +1906,12 @@ document.addEventListener('DOMContentLoaded', function () {
         myVaultsLink.addEventListener('click', function (e) {
             e.preventDefault();
             updateSidebarActiveState('my-vaults');
+            // Clear form state when navigating
+            clearFormData();
+            sessionStorage.removeItem('showAddVaultForm');
+            hideAddVaultForm();
+            // Ensure elements are shown
+            showVaultListElements();
             // Keep search term, reset to default filter for my-vaults tab
             VaultManager.currentTab = 'my-vaults';
             VaultManager.currentPage = 1; // Reset to first page
@@ -1791,6 +1924,12 @@ document.addEventListener('DOMContentLoaded', function () {
         trashLink.addEventListener('click', function (e) {
             e.preventDefault();
             updateSidebarActiveState('trash');
+            // Clear form state when navigating
+            clearFormData();
+            sessionStorage.removeItem('showAddVaultForm');
+            hideAddVaultForm();
+            // Ensure elements are shown
+            showVaultListElements();
             // Keep search term, just update tab and filter
             VaultManager.currentTab = 'trash';
             VaultManager.currentPage = 1; // Reset to first page
@@ -1897,6 +2036,13 @@ function initializeFilterTabs() {
 
             // Add active class to clicked link
             this.classList.add('navbar-filter-active');
+
+            // Clear form state when filtering
+            clearFormData();
+            sessionStorage.removeItem('showAddVaultForm');
+            hideAddVaultForm();
+            // Ensure elements are shown
+            showVaultListElements();
 
             // Get filter value and apply using VaultManager (keep search term)
             const filterValue = this.getAttribute('data-filter');
@@ -2046,6 +2192,683 @@ document.addEventListener('click', function (event) {
         hideDeleteNowConfirm();
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+// ---------------------------------Photo Preview Function-------------------------------------
+
+function previewVaultPhoto(input) {
+    const file = input.files[0];
+    const preview = document.getElementById('photoPreview');
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeVaultPhoto() {
+    const input = document.getElementById('vaultPhoto');
+    const preview = document.getElementById('photoPreview');
+
+    if (input) {
+        input.value = '';
+    }
+    if (preview) {
+        preview.src = '/images/vault/vault_df.webp';
+    }
+}
+
+// ---------------------------------AJAX Vault Creation-------------------------------------
+
+// This function is now handled by initializeAddVaultForm()
+
+function saveFormData(form) {
+    const formData = new FormData(form);
+    const data = {};
+
+    for (let [key, value] of formData.entries()) {
+        if (key !== 'photo') { // Don't save file input
+            data[key] = value;
+        }
+    }
+
+    sessionStorage.setItem('addVaultFormData', JSON.stringify(data));
+}
+
+function restoreFormData(form) {
+    const savedData = sessionStorage.getItem('addVaultFormData');
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            Object.keys(data).forEach(key => {
+                const field = form.querySelector(`[name="${key}"]`);
+                if (field && field.type !== 'file') {
+                    field.value = data[key];
+                }
+            });
+        } catch (e) {
+            console.error('Error restoring form data:', e);
+        }
+    }
+}
+
+function clearFormData() {
+    sessionStorage.removeItem('addVaultFormData');
+}
+
+function handleAddVaultAjax(form) {
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = `
+        <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+                <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+            </svg>
+        <span>Creating...</span>
+    `;
+    submitBtn.disabled = true;
+
+    // Clear previous errors
+    clearFormErrors(form);
+
+    const formData = new FormData(form);
+
+    fetch('/vault-management/add-vault-ajax', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => {
+            // Always try to parse JSON response first
+            return response.json().then(data => {
+                console.log('Raw response data:', data);
+                if (!response.ok) {
+                    // If response is not ok, throw the parsed data
+                    throw new Error(JSON.stringify(data));
+                }
+                return data;
+            });
+        })
+        .then(data => {
+            console.log('Processing response data:', data);
+            if (data.success) {
+                // Show success message
+                showToast(data.message, 'success');
+
+                // Reset form
+                form.reset();
+
+                // Clear saved form data
+                clearFormData();
+
+                // Reset photo preview
+                const photoPreview = document.getElementById('photoPreview');
+                if (photoPreview) {
+                    photoPreview.src = '/images/vault/vault_df.webp';
+                }
+
+                // Switch back to vault list view with smooth transition
+                const vaultListContent = document.getElementById('vault-list-content');
+                const addVaultFormContent = document.getElementById('add-vault-form-content');
+
+                if (vaultListContent && addVaultFormContent) {
+                    // Add transition classes
+                    addVaultFormContent.style.opacity = '0';
+                    addVaultFormContent.style.transform = 'translateY(10px)';
+
+                    setTimeout(() => {
+                        hideAddVaultForm();
+
+                        // Trigger reflow
+                        vaultListContent.offsetHeight;
+
+                        vaultListContent.style.opacity = '1';
+                        vaultListContent.style.transform = 'translateY(0)';
+
+                        // Ensure elements are shown
+                        showVaultListElements();
+
+                        // Clear form state
+                        sessionStorage.removeItem('showAddVaultForm');
+                        sessionStorage.removeItem('addVaultFormData');
+
+                        // Show loading spinner and refresh vault list via AJAX
+                        refreshVaultListAfterCreation();
+                    }, 300);
+                }
+            } else {
+                console.log('Response indicates failure:', data);
+                console.log('Errors in response:', data.errors);
+
+                // Display field errors if any
+                if (data.errors && Object.keys(data.errors).length > 0) {
+                    console.log('Displaying field errors:', data.errors);
+                    displayFormErrors(form, data.errors);
+                    // Don't show toast for field errors
+                } else {
+                    // Show error message only if no field errors
+                    showToast(data.message, 'error');
+                }
+
+                // Keep user on the form and ensure form state is saved
+                sessionStorage.setItem('showAddVaultForm', 'true');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+
+            // Try to parse error data for validation errors
+            try {
+                const errorData = JSON.parse(error.message);
+                console.log('Parsed error data:', errorData);
+
+                if (errorData.errors && Object.keys(errorData.errors).length > 0) {
+                    // Display field-specific errors
+                    displayFormErrors(form, errorData.errors);
+                    // Don't show toast for field errors, let the field errors speak for themselves
+                } else if (errorData.message) {
+                    // Show specific error message
+                    showToast(errorData.message, 'error');
+                } else {
+                    showToast('An error occurred while creating the vault. Please try again.', 'error');
+                }
+            } catch (parseError) {
+                console.error('Failed to parse error:', parseError);
+                showToast('An error occurred while creating the vault. Please try again.', 'error');
+            }
+
+            // Keep user on the form and ensure form state is saved
+            sessionStorage.setItem('showAddVaultForm', 'true');
+        })
+        .finally(() => {
+            // Restore button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+}
+
+function clearFormErrors(form) {
+    // Remove error styling from inputs
+    form.querySelectorAll('.input-error').forEach(input => {
+        input.classList.remove('input-error');
+    });
+
+    // Remove error messages
+    form.querySelectorAll('.text-danger').forEach(error => {
+        error.textContent = '';
+        error.style.display = 'none';
+    });
+}
+
+function displayFormErrors(form, errors) {
+    console.log('Displaying form errors:', errors);
+
+    Object.keys(errors).forEach(fieldName => {
+        console.log('Processing error for field:', fieldName);
+
+        // Try different selectors to find the field
+        let field = form.querySelector(`[name="${fieldName}"]`);
+        if (!field) {
+            field = form.querySelector(`#${fieldName}`);
+        }
+        if (!field) {
+            field = form.querySelector(`[id*="${fieldName}"]`);
+        }
+        if (!field) {
+            // Try to find by common field names
+            if (fieldName === 'name') {
+                field = form.querySelector('#vaultName');
+            }
+        }
+
+        if (field) {
+            console.log('Found field:', field);
+
+            // Add error styling
+            field.classList.add('input-error');
+
+            // Find existing error element in the form group
+            const formGroup = field.closest('.form-group');
+            let errorElement = null;
+
+            if (formGroup) {
+                errorElement = formGroup.querySelector('.text-danger');
+            }
+
+            if (!errorElement) {
+                // Create new error element
+                errorElement = document.createElement('div');
+                errorElement.className = 'text-danger';
+                errorElement.style.cssText = 'margin-bottom: -15px; margin-top: 0px;';
+
+                // Insert after the input wrapper
+                const inputWrapper = field.closest('.input-vaultname-wrapper');
+                if (inputWrapper) {
+                    inputWrapper.appendChild(errorElement);
+                } else {
+                    field.parentNode.appendChild(errorElement);
+                }
+            }
+
+            // Display error message
+            errorElement.textContent = errors[fieldName];
+            errorElement.style.display = 'block';
+
+            console.log('Error displayed for field:', fieldName, 'Message:', errors[fieldName]);
+        } else {
+            console.log('Field not found:', fieldName);
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// ---------------------------------Form State Management-------------------------------------
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Check if we should show the add vault form based on sessionStorage
+    const shouldShowAddVaultForm = sessionStorage.getItem('showAddVaultForm') === 'true';
+
+    if (shouldShowAddVaultForm) {
+        // Delay a bit to ensure DOM is fully loaded
+        setTimeout(() => {
+            showAddVaultFormOnLoad();
+        }, 100);
+    } else {
+        // If form is not showing, ensure elements are visible
+        setTimeout(() => {
+            showVaultListElements();
+        }, 100);
+    }
+
+    // Initialize form event listeners
+    initializeAddVaultForm();
+
+    // Force hide pagination if form is showing on page load
+    if (shouldShowAddVaultForm) {
+        setTimeout(() => {
+            const pagination = document.getElementById('vault-pagination');
+            if (pagination) {
+                pagination.style.display = 'none';
+            }
+        }, 200);
+    }
+});
+
+function showAddVaultForm() {
+    const vaultListContent = document.getElementById('vault-list-content');
+    const addVaultFormContent = document.getElementById('add-vault-form-content');
+
+    if (vaultListContent && addVaultFormContent) {
+        vaultListContent.classList.add('hidden');
+        addVaultFormContent.classList.remove('hidden');
+
+        // Hide elements when showing form
+        hideVaultListElements();
+
+        // Save state to sessionStorage
+        sessionStorage.setItem('showAddVaultForm', 'true');
+    }
+}
+
+function showAddVaultFormOnLoad() {
+    const vaultListContent = document.getElementById('vault-list-content');
+    const addVaultFormContent = document.getElementById('add-vault-form-content');
+
+    if (vaultListContent && addVaultFormContent) {
+        vaultListContent.classList.add('hidden');
+        addVaultFormContent.classList.remove('hidden');
+
+        // Hide elements immediately when loading from sessionStorage
+        hideVaultListElementsImmediately();
+
+        // Force hide pagination immediately
+        const pagination = document.getElementById('vault-pagination');
+        if (pagination) {
+            pagination.style.display = 'none';
+        }
+
+        // Save state to sessionStorage
+        sessionStorage.setItem('showAddVaultForm', 'true');
+    }
+}
+
+function hideVaultListElementsImmediately() {
+    // Hide pagination immediately
+    const pagination = document.getElementById('vault-pagination');
+    if (pagination) {
+        pagination.style.display = 'none';
+    }
+
+    // Hide filter tabs immediately
+    const filterTabs = document.querySelector('.navbar-filter-tabs');
+    if (filterTabs) {
+        filterTabs.style.display = 'none';
+    }
+
+    // Hide search input immediately
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+        searchContainer.style.display = 'none';
+    }
+}
+
+function hideAddVaultForm() {
+    const vaultListContent = document.getElementById('vault-list-content');
+    const addVaultFormContent = document.getElementById('add-vault-form-content');
+
+    if (vaultListContent && addVaultFormContent) {
+        addVaultFormContent.classList.add('hidden');
+        vaultListContent.classList.remove('hidden');
+
+        // Show elements when hiding form
+        showVaultListElements();
+
+        // Clear state from sessionStorage
+        sessionStorage.removeItem('showAddVaultForm');
+    }
+}
+
+function hideVaultListElements() {
+    // Hide pagination with smooth transition
+    const pagination = document.getElementById('vault-pagination');
+    if (pagination) {
+        pagination.style.opacity = '0';
+        pagination.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            pagination.style.display = 'none';
+        }, 300);
+    }
+
+    // Hide filter tabs with smooth transition
+    const filterTabs = document.querySelector('.navbar-filter-tabs');
+    if (filterTabs) {
+        filterTabs.style.opacity = '0';
+        filterTabs.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            filterTabs.style.display = 'none';
+        }, 300);
+    }
+
+    // Hide search input with smooth transition
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+        searchContainer.style.opacity = '0';
+        searchContainer.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            searchContainer.style.display = 'none';
+        }, 300);
+    }
+}
+
+function showVaultListElements() {
+    // Show pagination with smooth transition
+    const pagination = document.getElementById('vault-pagination');
+    if (pagination) {
+        pagination.style.display = 'flex';
+        // Trigger reflow
+        pagination.offsetHeight;
+        pagination.style.opacity = '1';
+        pagination.style.transform = 'translateY(0)';
+    }
+
+    // Show filter tabs with smooth transition
+    const filterTabs = document.querySelector('.navbar-filter-tabs');
+    if (filterTabs) {
+        filterTabs.style.display = 'flex';
+        // Trigger reflow
+        filterTabs.offsetHeight;
+        filterTabs.style.opacity = '1';
+        filterTabs.style.transform = 'translateY(0)';
+    }
+
+    // Show search input with smooth transition
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+        searchContainer.style.display = 'flex';
+        // Trigger reflow
+        searchContainer.offsetHeight;
+        searchContainer.style.opacity = '1';
+        searchContainer.style.transform = 'translateY(0)';
+    }
+}
+
+function initializeAddVaultForm() {
+    const addVaultForm = document.getElementById('add-vault-form');
+    if (addVaultForm) {
+        addVaultForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            handleAddVaultAjax(this);
+        });
+
+        // Save form data to sessionStorage when user types
+        const formInputs = addVaultForm.querySelectorAll('input, textarea');
+        formInputs.forEach(input => {
+            input.addEventListener('input', function () {
+                saveFormData(addVaultForm);
+            });
+        });
+
+        // Restore form data if exists
+        restoreFormData(addVaultForm);
+    }
+}
+
+function refreshVaultListAfterCreation() {
+    // Show loading spinner
+    const vaultLoading = document.getElementById('vault-loading');
+    if (vaultLoading) {
+        vaultLoading.style.display = 'flex';
+    }
+
+    // Fetch the newly created vault data
+    fetch('/vault-management/get-latest-vault', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Add the new vault to the existing list
+                addNewVaultToExistingList(data.vault);
+
+                // Re-initialize VaultManager to update pagination and filters
+                if (typeof VaultManager !== 'undefined') {
+                    VaultManager.performSearch();
+                }
+            } else {
+                throw new Error(data.message || 'Failed to get new vault data');
+            }
+        })
+        .catch(error => {
+            console.error('Error getting new vault data:', error);
+            showToast('Failed to update vault list. Please refresh the page manually.', 'error');
+        })
+        .finally(() => {
+            // Hide loading spinner
+            if (vaultLoading) {
+                vaultLoading.style.display = 'none';
+            }
+        });
+}
+
+function addNewVaultToExistingList(vaultData) {
+    const vaultListContainer = document.querySelector('.content-card-list');
+    if (!vaultListContainer) return;
+
+    // Create new vault card
+    const newVaultCard = createVaultCardFromData(vaultData);
+
+    // Add the new card to the container
+    vaultListContainer.appendChild(newVaultCard);
+
+    // Add event listeners to the new card
+    addEventListenersToVaultCard(newVaultCard);
+
+    // Show success message
+    showToast('Vault created successfully!', 'success');
+}
+
+function addEventListenersToVaultCard(vaultCard) {
+    // Add meatball menu functionality
+    const meatballMenuBtn = vaultCard.querySelector('.meatball-menu-btn');
+    if (meatballMenuBtn) {
+        meatballMenuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const vaultId = this.getAttribute('data-vault-id');
+            toggleVaultMenu(vaultId);
+        });
+    }
+
+    // Add delete item functionality
+    const deleteItem = vaultCard.querySelector('.delete-item');
+    if (deleteItem) {
+        deleteItem.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const vaultId = this.getAttribute('data-vault-id');
+            const vaultName = this.getAttribute('data-vault-name');
+            showDeleteNowConfirm(vaultId, vaultName);
+        });
+    }
+}
+
+function createVaultCardFromData(vaultData) {
+    const card = document.createElement('div');
+    card.className = 'card-vault';
+    card.setAttribute('data-status', vaultData.isActivated ? 'active' : 'inactive');
+    card.setAttribute('data-vault-id', vaultData.id);
+
+    // Determine status class
+    if (!vaultData.isActivated) {
+        card.classList.add('vault-inactive');
+    }
+
+    // Create card HTML using the exact same structure as existing cards
+    card.innerHTML = `
+        ${!vaultData.isActivated ? '<div class="inactive-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 10; border-radius: 8px; pointer-events: none;"></div>' : ''}
+        
+        <div class="card-vault-header" style="display: flex; align-items: center; gap: 12px; position: relative; z-index: 2;">
+            <div class="vault-picture">
+                <img src="${vaultData.photoUrl || '/images/vault/vault_df.webp'}" alt="vault picture" style="object-fit: cover; width: 100%; height: 100%;">
+            </div>
+            <div class="vault-header-info" style="flex: 1; min-width: 0;">
+                <a class="vault-name" href="/vault-detail?id=${vaultData.id}&assistant=true" style="text-decoration: none;">${vaultData.name}</a>
+                <div class="vault-owner" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${vaultData.ownerEmail}">
+                    Vault owner: <span style="white-space: nowrap;">${vaultData.ownerEmail}</span>
+                </div>
+            </div>
+
+            ${vaultData.isActivated ? `
+                <a type="submit" class="edit-vault-btn" href="/vault-management/edit-vault/general?id=${vaultData.id}" style="background: none; border: none; padding: 0; margin: 0; cursor: pointer; position: relative; z-index: 3;">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24">
+                        <path stroke="#555555" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+                    </svg>
+                </a>
+            ` : `
+                <div class="vault-actions-menu" style="position: relative; z-index: 3;">
+                    <button class="meatball-menu-btn" data-vault-id="${vaultData.id}" style="background: none; border: none; padding: 4px; cursor: pointer; border-radius: 4px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="5" r="2" fill="#555555" />
+                            <circle cx="12" cy="12" r="2" fill="#555555" />
+                            <circle cx="12" cy="19" r="2" fill="#555555" />
+                        </svg>
+                    </button>
+                    <div id="vault-menu-${vaultData.id}" class="vault-menu-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e1e5e9; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 150px; z-index: 1000;">
+                        <button class="vault-menu-item delete-item" data-vault-id="${vaultData.id}" data-vault-name="${vaultData.name}" style="width: 100%; padding: 12px 16px; border: none; background: none; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #dc3545; font-size: 14px; border-radius: 6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `}
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-vault-body">
+            <div class="vault-info">
+                <img src="/images/icon/Chart_pin_light.svg" alt="icon status">
+                <span>Status:</span>
+                <span class="${vaultData.isActivated ? 'status-active' : 'status-inactive'}">${vaultData.isActivated ? 'Active' : 'Inactive'}</span>
+            </div>
+            <div class="vault-info">
+                <img src="/images/icon/Group_duotone_line.svg" alt="icon members">
+                <span>Total members:</span>
+                <span class="number-in-card">${vaultData.memberCount || 0}</span>
+            </div>
+            <div class="vault-info">
+                <img src="/images/icon/Chemistry _light.svg" alt="icon knowledge">
+                <span>Total knowledge articles:</span>
+                <span class="number-in-card">${vaultData.documentCount || 0}</span>
+            </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="create-date">
+            <img src="/images/icon/Time_duotone_line.svg" alt="icon knowledge">
+            <span>Created on</span>
+            <span>${formatDate(vaultData.createdAt)}</span>
+        </div>
+    `;
+
+    return card;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '--';
+
+    try {
+        const date = new Date(dateString);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = date.toLocaleDateString('en-US', { month: 'short' });
+        const year = date.getFullYear().toString().slice(-2);
+        const hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = (hours % 12 || 12).toString().padStart(2, '0');
+
+        return `${day}/${month}/${year} ${displayHours}:${minutes} ${ampm}`;
+    } catch (e) {
+        return '--';
+    }
+}
+
+// Function removed since we're using page reload instead of AJAX update
+
+// Functions removed since we're using page reload instead of AJAX update
 
 
 

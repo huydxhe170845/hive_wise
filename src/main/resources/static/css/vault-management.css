@@ -3177,7 +3177,7 @@ button.disabled-btn {
     border-radius: 12px;
     width: auto;
     min-width: 300px;
-    z-index: 1000;
+    z-index: 100; /* Lower z-index than loader */
 }
 
 .pagination-info {
@@ -3313,4 +3313,69 @@ button.disabled-btn {
     .pagination-text {
         font-size: 12px;
     }
+}
+
+/* Loading Animation */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Form Error Styling */
+.input-error {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.text-danger {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
+/* Button Loading State */
+.modal-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.modal-btn:disabled:hover {
+    transform: none;
+    background-color: inherit;
+}
+
+/* Smooth transitions for form switching */
+.content-card-list,
+.content-add-vault {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.content-card-list.hidden,
+.content-add-vault.hidden {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+/* Smooth transitions for navbar elements */
+.navbar-filter-tabs,
+.search-container,
+#vault-pagination {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.navbar-filter-tabs[style*="display: none"],
+.search-container[style*="display: none"],
+#vault-pagination[style*="display: none"] {
+    opacity: 0;
+    transform: translateY(-10px);
 }

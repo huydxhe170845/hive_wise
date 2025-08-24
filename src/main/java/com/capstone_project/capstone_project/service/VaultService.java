@@ -184,6 +184,16 @@ public class VaultService {
                 .collect(Collectors.toList());
     }
 
+    public VaultDashboardResponse getLatestVaultByUserId(String userId) {
+        // Get all vaults where user is a member (owner or member) and not deleted
+        List<Vault> userVaults = userVaultRoleRepository.findVaultsByUserId(userId);
+        return userVaults.stream()
+                .filter(vault -> !vault.isDeleted())
+                .max((v1, v2) -> v1.getCreatedAt().compareTo(v2.getCreatedAt()))
+                .map(this::convertToVaultDashboardResponse)
+                .orElse(null);
+    }
+
     public List<VaultDashboardResponse> getTrashVaultsByUserId(String userId) {
         // Get all deleted vaults where user is the owner
         List<Vault> trashVaults = vaultRepository.findByCreatedByUserIdAndDeleted(userId);

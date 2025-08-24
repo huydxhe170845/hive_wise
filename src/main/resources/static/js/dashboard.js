@@ -4371,20 +4371,18 @@ function initializeProfileMenu() {
             }
         });
 
-        const profileMenuItems = freshAdminProfileMenu.querySelectorAll('.profile-menu-item');
+        const profileMenuItems = freshAdminProfileMenu.querySelectorAll('.profile-menu-item:not(button[type="submit"])');
 
         profileMenuItems.forEach((item, index) => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
-
                 const action = this.getAttribute('data-action');
 
                 if (action === 'profile') {
                     openProfileSettings();
                 }
-
                 // Close dropdown menu
                 freshAdminProfileMenu.classList.remove('show');
                 freshAdminProfileBtn.classList.remove('active');
@@ -4392,9 +4390,26 @@ function initializeProfileMenu() {
         });
 
         // Handle logout form submission
-        const logoutForm = freshAdminProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        const logoutForms = findLogoutForms(freshAdminProfileMenu);
+        const logoutForm = logoutForms[0];
         if (logoutForm) {
+            // Add event listener to the logout button to prevent event bubbling
+            const logoutBtn = logoutForm.querySelector('button[type="submit"]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    console.log('Logout button clicked - preventing event bubbling');
+                });
+            }
+
             logoutForm.addEventListener('submit', function (e) {
+                console.log('Logout form submitted');
+                console.log('Form action:', this.action);
+                console.log('Form method:', this.method);
+
+                // Close all profile dropdowns
+                closeAllProfileDropdowns();
+
                 // Show loading state
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
@@ -4405,6 +4420,7 @@ function initializeProfileMenu() {
                 localStorage.removeItem('currentPage');
 
                 // Form will submit normally
+                console.log('Allowing form to submit...');
             });
         }
     }
@@ -4453,8 +4469,8 @@ function initializeProfileMenu() {
             }
         });
 
-        // Handle profile menu item clicks
-        const profileMenuItems2 = freshAdminProfileMenu2.querySelectorAll('.profile-menu-item');
+        // Handle profile menu item clicks (excluding logout button)
+        const profileMenuItems2 = freshAdminProfileMenu2.querySelectorAll('.profile-menu-item:not(button[type="submit"])');
         console.log('Found profile menu 2 items:', profileMenuItems2.length);
 
         profileMenuItems2.forEach((item, index) => {
@@ -4472,7 +4488,6 @@ function initializeProfileMenu() {
                     console.log('Calling openProfileSettings...');
                     openProfileSettings();
                 }
-
                 // Close dropdown menu
                 freshAdminProfileMenu2.classList.remove('show');
                 freshAdminProfileBtn2.classList.remove('active');
@@ -4480,9 +4495,26 @@ function initializeProfileMenu() {
         });
 
         // Handle logout form submission
-        const logoutForm2 = freshAdminProfileMenu2.querySelector('form[action="/dashboard/logout"]');
+        const logoutForms2 = findLogoutForms(freshAdminProfileMenu2);
+        const logoutForm2 = logoutForms2[0];
         if (logoutForm2) {
+            // Add event listener to the logout button to prevent event bubbling
+            const logoutBtn2 = logoutForm2.querySelector('button[type="submit"]');
+            if (logoutBtn2) {
+                logoutBtn2.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    console.log('Logout button 2 clicked - preventing event bubbling');
+                });
+            }
+
             logoutForm2.addEventListener('submit', function (e) {
+                console.log('Logout form 2 submitted');
+                console.log('Form action:', this.action);
+                console.log('Form method:', this.method);
+
+                // Close all profile dropdowns
+                closeAllProfileDropdowns();
+
                 // Show loading state
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
@@ -4493,6 +4525,7 @@ function initializeProfileMenu() {
                 localStorage.removeItem('currentPage');
 
                 // Form will submit normally
+                console.log('Allowing form 2 to submit...');
             });
         }
     }
@@ -4539,8 +4572,8 @@ function initializeProfileMenu() {
             }
         });
 
-        // Handle profile menu item clicks
-        const vaultProfileMenuItems = freshVaultAdminProfileMenu.querySelectorAll('.profile-menu-item');
+        // Handle profile menu item clicks (excluding logout button)
+        const vaultProfileMenuItems = freshVaultAdminProfileMenu.querySelectorAll('.profile-menu-item:not(button[type="submit"])');
         vaultProfileMenuItems.forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -4550,7 +4583,6 @@ function initializeProfileMenu() {
                 if (action === 'profile') {
                     openProfileSettings();
                 }
-
                 // Close dropdown menu
                 freshVaultAdminProfileMenu.classList.remove('show');
                 freshVaultAdminProfileBtn.classList.remove('active');
@@ -4558,9 +4590,26 @@ function initializeProfileMenu() {
         });
 
         // Handle logout form submission
-        const vaultLogoutForm = freshVaultAdminProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        const vaultLogoutForms = findLogoutForms(freshVaultAdminProfileMenu);
+        const vaultLogoutForm = vaultLogoutForms[0];
         if (vaultLogoutForm) {
+            // Add event listener to the logout button to prevent event bubbling
+            const logoutBtn = vaultLogoutForm.querySelector('button[type="submit"]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    console.log('Logout button clicked - preventing event bubbling');
+                });
+            }
+
             vaultLogoutForm.addEventListener('submit', function (e) {
+                console.log('Vault logout form submitted');
+                console.log('Form action:', this.action);
+                console.log('Form method:', this.method);
+
+                // Close all profile dropdowns
+                closeAllProfileDropdowns();
+
                 // Show loading state
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
@@ -4571,6 +4620,7 @@ function initializeProfileMenu() {
                 localStorage.removeItem('currentPage');
 
                 // Form will submit normally
+                console.log('Allowing vault logout form to submit...');
             });
         }
     }
@@ -4617,8 +4667,8 @@ function initializeProfileMenu() {
             }
         });
 
-        // Handle profile menu item clicks
-        const registerAccountProfileMenuItems = freshRegisterAccountProfileMenu.querySelectorAll('.profile-menu-item');
+        // Handle profile menu item clicks (excluding logout button)
+        const registerAccountProfileMenuItems = freshRegisterAccountProfileMenu.querySelectorAll('.profile-menu-item:not(button[type="submit"])');
         registerAccountProfileMenuItems.forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -4628,7 +4678,6 @@ function initializeProfileMenu() {
                 if (action === 'profile') {
                     openProfileSettings();
                 }
-
                 // Close dropdown menu
                 freshRegisterAccountProfileMenu.classList.remove('show');
                 freshRegisterAccountProfileBtn.classList.remove('active');
@@ -4636,9 +4685,26 @@ function initializeProfileMenu() {
         });
 
         // Handle logout form submission
-        const registerAccountLogoutForm = freshRegisterAccountProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        const registerAccountLogoutForms = findLogoutForms(freshRegisterAccountProfileMenu);
+        const registerAccountLogoutForm = registerAccountLogoutForms[0];
         if (registerAccountLogoutForm) {
+            // Add event listener to the logout button to prevent event bubbling
+            const logoutBtn = registerAccountLogoutForm.querySelector('button[type="submit"]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    console.log('Register account logout button clicked - preventing event bubbling');
+                });
+            }
+
             registerAccountLogoutForm.addEventListener('submit', function (e) {
+                console.log('Register account logout form submitted');
+                console.log('Form action:', this.action);
+                console.log('Form method:', this.method);
+
+                // Close all profile dropdowns
+                closeAllProfileDropdowns();
+
                 // Show loading state
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
@@ -4649,6 +4715,7 @@ function initializeProfileMenu() {
                 localStorage.removeItem('currentPage');
 
                 // Form will submit normally
+                console.log('Allowing register account logout form to submit...');
             });
         }
     }
@@ -4695,8 +4762,8 @@ function initializeProfileMenu() {
             }
         });
 
-        // Handle profile menu item clicks
-        const createVaultProfileMenuItems = freshCreateVaultProfileMenu.querySelectorAll('.profile-menu-item');
+        // Handle profile menu item clicks (excluding logout button)
+        const createVaultProfileMenuItems = freshCreateVaultProfileMenu.querySelectorAll('.profile-menu-item:not(button[type="submit"])');
         createVaultProfileMenuItems.forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -4706,7 +4773,6 @@ function initializeProfileMenu() {
                 if (action === 'profile') {
                     openProfileSettings();
                 }
-
                 // Close dropdown menu
                 freshCreateVaultProfileMenu.classList.remove('show');
                 freshCreateVaultProfileBtn.classList.remove('active');
@@ -4714,9 +4780,26 @@ function initializeProfileMenu() {
         });
 
         // Handle logout form submission
-        const createVaultLogoutForm = freshCreateVaultProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        const createVaultLogoutForms = findLogoutForms(freshCreateVaultProfileMenu);
+        const createVaultLogoutForm = createVaultLogoutForms[0];
         if (createVaultLogoutForm) {
+            // Add event listener to the logout button to prevent event bubbling
+            const logoutBtn = createVaultLogoutForm.querySelector('button[type="submit"]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    console.log('Create vault logout button clicked - preventing event bubbling');
+                });
+            }
+
             createVaultLogoutForm.addEventListener('submit', function (e) {
+                console.log('Create vault logout form submitted');
+                console.log('Form action:', this.action);
+                console.log('Form method:', this.method);
+
+                // Close all profile dropdowns
+                closeAllProfileDropdowns();
+
                 // Show loading state
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
@@ -4727,6 +4810,7 @@ function initializeProfileMenu() {
                 localStorage.removeItem('currentPage');
 
                 // Form will submit normally
+                console.log('Allowing create vault logout form to submit...');
             });
         }
     }
@@ -4773,8 +4857,8 @@ function initializeProfileMenu() {
             }
         });
 
-        // Handle profile menu item clicks
-        const myVaultsProfileMenuItems = freshMyVaultsProfileMenu.querySelectorAll('.profile-menu-item');
+        // Handle profile menu item clicks (excluding logout button)
+        const myVaultsProfileMenuItems = freshMyVaultsProfileMenu.querySelectorAll('.profile-menu-item:not(button[type="submit"])');
         myVaultsProfileMenuItems.forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -4784,7 +4868,6 @@ function initializeProfileMenu() {
                 if (action === 'profile') {
                     openProfileSettings();
                 }
-
                 // Close dropdown menu
                 freshMyVaultsProfileMenu.classList.remove('show');
                 freshMyVaultsProfileBtn.classList.remove('active');
@@ -4792,9 +4875,26 @@ function initializeProfileMenu() {
         });
 
         // Handle logout form submission
-        const myVaultsLogoutForm = freshMyVaultsProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        const myVaultsLogoutForms = findLogoutForms(freshMyVaultsProfileMenu);
+        const myVaultsLogoutForm = myVaultsLogoutForms[0];
         if (myVaultsLogoutForm) {
+            // Add event listener to the logout button to prevent event bubbling
+            const logoutBtn = myVaultsLogoutForm.querySelector('button[type="submit"]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    console.log('My vaults logout button clicked - preventing event bubbling');
+                });
+            }
+
             myVaultsLogoutForm.addEventListener('submit', function (e) {
+                console.log('My vaults logout form submitted');
+                console.log('Form action:', this.action);
+                console.log('Form method:', this.method);
+
+                // Close all profile dropdowns
+                closeAllProfileDropdowns();
+
                 // Show loading state
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
@@ -4805,6 +4905,7 @@ function initializeProfileMenu() {
                 localStorage.removeItem('currentPage');
 
                 // Form will submit normally
+                console.log('Allowing my vaults logout form to submit...');
             });
         }
     }
@@ -4851,8 +4952,8 @@ function initializeProfileMenu() {
             }
         });
 
-        // Handle profile menu item clicks
-        const trashProfileMenuItems = freshTrashProfileMenu.querySelectorAll('.profile-menu-item');
+        // Handle profile menu item clicks (excluding logout button)
+        const trashProfileMenuItems = freshTrashProfileMenu.querySelectorAll('.profile-menu-item:not(button[type="submit"])');
         trashProfileMenuItems.forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -4862,7 +4963,6 @@ function initializeProfileMenu() {
                 if (action === 'profile') {
                     openProfileSettings();
                 }
-
                 // Close dropdown menu
                 freshTrashProfileMenu.classList.remove('show');
                 freshTrashProfileBtn.classList.remove('active');
@@ -4870,9 +4970,26 @@ function initializeProfileMenu() {
         });
 
         // Handle logout form submission
-        const trashLogoutForm = freshTrashProfileMenu.querySelector('form[action="/dashboard/logout"]');
+        const trashLogoutForms = findLogoutForms(freshTrashProfileMenu);
+        const trashLogoutForm = trashLogoutForms[0];
         if (trashLogoutForm) {
+            // Add event listener to the logout button to prevent event bubbling
+            const logoutBtn = trashLogoutForm.querySelector('button[type="submit"]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    console.log('Trash logout button clicked - preventing event bubbling');
+                });
+            }
+
             trashLogoutForm.addEventListener('submit', function (e) {
+                console.log('Trash logout form submitted');
+                console.log('Form action:', this.action);
+                console.log('Form method:', this.method);
+
+                // Close all profile dropdowns
+                closeAllProfileDropdowns();
+
                 // Show loading state
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
@@ -4883,6 +5000,7 @@ function initializeProfileMenu() {
                 localStorage.removeItem('currentPage');
 
                 // Form will submit normally
+                console.log('Allowing trash logout form to submit...');
             });
         }
     }
@@ -5203,6 +5321,84 @@ function enhanceProfileAvatarEffects() {
 // Initialize all profile-related features
 let profileFeaturesInitialized = false;
 
+// Helper function to find logout forms
+function findLogoutForms(container = document) {
+    let logoutForms = container.querySelectorAll('form[action="/dashboard/logout"]');
+    if (logoutForms.length === 0) {
+        logoutForms = container.querySelectorAll('form[action*="logout"]');
+    }
+    if (logoutForms.length === 0) {
+        logoutForms = container.querySelectorAll('form');
+        logoutForms = Array.from(logoutForms).filter(form => {
+            const action = form.getAttribute('action') || form.getAttribute('th:action') || '';
+            return action.includes('logout');
+        });
+    }
+    return logoutForms;
+}
+
+// Helper function to close all profile dropdowns
+function closeAllProfileDropdowns() {
+    const allProfileMenus = document.querySelectorAll('.dropdown-menu.show');
+    allProfileMenus.forEach(menu => {
+        menu.classList.remove('show');
+    });
+    const allProfileBtns = document.querySelectorAll('[id*="ProfileBtn"]');
+    allProfileBtns.forEach(btn => {
+        btn.classList.remove('active');
+    });
+}
+
+// Global logout form handler
+function initializeGlobalLogoutHandlers() {
+    console.log('Initializing global logout handlers...');
+
+    // Find all logout forms in the document
+    const logoutForms = findLogoutForms();
+    console.log('Found logout forms:', logoutForms.length);
+
+    logoutForms.forEach((form, index) => {
+        console.log(`Processing logout form ${index}:`, form);
+
+        // Remove any existing event listeners by cloning the form
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        // Add event listener to the logout button to prevent event bubbling
+        const logoutBtn = newForm.querySelector('button[type="submit"]');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                console.log('Global logout button clicked - preventing event bubbling');
+            });
+        }
+
+        // Add event listener to the new form
+        newForm.addEventListener('submit', function (e) {
+            console.log('Logout form submitted');
+            console.log('Form action:', this.action);
+            console.log('Form method:', this.method);
+
+            // Close all profile dropdowns
+            closeAllProfileDropdowns();
+
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="las la-spinner la-spin mr-1"></i>Đang đăng xuất...';
+                submitBtn.disabled = true;
+            }
+
+            // Clear localStorage to ensure dashboard shows on next login
+            localStorage.removeItem('currentPage');
+
+            // Form will submit normally
+            console.log('Allowing form to submit...');
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     if (profileFeaturesInitialized) return;
 
@@ -5220,7 +5416,57 @@ document.addEventListener('DOMContentLoaded', function () {
         initializeProfileMenu();
         addProfileMenuAnimations();
         enhanceProfileAvatarEffects();
+        initializeGlobalLogoutHandlers();
     }, 100);
 
     profileFeaturesInitialized = true;
+
+    // Set up a mutation observer to handle dynamically added logout forms
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach(function (node) {
+                    if (node.nodeType === 1) { // Element node
+                        const logoutForms = findLogoutForms(node);
+                        logoutForms.forEach(form => {
+                            if (!form.hasAttribute('data-logout-handler-added')) {
+                                form.setAttribute('data-logout-handler-added', 'true');
+                                // Add event listener to the logout button to prevent event bubbling
+                                const logoutBtn = form.querySelector('button[type="submit"]');
+                                if (logoutBtn) {
+                                    logoutBtn.addEventListener('click', function (e) {
+                                        e.stopPropagation();
+                                        console.log('Dynamic logout button clicked - preventing event bubbling');
+                                    });
+                                }
+
+                                form.addEventListener('submit', function (e) {
+                                    console.log('Dynamic logout form submitted');
+                                    console.log('Form action:', this.action);
+                                    console.log('Form method:', this.method);
+
+                                    // Close all profile dropdowns
+                                    closeAllProfileDropdowns();
+
+                                    const submitBtn = this.querySelector('button[type="submit"]');
+                                    if (submitBtn) {
+                                        submitBtn.innerHTML = '<i class="las la-spinner la-spin mr-1"></i>Đang đăng xuất...';
+                                        submitBtn.disabled = true;
+                                    }
+                                    localStorage.removeItem('currentPage');
+                                    console.log('Allowing dynamic logout form to submit...');
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Start observing the document body for changes
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 });

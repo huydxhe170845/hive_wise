@@ -45,6 +45,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.http.HttpStatus;
+import com.capstone_project.capstone_project.model.UserVaultRole;
+import com.capstone_project.capstone_project.dto.response.VaultDashboardResponse;
 
 @Controller
 @RequestMapping(path = "/vault-management")
@@ -133,7 +136,15 @@ public class VaultManagementController {
             BindingResult bindingResult,
             Model model,
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes,
+            @RequestHeader(value = "X-Requested-With", required = false) String requestedWith) {
+
+        // Check if this is an AJAX request
+        if ("XMLHttpRequest".equals(requestedWith)) {
+            // This should be handled by the AJAX endpoint
+            return "redirect:/vault-management";
+        }
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("org.springframework.validation.BindingResult.addVaultRequest", bindingResult);
             model.addAttribute("showAddVaultForm", true);
@@ -173,6 +184,103 @@ public class VaultManagementController {
         model.addAttribute("showAddVaultForm", false);
         redirectAttributes.addFlashAttribute("successAddVaultMessage", "Vault added successfully!");
         return "redirect:/vault-management";
+    }
+
+    @PostMapping("/add-vault-ajax")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addVaultAjax(
+            @Valid @ModelAttribute("addVaultRequest") AddVaultRequest request,
+            BindingResult bindingResult,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (bindingResult.hasErrors()) {
+            response.put("success", false);
+            response.put("message", "Validation failed");
+
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            response.put("errors", errors);
+
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {
+            // Set user details if not already set
+            if (request.getCreatedByUserId() == null) {
+                request.setCreatedByUserId(userDetails.getId());
+            }
+            if (request.getCreatedByEmail() == null) {
+                request.setCreatedByEmail(userDetails.getEmail());
+            }
+
+            Vault createdVault = vaultService.addVault(request, userDetails.getId());
+
+            response.put("success", true);
+            response.put("message", "Vault created successfully!");
+            response.put("vaultId", createdVault.getId());
+            response.put("vaultName", createdVault.getName());
+
+            return ResponseEntity.ok(response);
+
+        } catch (FieldValidationException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            Map<String, String> errors = new HashMap<>();
+            errors.put(e.getField(), e.getMessage());
+            response.put("errors", errors);
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to create vault: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/get-latest-vault")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getLatestVault(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Get the most recently created vault for this user
+            VaultDashboardResponse latestVault = vaultService.getLatestVaultByUserId(userDetails.getId());
+            
+            if (latestVault == null) {
+                response.put("success", false);
+                response.put("message", "No vault found");
+                return ResponseEntity.ok(response);
+            }
+            
+            // Convert to map format for JSON response
+            Map<String, Object> vaultInfo = new HashMap<>();
+            vaultInfo.put("id", latestVault.getId());
+            vaultInfo.put("name", latestVault.getName());
+            vaultInfo.put("description", ""); // VaultDashboardResponse doesn't have description
+            vaultInfo.put("status", latestVault.getStatus());
+            vaultInfo.put("createdAt", latestVault.getCreatedAt());
+            vaultInfo.put("photoUrl", "/images/vault/vault_df.webp"); // Default photo
+            vaultInfo.put("ownerName", latestVault.getOwnerName());
+            vaultInfo.put("ownerEmail", latestVault.getOwnerEmail());
+            vaultInfo.put("memberCount", latestVault.getMemberCount());
+            vaultInfo.put("documentCount", latestVault.getDocumentCount());
+            vaultInfo.put("isActivated", latestVault.getIsActivated());
+            vaultInfo.put("isDeleted", latestVault.getIsDeleted());
+            
+            response.put("success", true);
+            response.put("vault", vaultInfo);
+            response.put("message", "Latest vault retrieved successfully");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Failed to get latest vault: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/update-vault")

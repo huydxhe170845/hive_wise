@@ -49,7 +49,6 @@
                                 d="m7 10 1.99994 1.9999-1.99994 2M12 5v14M5 4h14c.5523 0 1 .44772 1 1v14c0 .5523-.4477 1-1 1H5c-.55228 0-1-.4477-1-1V5c0-.55228.44772-1 1-1Z" />
                         </svg>
                     </div>
-
                 </div>
                 <a class="sidebar-link sidebar-link-active" href="#" id="my-vaults-link">
                     <div
@@ -112,7 +111,7 @@
                     </div>
                     <a class="add-vault-btn">
                         <img style="margin-left: -10px;" src="/images/icon/Add_round_duotone_line.svg" alt="">
-                        <span class="label-add-vault-btn">Add vault</span>
+                        <span class="label-add-vault-btn">Add Vault</span>
                     </a>
                     <div class="notification-btn" style="margin-right: -15px;">
                         <img src="/images/icon/Notification.svg" alt="notification icon">
@@ -462,7 +461,8 @@
                                         <input type="text" id="vaultName" placeholder="Enter name" th:field="*{name}"
                                             th:classappend="${#fields.hasErrors('name')} ? 'input-error' : ''" required>
                                         <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
-                                            style="margin-bottom: -15px; margin-top: 0px;" class="text-danger"></div>
+                                            style="margin-bottom: -15px; margin-top: 0px;" class="text-danger">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -481,10 +481,11 @@
                                         placeholder="Enter description..." style="resize: vertical;"></textarea>
                                 </div>
                                 <div class="add-vault-btn-container" style="gap: 10px;">
-                                    <button type="button" id="cancel-add-vault" class="modal-btn">
+                                    <button type="button" id="cancel-add-vault" class="modal-btn"
+                                        style="border-radius: 20px;">
                                         Cancel
                                     </button>
-                                    <button type="submit" class="modal-btn modal-form-btn">
+                                    <button type="submit" class="modal-btn modal-form-btn" style="border-radius: 20px;">
                                         <svg viewBox="64 64 896 896" focusable="false" data-icon="save" width="1em"
                                             height="1em" fill="currentColor" aria-hidden="true">
                                             <path

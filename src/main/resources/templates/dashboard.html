@@ -1265,9 +1265,9 @@
                                                 role="grid" aria-describedby="user-list-page-info">
                                                 <thead>
                                                     <tr class="ligth">
-                                                        <th>Profile</th>
-                                                        <th class="sortable" data-column="name">
-                                                            Name
+                                                        <th>User ID</th>
+                                                        <th class="sortable" data-column="username">
+                                                            Username
                                                             <i class="fas fa-sort sort-icon"
                                                                 data-sort-direction="none"></i>
                                                         </th>
@@ -1292,55 +1292,11 @@
                                                         <th style="min-width: 100px">Action</th>
                                                     </tr>
                                                 <tbody>
-                                                    <tr th:if="${#lists.isEmpty(users)}">
+                                                    <tr>
                                                         <td colspan="9" class="text-center py-4">
                                                             <div class="text-muted">
-                                                                <i class="fas fa-users fa-3x mb-3"></i>
-                                                                <p class="mb-0">No users found</p>
-                                                                <small th:if="${keyword != null and !keyword.isEmpty()}"
-                                                                    th:text="'No users match your search: ' + ${keyword}"></small>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    <tr th:each="user : ${users}" th:unless="${#lists.isEmpty(users)}">
-                                                        <td class="text-center">
-                                                            <img class="rounded img-fluid avatar-40"
-                                                                th:src="${user.avatar != null ? user.avatar : 'https://placehold.co/40x40'}"
-                                                                th:alt="${user.name}" />
-                                                        </td>
-                                                        <td th:text="${user.name != null ? user.name : user.username}">
-                                                            Name</td>
-                                                        <td
-                                                            th:text="${user.phoneNumber != null ? user.phoneNumber : 'N/A'}">
-                                                            Contact
-                                                        </td>
-                                                        <td th:text="${user.email}">Email</td>
-                                                        <td
-                                                            th:text="${user.authProvider != null ? user.authProvider : 'LOCAL'}">
-                                                            Provider
-                                                        </td>
-                                                        <td
-                                                            th:text="${user.systemRole != null ? user.systemRole.name : 'No Role'}">
-                                                            Role
-                                                        </td>
-                                                        <td>
-                                                            <span
-                                                                th:class="${user.isActivated ? 'badge iq-bg-primary' : 'badge iq-bg-warning'}"
-                                                                th:text="${user.isActivated ? 'Active' : 'Inactive'}">Status</span>
-                                                        </td>
-                                                        <td
-                                                            th:text="${#temporals.format(user.createdAt, 'yyyy/MM/dd')}">
-                                                            Join Date
-                                                        </td>
-                                                        <td class="text-center">
-                                                            <div
-                                                                class="d-flex align-items-center justify-content-center list-user-action">
-                                                                <a class="iq-bg-primary edit-user-btn"
-                                                                    data-toggle="tooltip" data-placement="top" title=""
-                                                                    data-original-title="Edit" href="#"
-                                                                    th:data-user-id="${user.id}">
-                                                                    <i class="ri-pencil-line"></i>
-                                                                </a>
+                                                                <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+                                                                <p class="mb-0">Loading users...</p>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -1349,23 +1305,12 @@
                                         </div>
                                         <div class="row justify-content-between mt-3">
                                             <div id="user-list-page-info" class="col-md-6">
-                                                <span
-                                                    th:text="|Showing 1 to ${#lists.size(users)} of ${#lists.size(users)} entries|">
-                                                    Showing entries
-                                                </span>
+                                                <span>Loading...</span>
                                             </div>
                                             <div class="col-md-6">
                                                 <nav aria-label="Page navigation example">
                                                     <ul class="pagination justify-content-end mb-0">
-                                                        <li class="page-item disabled">
-                                                            <a class="page-link" href="#" tabindex="-1"
-                                                                aria-disabled="true">Previous</a>
-                                                        </li>
-                                                        <li class="page-item active"><a class="page-link" href="#">1</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="#">Next</a>
-                                                        </li>
+                                                        <!-- Pagination will be loaded by JavaScript -->
                                                     </ul>
                                                 </nav>
                                             </div>
@@ -3305,6 +3250,21 @@
     </script>
 
     <script src="/js/dashboard.js"></script>
+    <script>
+        console.log('Inline script loaded');
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Inline DOMContentLoaded fired');
+            setTimeout(function () {
+                console.log('Trying to load users...');
+                if (typeof window.loadUsersPaginated === 'function') {
+                    console.log('loadUsersPaginated function exists');
+                    window.loadUsersPaginated(0, '');
+                } else {
+                    console.log('loadUsersPaginated function not found');
+                }
+            }, 1000);
+        });
+    </script>
 
     <!-- Vault Status Confirm Modal -->
     <div id="vaultStatusConfirmModal" class="vault-confirm-modal">
@@ -3488,6 +3448,27 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Status Toggle Confirm Modal -->
+    <div id="userStatusConfirmModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Status Change</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="userStatusConfirmMessage">Are you sure you want to change the status of this user?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmUserStatusToggle">Confirm</button>
+                </div>
             </div>
         </div>
     </div>

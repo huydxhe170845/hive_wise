@@ -58,6 +58,19 @@ public class UserService {
         return userRepository.findByKeyword(keyword);
     }
 
+    public Page<User> findByKeywordPaginated(String keyword, int page, int size) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllUsersPaginated(page, size);
+        }
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.findByKeywordPaginated(keyword, pageable);
+    }
+
+    public Page<User> getAllUsersPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.findAll(pageable);
+    }
+
     public List<User> findAvailableUsersForVault(String keyword, String vaultId) {
         List<User> allUsers;
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -583,6 +596,29 @@ public class UserService {
         existingUser.setUpdatedAt(LocalDateTime.now());
 
         return userRepository.save(existingUser);
+    }
+
+    // Update user activation status only
+    public User updateUserActivationStatus(String userId, boolean isActivated) {
+        System.out.println("UserService.updateUserActivationStatus called with userId: " + userId + ", isActivated: "
+                + isActivated);
+
+        User existingUser = findById(userId);
+        if (existingUser == null) {
+            System.out.println("User not found in UserService");
+            throw new IllegalArgumentException("User not found with ID: " + userId);
+        }
+
+        System.out.println(
+                "Found user: " + existingUser.getUsername() + ", current status: " + existingUser.isActivated());
+
+        existingUser.setActivated(isActivated);
+        existingUser.setUpdatedAt(LocalDateTime.now());
+
+        User savedUser = userRepository.save(existingUser);
+        System.out.println("User saved successfully. New status: " + savedUser.isActivated());
+
+        return savedUser;
     }
 
     private String saveAvatarFile(MultipartFile avatar) throws Exception {

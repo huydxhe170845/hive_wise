@@ -748,6 +748,30 @@ function setupRegisterForm() {
         }
     });
 
+    // User status toggle handler
+    document.addEventListener('change', function (e) {
+        if (e.target.classList.contains('user-status-toggle')) {
+            e.preventDefault();
+            const checkbox = e.target;
+            const userId = checkbox.getAttribute('data-user-id');
+            const userName = checkbox.getAttribute('data-user-name');
+            const isChecked = checkbox.checked;
+
+            confirmToggleUserStatus(checkbox, userId, userName, isChecked);
+        }
+    });
+
+    // Copy user ID button handler
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.copy-user-id-btn')) {
+            e.preventDefault();
+            const button = e.target.closest('.copy-user-id-btn');
+            const userId = button.getAttribute('data-user-id');
+
+            copyToClipboard(userId, button);
+        }
+    });
+
     // Load user data for editing
     function loadUserForEdit(userId) {
         fetch(`/dashboard/user/${userId}`)
@@ -962,17 +986,35 @@ function setupRegisterForm() {
             return;
         }
 
-        // Update avatar (1st cell)
-        const avatarImg = cells[0].querySelector('img.avatar-40');
-        if (avatarImg && data.avatar) {
-            avatarImg.src = data.avatar + '?t=' + new Date().getTime();
-            console.log('Updated avatar');
+        // Update user ID (1st cell)
+        if (cells[0] && data.userId) {
+            const userIdSpan = cells[0].querySelector('span');
+            const copyButton = cells[0].querySelector('.copy-user-id-btn');
+
+            if (userIdSpan) {
+                userIdSpan.textContent = data.userId.substring(0, 8) + '...';
+                console.log('Updated user ID to:', data.userId);
+            }
+
+            if (copyButton) {
+                copyButton.setAttribute('data-user-id', data.userId);
+            }
         }
 
-        // Update name (2nd cell)
-        if (cells[1] && data.name) {
-            cells[1].textContent = data.name;
-            console.log('Updated name to:', data.name);
+        // Update username and avatar (2nd cell)
+        if (cells[1] && (data.username || data.avatar)) {
+            const usernameDiv = cells[1].querySelector('.font-weight-bold');
+            const avatarImg = cells[1].querySelector('img.avatar-40');
+
+            if (usernameDiv && data.username) {
+                usernameDiv.textContent = data.username;
+                console.log('Updated username to:', data.username);
+            }
+
+            if (avatarImg && data.avatar) {
+                avatarImg.src = data.avatar + '?t=' + new Date().getTime();
+                console.log('Updated avatar');
+            }
         }
 
         // Update phone number (3rd cell) - if available
@@ -991,18 +1033,59 @@ function setupRegisterForm() {
 
         // Update role (6th cell)
         if (cells[5] && data.role) {
-            cells[5].textContent = data.role;
-            console.log('Updated role to:', data.role);
+            // Convert role to proper case
+            let roleText = data.role;
+            if (data.role === 'ADMIN') {
+                roleText = 'Admin';
+            } else if (data.role === 'USER') {
+                roleText = 'User';
+            }
+            cells[5].textContent = roleText;
+            console.log('Updated role to:', roleText);
+        }
+
+        // Update auth provider (5th cell) if available
+        if (cells[4] && data.authProvider) {
+            let providerText = data.authProvider;
+            if (data.authProvider === 'LOCAL') {
+                providerText = 'Local';
+            } else if (data.authProvider === 'GOOGLE') {
+                providerText = 'Google';
+            }
+            cells[4].textContent = providerText;
+            console.log('Updated auth provider to:', providerText);
         }
 
         // Update status (7th cell)
         if (cells[6]) {
-            if (data.isActivated) {
-                cells[6].innerHTML = '<span class="badge iq-bg-primary">Active</span>';
-            } else {
-                cells[6].innerHTML = '<span class="badge iq-bg-warning">Inactive</span>';
-            }
+            const userName = data.username;
+            cells[6].innerHTML = `
+                <div class="d-flex align-items-center justify-content-center">
+                    <label class="switch">
+                        <input type="checkbox" 
+                               ${data.isActivated ? 'checked' : ''}
+                               data-user-id="${userId}"
+                               data-user-name="${userName}"
+                               class="user-status-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            `;
             console.log('Updated status to:', data.isActivated ? 'Active' : 'Inactive');
+        }
+
+        // Join date stays the same (8th cell)
+
+        // Update edit button visibility (9th cell)
+        if (cells[8]) {
+            const editButton = cells[8].querySelector('.edit-user-btn');
+            if (editButton) {
+                if (data.isActivated) {
+                    editButton.style.display = 'block';
+                } else {
+                    editButton.style.display = 'none';
+                }
+            }
         }
 
         // Join date stays the same (8th cell)
@@ -2375,10 +2458,270 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // User search functionality
     if (userSearchInput) {
+        let searchTimeout;
         userSearchInput.addEventListener('input', function () {
-            performUserSearch();
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const keyword = this.value.trim();
+                if (keyword.length >= 2 || keyword.length === 0) {
+                    loadUsersPaginated(0, keyword);
+                }
+            }, 500);
         });
     }
+
+    // Pagination functionality
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('pagination-link')) {
+            e.preventDefault();
+            const page = parseInt(e.target.dataset.page);
+            const keyword = userSearchInput ? userSearchInput.value.trim() : '';
+            loadUsersPaginated(page, keyword);
+        }
+    });
+
+    // Load initial data when page loads
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOMContentLoaded event fired');
+        // Load initial user data immediately
+        loadUsersPaginated(0, '');
+    });
+
+    // Move function to global scope
+    window.loadUsersPaginated = function (page, keyword = '') {
+        console.log('loadUsersPaginated called with page:', page, 'keyword:', keyword);
+
+        const params = new URLSearchParams({
+            page: page,
+            size: 10
+        });
+
+        if (keyword) {
+            params.append('keyword', keyword);
+        }
+
+        console.log('Fetching from:', `/dashboard/admin/users/paginated?${params}`);
+
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        if (csrfToken && csrfHeader) {
+            headers[csrfHeader] = csrfToken;
+        }
+
+        fetch(`/dashboard/admin/users/paginated?${params}`, {
+            method: 'GET',
+            headers: headers
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.users) {
+                    updateUserTable(data.users);
+                    updatePagination(data.currentPage, data.totalPages, data.totalElements, data.keyword);
+                    updateUserFilterInfo(keyword, data.users.length);
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading users:', error);
+                showToast('Error loading users: ' + error.message, 'error');
+            });
+    };
+
+    // Move function to global scope
+    window.updateUserTable = function (users) {
+        const userTable = document.getElementById('user-list-table');
+        if (!userTable) {
+            console.error('User table not found');
+            return;
+        }
+
+        const tbody = userTable.querySelector('tbody');
+        if (!tbody) {
+            console.error('User table tbody not found');
+            return;
+        }
+
+        tbody.innerHTML = '';
+
+        users.forEach(user => {
+            const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <span class="user-id-cell">${user.id.substring(0, 8)}...</span>
+                        <button class="btn btn-sm btn-outline-secondary ml-2 copy-user-id-btn" 
+                                data-user-id="${user.id}"
+                                title="Copy User ID">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </td>
+                <td>
+                    <div class="user-name-container">
+                        <img class="rounded avatar-40"
+                            src="${user.avatar || 'https://placehold.co/40x40'}"
+                            alt="${user.username}" />
+                        <div>
+                            <div class="font-weight-bold">${user.username}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${user.phoneNumber || 'N/A'}</td>
+                <td>${user.email || ''}</td>
+                <td>
+                    ${user.authProvider === 'LOCAL' ? 'Local' :
+                    user.authProvider === 'GOOGLE' ? 'Google' : 'Local'}
+                </td>
+                <td>
+                    ${user.systemRole === 'ADMIN' ? 'Admin' :
+                    user.systemRole === 'USER' ? 'User' : 'No Role'}
+                </td>
+                <td>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <label class="switch">
+                            <input type="checkbox" class="user-status-toggle" 
+                                   ${user.isActivated ? 'checked' : ''}
+                                   data-user-id="${user.id}"
+                                   data-user-name="${user.username}">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </td>
+                <td>${joinDate}</td>
+                <td class="text-center">
+                    <div class="d-flex align-items-center justify-content-center list-user-action">
+                        <a class="iq-bg-primary edit-user-btn"
+                           data-toggle="tooltip" data-placement="top" title=""
+                           data-original-title="Edit" href="#"
+                           data-user-id="${user.id}"
+                           ${!user.isActivated ? 'style="display: none;"' : ''}>
+                            <i class="ri-pencil-line"></i>
+                        </a>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Re-attach event listeners
+        attachUserTableEventListeners();
+    }
+
+    // Move function to global scope
+    window.updatePagination = function (currentPage, totalPages, totalElements, keyword) {
+        const paginationUl = document.querySelector('.pagination');
+        if (!paginationUl) {
+            console.error('Pagination ul not found');
+            return;
+        }
+
+        const startItem = currentPage * 10 + 1;
+        const endItem = Math.min(currentPage * 10 + 10, totalElements);
+
+        // Update page info
+        const pageInfo = document.getElementById('user-list-page-info');
+        if (pageInfo) {
+            if (totalElements > 0) {
+                pageInfo.innerHTML = `<span>Showing ${startItem} to ${endItem} of ${totalElements} entries</span>`;
+            } else {
+                pageInfo.innerHTML = '<span>No entries found</span>';
+            }
+        }
+
+        // Update pagination controls
+        paginationUl.innerHTML = '';
+
+        // Previous button
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${currentPage === 0 ? 'disabled' : ''}`;
+        if (currentPage > 0) {
+            const prevLink = document.createElement('a');
+            prevLink.className = 'page-link pagination-link';
+            prevLink.href = '#';
+            prevLink.dataset.page = currentPage - 1;
+            prevLink.textContent = 'Previous';
+            prevLi.appendChild(prevLink);
+        } else {
+            const prevSpan = document.createElement('span');
+            prevSpan.className = 'page-link';
+            prevSpan.textContent = 'Previous';
+            prevLi.appendChild(prevSpan);
+        }
+        paginationUl.appendChild(prevLi);
+
+        // Page numbers
+        for (let i = 0; i < totalPages; i++) {
+            const pageLi = document.createElement('li');
+            pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+            const pageLink = document.createElement('a');
+            pageLink.className = 'page-link pagination-link';
+            pageLink.href = '#';
+            pageLink.dataset.page = i;
+            pageLink.textContent = i + 1;
+            pageLi.appendChild(pageLink);
+            paginationUl.appendChild(pageLi);
+        }
+
+        // Next button
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`;
+        if (currentPage < totalPages - 1) {
+            const nextLink = document.createElement('a');
+            nextLink.className = 'page-link pagination-link';
+            nextLink.href = '#';
+            nextLink.dataset.page = currentPage + 1;
+            nextLink.textContent = 'Next';
+            nextLi.appendChild(nextLink);
+        } else {
+            const nextSpan = document.createElement('span');
+            nextSpan.className = 'page-link';
+            nextSpan.textContent = 'Next';
+            nextLi.appendChild(nextSpan);
+        }
+        paginationUl.appendChild(nextLi);
+    }
+
+    // Move function to global scope
+    window.attachUserTableEventListeners = function () {
+        // Re-attach toggle event listeners
+        document.querySelectorAll('.user-status-toggle').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const userId = this.dataset.userId;
+                const userName = this.dataset.userName;
+                const isChecked = this.checked;
+                confirmToggleUserStatus(this, userId, userName, isChecked);
+            });
+        });
+
+        // Re-attach edit button event listeners
+        document.querySelectorAll('.edit-user-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const userId = this.dataset.userId;
+                loadUserForEdit(userId);
+            });
+        });
+
+        // Re-attach copy button event listeners
+        document.querySelectorAll('.copy-user-id-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const userId = this.dataset.userId;
+                copyToClipboard(userId, this);
+            });
+        });
+    };
 
     // User filter functionality
     if (applyUserFiltersBtn) {
@@ -3086,6 +3429,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 500);
     }
 });
+
+// Test function
+window.testLoad = function () {
+    console.log('Test function called');
+    alert('Test function works!');
+    if (typeof window.loadUsersPaginated === 'function') {
+        window.loadUsersPaginated(0, '');
+    } else {
+        alert('loadUsersPaginated function not found!');
+    }
+};
 
 // Function to refresh vault list from server
 function refreshVaultList() {
@@ -5515,3 +5869,298 @@ document.addEventListener('DOMContentLoaded', function () {
         subtree: true
     });
 });
+
+// User Status Toggle Functions
+function confirmToggleUserStatus(checkbox, userId, userName, isChecked) {
+    const action = isChecked ? 'activate' : 'deactivate';
+    const message = `Are you sure you want to ${action} the account "${userName}"?`;
+
+    // Update modal message
+    document.getElementById('userStatusConfirmMessage').textContent = message;
+
+    // Store data for confirmation
+    document.getElementById('userStatusConfirmModal').dataset.userId = userId;
+    document.getElementById('userStatusConfirmModal').dataset.checkbox = checkbox.checked;
+
+    // Show confirm modal
+    $('#userStatusConfirmModal').modal('show');
+}
+
+function confirmUserStatusToggle() {
+    const modal = document.getElementById('userStatusConfirmModal');
+    const userId = modal.dataset.userId;
+    const isChecked = modal.dataset.checkbox === 'true';
+
+    // Hide modal
+    $('#userStatusConfirmModal').modal('hide');
+
+    // Perform the toggle
+    performUserStatusToggle(userId, isChecked);
+}
+
+function cancelUserStatusToggle() {
+    // Revert checkbox state only when canceling
+    const modal = document.getElementById('userStatusConfirmModal');
+    const userId = modal.dataset.userId;
+    const checkbox = document.querySelector(`.user-status-toggle[data-user-id="${userId}"]`);
+
+    if (checkbox) {
+        // Revert to original state (opposite of what was clicked)
+        checkbox.checked = !checkbox.checked;
+        updateUserStatusDisplay(checkbox);
+    }
+
+    // Hide modal
+    $('#userStatusConfirmModal').modal('hide');
+}
+
+function performUserStatusToggle(userId, isActivated) {
+    console.log('performUserStatusToggle called with userId:', userId, 'isActivated:', isActivated);
+
+    // Show loading state
+    const checkbox = document.querySelector(`.user-status-toggle[data-user-id="${userId}"]`);
+    if (checkbox) {
+        checkbox.disabled = true;
+    }
+
+    // Get CSRF token first
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+
+    // Prepare request data
+    const requestData = new URLSearchParams();
+    requestData.append('userId', userId);
+
+    // Add CSRF token to body if needed
+    if (csrfToken) {
+        const csrfParamName = document.querySelector('meta[name="_csrf_parameter"]')?.getAttribute('content') || '_csrf';
+        requestData.append(csrfParamName, csrfToken);
+    }
+
+    console.log('CSRF Token:', csrfToken);
+    console.log('CSRF Header:', csrfHeader);
+
+    // Prepare headers
+    const headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    };
+    if (csrfToken) {
+        headers[csrfHeader] = csrfToken;
+    }
+
+    console.log('Request headers:', headers);
+    console.log('Request body:', requestData.toString());
+
+    // Send request
+    fetch('/dashboard/admin/toggle-user-status', {
+        method: 'POST',
+        headers: headers,
+        body: requestData
+    })
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                // Update UI
+                updateUserStatusDisplay(checkbox, isActivated);
+                updateUserEditButton(userId, isActivated);
+                updateDashboardStatistics(data);
+
+                // Show success message
+                const action = isActivated ? 'activated' : 'deactivated';
+                showToast(`User account ${action} successfully!`, 'success');
+            } else {
+                // Revert checkbox state on error
+                checkbox.checked = !isActivated;
+                updateUserStatusDisplay(checkbox);
+                showToast(data.message || 'Failed to update user status. Please try again.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Revert checkbox state on error
+            checkbox.checked = !isActivated;
+            updateUserStatusDisplay(checkbox);
+            showToast('An error occurred while updating user status. Please try again.', 'error');
+        })
+        .finally(() => {
+            // Re-enable checkbox
+            if (checkbox) {
+                checkbox.disabled = false;
+            }
+        });
+}
+
+function updateUserStatusDisplay(checkbox, newStatus = null) {
+    // No longer needed since we removed status labels
+    // Function kept for compatibility but does nothing
+}
+
+function updateUserEditButton(userId, isActivated) {
+    const editButton = document.querySelector(`.edit-user-btn[data-user-id="${userId}"]`);
+    if (editButton) {
+        if (isActivated) {
+            editButton.style.display = 'block';
+        } else {
+            editButton.style.display = 'none';
+        }
+    }
+}
+
+// Add event listeners for confirm modal
+document.addEventListener('DOMContentLoaded', function () {
+    const confirmBtn = document.getElementById('confirmUserStatusToggle');
+    const cancelBtn = document.querySelector('#userStatusConfirmModal .btn-secondary');
+    const closeBtn = document.querySelector('#userStatusConfirmModal .close');
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', confirmUserStatusToggle);
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', cancelUserStatusToggle);
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', cancelUserStatusToggle);
+    }
+
+    // Handle modal close events - only cancel if not confirmed
+    let isConfirmed = false;
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function () {
+            isConfirmed = true;
+            confirmUserStatusToggle();
+        });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+            isConfirmed = false;
+            cancelUserStatusToggle();
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            isConfirmed = false;
+            cancelUserStatusToggle();
+        });
+    }
+
+    // Handle modal close events - only cancel if not confirmed
+    $('#userStatusConfirmModal').on('hidden.bs.modal', function () {
+        if (!isConfirmed) {
+            cancelUserStatusToggle();
+        }
+        isConfirmed = false; // Reset for next time
+    });
+});
+
+// Copy to clipboard function
+function copyToClipboard(text, button) {
+    if (navigator.clipboard && window.isSecureContext) {
+        // Use modern clipboard API
+        navigator.clipboard.writeText(text).then(function () {
+            showCopySuccess(button);
+        }).catch(function (err) {
+            console.error('Failed to copy: ', err);
+            fallbackCopyTextToClipboard(text, button);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(text, button);
+    }
+}
+
+function fallbackCopyTextToClipboard(text, button) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopySuccess(button);
+        } else {
+            showToast('Failed to copy User ID', 'error');
+        }
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+        showToast('Failed to copy User ID', 'error');
+    }
+
+    document.body.removeChild(textArea);
+}
+
+function showCopySuccess(button) {
+    // Change button appearance
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    button.classList.add('copied');
+
+    // Show success message
+    showToast('User ID copied to clipboard!', 'success');
+
+    // Reset button after 2 seconds
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.classList.remove('copied');
+    }, 2000);
+}
+
+// Global function to update dashboard statistics
+window.updateDashboardStatistics = function (data) {
+    console.log('Updating dashboard statistics with data:', data);
+
+    if (data.totalAccounts !== undefined) {
+        // Find total accounts element by text content
+        const totalAccountsElements = Array.from(document.querySelectorAll('h3')).filter(el =>
+            el.textContent.trim() === data.totalAccounts.toString()
+        );
+        if (totalAccountsElements.length > 0) {
+            // Update the first matching element
+            totalAccountsElements[0].textContent = data.totalAccounts;
+            console.log('Updated total accounts to:', data.totalAccounts);
+        }
+    }
+
+    if (data.activeAccounts !== undefined) {
+        // Find active accounts element by looking for the one with text-success class
+        const activeAccountsElement = document.querySelector('h3.text-success');
+        if (activeAccountsElement) {
+            activeAccountsElement.textContent = data.activeAccounts;
+            console.log('Updated active accounts to:', data.activeAccounts);
+        }
+    }
+
+    if (data.inactiveAccounts !== undefined) {
+        // Find inactive accounts element by looking for the one with text-warning class
+        const inactiveAccountsElement = document.querySelector('h3.text-warning');
+        if (inactiveAccountsElement) {
+            inactiveAccountsElement.textContent = data.inactiveAccounts;
+            console.log('Updated inactive accounts to:', data.inactiveAccounts);
+        }
+    }
+
+    if (data.pendingRequests !== undefined) {
+        // Find pending requests element by looking for the one with text-info class
+        const pendingRequestsElement = document.querySelector('h3.text-info');
+        if (pendingRequestsElement) {
+            pendingRequestsElement.textContent = data.pendingRequests;
+            console.log('Updated pending requests to:', data.pendingRequests);
+        }
+    }
+};

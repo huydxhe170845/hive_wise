@@ -19,6 +19,7 @@ import lombok.experimental.FieldDefaults;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -82,13 +83,19 @@ public class DashboardController {
             model.addAttribute("currentAdminSystemRole", userDetails.getSystemRoleName());
         }
 
-        List<User> allUsers;
+        // Load initial data (first page) for display
+        Page<User> userPage;
         if (keyword != null && !keyword.trim().isEmpty()) {
-            allUsers = userService.findByKeyword(keyword.trim());
+            userPage = userService.findByKeywordPaginated(keyword.trim(), 0, 10);
         } else {
-            allUsers = userService.getAllUsers();
+            userPage = userService.getAllUsersPaginated(0, 10);
         }
-        model.addAttribute("users", allUsers);
+
+        model.addAttribute("users", userPage.getContent());
+        model.addAttribute("currentPage", 0);
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("totalElements", userPage.getTotalElements());
+        model.addAttribute("size", 10);
         model.addAttribute("keyword", keyword);
         model.addAttribute("totalAccounts", userService.getTotalAccounts());
         model.addAttribute("activeAccounts", userService.getActiveAccounts());
@@ -297,6 +304,75 @@ public class DashboardController {
         }
     }
 
+    @PostMapping("/admin/toggle-user-status")
+    public ResponseEntity<?> toggleUserStatus(
+            @RequestParam("userId") String userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        System.out.println(
+                "Authentication check - userDetails: " + (userDetails != null ? userDetails.getUsername() : "null"));
+        if (userDetails != null) {
+            System.out.println("User role: " + userDetails.getAuthorities());
+        }
+
+        try {
+            System.out.println("Toggle user status called for userId: " + userId);
+
+            // Validate required fields
+            if (userId == null || userId.trim().isEmpty()) {
+                System.out.println("User ID is null or empty");
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "User ID is required"));
+            }
+
+            // Get existing user
+            User existingUser = userService.findById(userId.trim());
+            if (existingUser == null) {
+                System.out.println("User not found with ID: " + userId);
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "User not found"));
+            }
+
+            System.out.println("Current user status: " + existingUser.isActivated());
+
+            // Toggle user status
+            boolean newStatus = !existingUser.isActivated();
+            System.out.println("New status will be: " + newStatus);
+
+            User updatedUser = userService.updateUserActivationStatus(userId.trim(), newStatus);
+            System.out.println("User updated successfully. New status: " + updatedUser.isActivated());
+
+            // Prepare success response
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "User status updated successfully!");
+            response.put("userId", updatedUser.getId());
+            response.put("isActivated", updatedUser.isActivated());
+            response.put("username", updatedUser.getUsername());
+            response.put("email", updatedUser.getEmail());
+            response.put("name", updatedUser.getName());
+
+            // Update statistics
+            response.put("totalAccounts", userService.getTotalAccounts());
+            response.put("activeAccounts", userService.getActiveAccounts());
+            response.put("inactiveAccounts", userService.getInactiveAccounts());
+            response.put("pendingRequests", userService.getPendingRequests());
+
+            System.out.println("Response prepared successfully");
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("IllegalArgumentException: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            System.out.println("Exception occurred: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "Internal server error: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/admin/edit")
     public ResponseEntity<?> editUserAccount(
             @RequestParam("userId") String userId,
@@ -411,6 +487,56 @@ public class DashboardController {
 
             return ResponseEntity.ok(userList);
         } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/admin/users/paginated")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getUsersPaginated(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "keyword", required = false) String keyword) {
+        try {
+            System.out.println("Loading users - page: " + page + ", size: " + size + ", keyword: " + keyword);
+
+            Page<User> userPage;
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                userPage = userService.findByKeywordPaginated(keyword.trim(), page, size);
+            } else {
+                userPage = userService.getAllUsersPaginated(page, size);
+            }
+
+            List<Map<String, Object>> userList = new ArrayList<>();
+            for (User user : userPage.getContent()) {
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("id", user.getId());
+                userMap.put("username", user.getUsername());
+                userMap.put("name", user.getName());
+                userMap.put("email", user.getEmail());
+                userMap.put("phoneNumber", user.getPhoneNumber());
+                userMap.put("avatar", user.getAvatar());
+                userMap.put("isActivated", user.isActivated());
+                userMap.put("authProvider", user.getAuthProvider());
+                userMap.put("systemRole", user.getSystemRole() != null ? user.getSystemRole().getName() : null);
+                userMap.put("createdAt", user.getCreatedAt());
+                userList.add(userMap);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("users", userList);
+            response.put("currentPage", page);
+            response.put("totalPages", userPage.getTotalPages());
+            response.put("totalElements", userPage.getTotalElements());
+            response.put("size", size);
+            response.put("keyword", keyword);
+
+            System.out.println(
+                    "Response - users count: " + userList.size() + ", total pages: " + userPage.getTotalPages());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("Error in getUsersPaginated: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

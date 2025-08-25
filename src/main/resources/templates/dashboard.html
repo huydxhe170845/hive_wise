@@ -1176,42 +1176,46 @@
                                                 </div>
                                             </div>
                                             <div class="filter-dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                                                    id="userFilterDropdown" data-toggle="dropdown" aria-haspopup="true"
-                                                    aria-expanded="false">
-                                                    <i class="fas fa-filter mr-2"></i>Filter
+                                                <button
+                                                    class="btn btn-outline-secondary dropdown-toggle filter-btn-circle"
+                                                    type="button" id="userFilterDropdown" data-toggle="dropdown"
+                                                    aria-haspopup="true" aria-expanded="false" title="Filter">
+                                                    <i class="fas fa-filter"></i>
                                                 </button>
                                                 <div class="dropdown-menu dropdown-menu-right p-3"
                                                     aria-labelledby="userFilterDropdown" style="min-width: 300px;">
                                                     <h6 class="dropdown-header">Filter Options</h6>
                                                     <div class="form-group">
                                                         <label for="userStatusFilter" class="small">Status</label>
-                                                        <select class="form-control form-control-sm"
-                                                            id="userStatusFilter">
-                                                            <option value="">All Status</option>
-                                                            <option value="Active">Active</option>
-                                                            <option value="Inactive">Inactive</option>
-                                                        </select>
+                                                        <div class="custom-select-container">
+                                                            <select class="custom-select" id="userStatusFilter">
+                                                                <option value="">All Status</option>
+                                                                <option value="Active">Active</option>
+                                                                <option value="Inactive">Inactive</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="userRoleFilter" class="small">Role</label>
-                                                        <select class="form-control form-control-sm"
-                                                            id="userRoleFilter">
-                                                            <option value="">All Roles</option>
-                                                            <option value="USER">User</option>
-                                                            <option value="ADMIN">Admin</option>
-                                                        </select>
+                                                        <div class="custom-select-container">
+                                                            <select class="custom-select" id="userRoleFilter">
+                                                                <option value="">All Roles</option>
+                                                                <option value="USER">User</option>
+                                                                <option value="ADMIN">Admin</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="userProviderFilter" class="small">Auth
                                                             Provider
                                                         </label>
-                                                        <select class="form-control form-control-sm"
-                                                            id="userProviderFilter">
-                                                            <option value="">All Providers</option>
-                                                            <option value="LOCAL">Local</option>
-                                                            <option value="GOOGLE">Google</option>
-                                                        </select>
+                                                        <div class="custom-select-container">
+                                                            <select class="custom-select" id="userProviderFilter">
+                                                                <option value="">All Providers</option>
+                                                                <option value="LOCAL">Local</option>
+                                                                <option value="GOOGLE">Google</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                     <div class="date-range-filter">
                                                         <div class="form-group">
@@ -1252,7 +1256,7 @@
                                             <div class="row mb-3" id="userFilterResultsInfo" style="display: none;">
                                                 <div class="col-12">
                                                     <div class="alert alert-info py-2 mb-0">
-                                                        <i class="fas fa-info-circle mr-2"></i>
+                                                        <i class="fas fa-info-circle mr-2" style="margin-top: 5px;"></i>
                                                         <span id="userFilterResultsText">Showing filtered results</span>
                                                         <button type="button" class="btn btn-sm btn-outline-info ml-2"
                                                             id="clearAllUserFilters">
@@ -1913,43 +1917,66 @@
                                                     <input type="text" class="form-control" id="vaultSearchInput"
                                                         placeholder="Search vaults..." style="padding-right: 35px;">
                                                     <i class="fas fa-search position-absolute"
-                                                        style="right: 10px; top: 50%; transform: translateY(-50%); color: #666;"></i>
+                                                        style="right: 15px; top: 50%; transform: translateY(-50%); color: #666;"></i>
                                                 </div>
                                             </div>
                                             <div class="filter-dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                                                    id="vaultFilterDropdown" data-toggle="dropdown" aria-haspopup="true"
-                                                    aria-expanded="false">
-                                                    <i class="fas fa-filter mr-2"></i>Filter
+                                                <button
+                                                    class="btn btn-outline-secondary dropdown-toggle filter-btn-circle"
+                                                    type="button" id="vaultFilterDropdown" data-toggle="dropdown"
+                                                    aria-haspopup="true" aria-expanded="false" title="Filter">
+                                                    <i class="fas fa-filter"></i>
                                                 </button>
                                                 <div class="dropdown-menu dropdown-menu-right p-3"
                                                     aria-labelledby="vaultFilterDropdown" style="min-width: 300px;">
                                                     <h6 class="dropdown-header">Filter Options</h6>
                                                     <div class="form-group">
                                                         <label for="statusFilter" class="small">Status</label>
-                                                        <select class="form-control form-control-sm" id="statusFilter">
-                                                            <option value="">All Status</option>
-                                                            <option value="Active">Active</option>
-                                                            <option value="Inactive">Inactive</option>
-                                                            <option value="Archived">Archived</option>
-                                                        </select>
+                                                        <div class="custom-select-container">
+                                                            <select class="custom-select" id="statusFilter">
+                                                                <option value="">All Status</option>
+                                                                <option value="Active">Active</option>
+                                                                <option value="Inactive">Inactive</option>
+                                                                <option value="Archived">Archived</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="ownerFilter" class="small">Owner</label>
-                                                        <input type="text" class="form-control form-control-sm"
-                                                            id="ownerFilter" placeholder="Filter by owner...">
+                                                        <div class="vault-owner-select-container">
+                                                            <div class="vault-owner-search-wrapper">
+                                                                <input type="text" class="form-control form-control-sm"
+                                                                    id="ownerFilter" placeholder="Search for owner..."
+                                                                    autocomplete="off">
+                                                                <button type="button" class="vault-owner-clear-btn"
+                                                                    id="clearOwnerFilter" style="display: none;">
+                                                                    <i class="fas fa-times"></i>
+                                                                </button>
+                                                            </div>
+                                                            <div class="vault-owner-dropdown" id="ownerFilterDropdown"
+                                                                style="display: none;">
+                                                                <div class="vault-owner-list" id="ownerFilterList">
+                                                                    <!-- User options will be populated here -->
+                                                                </div>
+                                                            </div>
+                                                            <!-- Hidden inputs to store selected user data -->
+                                                            <input type="hidden" id="selectedOwnerId" value="">
+                                                            <input type="hidden" id="selectedOwnerName" value="">
+                                                            <input type="hidden" id="selectedOwnerEmail" value="">
+                                                        </div>
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="memberCountFilter" class="small">
                                                             Member Count</label>
-                                                        <select class="form-control form-control-sm"
-                                                            id="memberCountFilter">
-                                                            <option value="">All</option>
-                                                            <option value="0">No members</option>
-                                                            <option value="1-5">1-5 members</option>
-                                                            <option value="6-20">6-20 members</option>
-                                                            <option value="20+">20+ members</option>
-                                                        </select>
+                                                        <div class="custom-select-container">
+                                                            <select class="custom-select" id="memberCountFilter">
+                                                                <option value="">All</option>
+                                                                <option value="0">No members</option>
+                                                                <option value="1-5">1-5 members</option>
+                                                                <option value="6-20">6-20 members</option>
+                                                                <option value="20+">20+ members</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                     <div class="date-range-filter">
                                                         <div class="form-group">
@@ -1991,7 +2018,7 @@
                                             <div class="row mb-3" id="filterResultsInfo" style="display: none;">
                                                 <div class="col-12">
                                                     <div class="alert alert-info py-2 mb-0">
-                                                        <i class="fas fa-info-circle mr-2"></i>
+                                                        <i class="fas fa-info-circle mr-2" style="margin-top: 5px;"></i>
                                                         <span id="filterResultsText">Showing filtered results</span>
                                                         <button type="button" class="btn btn-sm btn-outline-info ml-2"
                                                             id="clearAllFilters">
@@ -2003,6 +2030,11 @@
                                             <table class="table table-striped" id="vaultTable">
                                                 <thead>
                                                     <tr>
+                                                        <th class="sortable" data-column="id" style="cursor: pointer;">
+                                                            Vault ID
+                                                            <i class="fas fa-sort sort-icon"
+                                                                data-sort-direction="none"></i>
+                                                        </th>
                                                         <th class="sortable" data-column="name"
                                                             style="cursor: pointer;">
                                                             Vault Name
@@ -2046,7 +2078,7 @@
                                                 </thead>
                                                 <tbody>
                                                     <tr th:if="${#lists.isEmpty(vaults)}">
-                                                        <td colspan="7" class="text-center py-4">
+                                                        <td colspan="8" class="text-center py-4">
                                                             <div class="text-muted">
                                                                 <i class="fas fa-vault fa-3x mb-3"></i>
                                                                 <p class="mb-0">No vaults found</p>
@@ -2055,6 +2087,19 @@
                                                     </tr>
                                                     <tr th:each="vault : ${vaults}"
                                                         th:unless="${#lists.isEmpty(vaults)}">
+                                                        <td>
+                                                            <div
+                                                                class="d-flex align-items-center justify-content-center">
+                                                                <span class="vault-id-cell" th:text="${vault.id}">Vault
+                                                                    ID</span>
+                                                                <button
+                                                                    class="btn btn-sm btn-outline-secondary ml-2 copy-vault-id-btn"
+                                                                    th:data-vault-id="${vault.id}"
+                                                                    title="Copy Vault ID">
+                                                                    <i class="fas fa-copy"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                                 <i class="fas fa-lock mr-2"
@@ -2080,10 +2125,6 @@
                                                                         onclick="confirmToggleVaultStatus(this)">
                                                                     <span class="slider round"></span>
                                                                 </label>
-                                                                <span class="status-label" th:text="${vault.status}"
-                                                                    th:class="'status-label ' + (${vault.isActivated} ? 'active' : 'inactive')">
-                                                                    Status
-                                                                </span>
                                                             </div>
                                                         </td>
                                                         <td
@@ -2114,6 +2155,21 @@
                                                     </tr>
                                                 </tbody>
                                             </table>
+                                        </div>
+
+                                        <!-- Pagination Section -->
+                                        <div class="row justify-content-between mt-3">
+                                            <div id="vault-list-page-info" class="col-md-6">
+                                                <span>Loading...</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <nav aria-label="Page navigation example">
+                                                    <ul class="pagination justify-content-end mb-0"
+                                                        id="vaultPagination">
+                                                        <!-- Pagination will be loaded by JavaScript -->
+                                                    </ul>
+                                                </nav>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -22,10 +22,8 @@ function confirmVaultStatusToggle() {
     if (!currentToggleCheckbox) return;
 
     const vaultId = currentToggleCheckbox.getAttribute('data-vault-id');
-    const statusLabel = currentToggleCheckbox.parentElement.parentElement.querySelector('.status-label');
 
     currentToggleCheckbox.disabled = true;
-    statusLabel.textContent = 'Updating...';
 
     fetch('/dashboard/toggle-vault-status', {
         method: 'POST',
@@ -38,8 +36,6 @@ function confirmVaultStatusToggle() {
         .then(data => {
             if (data.success) {
                 currentToggleCheckbox.checked = data.newStatus;
-                statusLabel.textContent = data.statusText;
-                statusLabel.className = `status-label ${data.newStatus ? 'active' : 'inactive'}`;
 
                 // Update View Vault action visibility
                 const vaultRow = currentToggleCheckbox.closest('tr');
@@ -55,10 +51,13 @@ function confirmVaultStatusToggle() {
                 }
 
                 showToast(`Vault status updated to ${data.statusText}`, 'success');
+
+                // Refresh vault list to update pagination info
+                setTimeout(() => {
+                    loadVaultsPaginated(currentVaultPage, vaultFilters);
+                }, 500);
             } else {
                 currentToggleCheckbox.checked = !currentToggleCheckbox.checked;
-                statusLabel.textContent = currentToggleCheckbox.checked ? 'Active' : 'Inactive';
-                statusLabel.className = `status-label ${currentToggleCheckbox.checked ? 'active' : 'inactive'}`;
 
                 // Update View Vault action visibility on API error (revert to original state)
                 const vaultRow = currentToggleCheckbox.closest('tr');
@@ -78,8 +77,6 @@ function confirmVaultStatusToggle() {
         })
         .catch(error => {
             currentToggleCheckbox.checked = !currentToggleCheckbox.checked;
-            statusLabel.textContent = currentToggleCheckbox.checked ? 'Active' : 'Inactive';
-            statusLabel.className = `status-label ${currentToggleCheckbox.checked ? 'active' : 'inactive'}`;
 
             // Update View Vault action visibility on error (revert to original state)
             const vaultRow = currentToggleCheckbox.closest('tr');
@@ -2092,6 +2089,9 @@ document.addEventListener('DOMContentLoaded', function () {
     initializePageNavigation();
     initializeDashboardFeatures();
 
+    // Initialize vault pagination
+    initializeVaultPagination();
+
     // Initialize unified dropdown management
     initializeDropdownManagement();
 
@@ -2112,7 +2112,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         initializeDashboardFeatures();
                         // Refresh vault list when entering vault management page
                         if (target.id === 'vault-management-page') {
-                            refreshVaultList();
+                            initializeVaultPagination();
                         }
                     }, 100);
                 }
@@ -2145,7 +2145,7 @@ document.addEventListener('DOMContentLoaded', function () {
         observer.observe(vaultPage, { attributes: true });
         // Refresh vault list when entering vault management page
         if (vaultPage.classList.contains('active')) {
-            refreshVaultList();
+            initializeVaultPagination();
         }
     }
     if (vaultOverviewPage) {
@@ -2271,35 +2271,79 @@ document.addEventListener('DOMContentLoaded', function () {
         updateFilterInfo(searchTerm, visibleCount);
     }
 
+    // Simple and clean vault filter function
     function applyFilters() {
+        console.log('Applying vault filters...');
+
+        // Get filter values
+        const statusFilter = document.getElementById('statusFilter');
+        const ownerFilter = document.getElementById('ownerFilter');
+        const memberCountFilter = document.getElementById('memberCountFilter');
+        const vaultDateFromFilter = document.getElementById('vaultDateFromFilter');
+        const vaultDateToFilter = document.getElementById('vaultDateToFilter');
+
+        // Get selected owner info
+        const selectedOwnerName = document.getElementById('selectedOwnerName');
+        const selectedOwnerEmail = document.getElementById('selectedOwnerEmail');
+
+        console.log('Filter elements:', {
+            statusFilter: statusFilter?.value,
+            ownerFilter: ownerFilter?.value,
+            selectedOwnerName: selectedOwnerName?.value,
+            selectedOwnerEmail: selectedOwnerEmail?.value
+        });
+
+        // Get all rows
         const rows = vaultTable.querySelectorAll('tbody tr');
         let visibleCount = 0;
         const activeFilters = [];
 
+        // Apply filters to each row
         rows.forEach(row => {
-            if (row.cells.length < 6) return; // Skip empty rows
+            // Skip rows with colspan (like "No vaults found" row)
+            if (row.querySelector('td[colspan]')) {
+                row.style.display = 'none';
+                return;
+            }
+
+            // Skip rows without enough cells
+            if (row.cells.length < 5) return;
 
             let isVisible = true;
 
             // Status filter
-            if (statusFilter.value) {
-                const status = row.cells[3].textContent.trim();
-                if (status !== statusFilter.value) {
+            if (statusFilter && statusFilter.value) {
+                const statusCell = row.cells[4]; // Status column (toggle switch)
+                const statusCheckbox = statusCell.querySelector('input[type="checkbox"]');
+                const isActive = statusCheckbox ? statusCheckbox.checked : false;
+                const expectedStatus = statusFilter.value.toLowerCase() === 'active';
+
+                if (isActive !== expectedStatus) {
                     isVisible = false;
                 }
             }
 
             // Owner filter
-            if (ownerFilter.value) {
-                const owner = row.cells[1].textContent.toLowerCase();
-                if (!owner.includes(ownerFilter.value.toLowerCase())) {
+            if (selectedOwnerName && selectedOwnerName.value) {
+                const ownerCell = row.cells[2]; // Owner column
+                const ownerText = ownerCell.textContent.trim().toLowerCase();
+                const selectedText = selectedOwnerName.value.trim().toLowerCase();
+
+                console.log('Owner filter check:', {
+                    ownerText: ownerText,
+                    selectedText: selectedText,
+                    includes: ownerText.includes(selectedText)
+                });
+
+                if (!ownerText.includes(selectedText)) {
                     isVisible = false;
                 }
             }
 
             // Member count filter
-            if (memberCountFilter.value) {
-                const memberBadge = row.cells[2].querySelector('.badge');
+            if (memberCountFilter && memberCountFilter.value) {
+                const memberCell = row.cells[3]; // Member count column (index 3)
+                const memberBadge = memberCell.querySelector('.badge');
                 const memberCount = memberBadge ? parseInt(memberBadge.textContent) : 0;
 
                 let memberRangeMatch = false;
@@ -2324,32 +2368,27 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // Date range filter
-            if (vaultDateFromFilter && vaultDateToFilter && (vaultDateFromFilter.value || vaultDateToFilter.value)) {
-                const createdDateCell = row.cells[4]; // Created At column
-                const createdDateText = createdDateCell.textContent.trim();
+            if ((vaultDateFromFilter && vaultDateFromFilter.value) || (vaultDateToFilter && vaultDateToFilter.value)) {
+                const dateCell = row.cells[5]; // Created date column (index 5)
+                const dateText = dateCell.textContent.trim();
 
-                if (createdDateText && createdDateText !== 'Date') {
-                    // Parse the date from format yyyy/MM/dd
-                    const dateParts = createdDateText.split('/');
+                if (dateText && dateText !== 'Date') {
+                    const dateParts = dateText.split('/');
                     if (dateParts.length === 3) {
-                        const createdDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                        const rowDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
-                        // Check from date
-                        if (vaultDateFromFilter.value) {
+                        if (vaultDateFromFilter && vaultDateFromFilter.value) {
                             const fromDate = new Date(vaultDateFromFilter.value);
-                            // Set time to start of day for accurate comparison
                             fromDate.setHours(0, 0, 0, 0);
-                            if (createdDate < fromDate) {
+                            if (rowDate < fromDate) {
                                 isVisible = false;
                             }
                         }
 
-                        // Check to date
-                        if (vaultDateToFilter.value) {
+                        if (vaultDateToFilter && vaultDateToFilter.value) {
                             const toDate = new Date(vaultDateToFilter.value);
-                            // Set time to end of day for accurate comparison
                             toDate.setHours(23, 59, 59, 999);
-                            if (createdDate > toDate) {
+                            if (rowDate > toDate) {
                                 isVisible = false;
                             }
                         }
@@ -2357,42 +2396,64 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
+            // Show/hide row
             row.style.display = isVisible ? '' : 'none';
             if (isVisible) visibleCount++;
         });
 
-        // Build active filters array
-        if (statusFilter.value) activeFilters.push(`Status: ${statusFilter.value}`);
-        if (ownerFilter.value) activeFilters.push(`Owner: ${ownerFilter.value}`);
-        if (memberCountFilter.value) activeFilters.push(`Members: ${memberCountFilter.value}`);
-        if (vaultDateFromFilter && vaultDateToFilter && (vaultDateFromFilter.value || vaultDateToFilter.value)) {
-            let dateFilterText = 'Created Date: ';
-            if (vaultDateFromFilter.value && vaultDateToFilter.value) {
-                const fromDate = new Date(vaultDateFromFilter.value).toLocaleDateString('vi-VN');
-                const toDate = new Date(vaultDateToFilter.value).toLocaleDateString('vi-VN');
-                dateFilterText += `${fromDate} đến ${toDate}`;
-            } else if (vaultDateFromFilter.value) {
-                const fromDate = new Date(vaultDateFromFilter.value).toLocaleDateString('vi-VN');
-                dateFilterText += `từ ${fromDate}`;
-            } else if (vaultDateToFilter.value) {
-                const toDate = new Date(vaultDateToFilter.value).toLocaleDateString('vi-VN');
-                dateFilterText += `đến ${toDate}`;
+        // Build active filters text
+        if (statusFilter && statusFilter.value) activeFilters.push(`Status: ${statusFilter.value}`);
+        if (selectedOwnerName && selectedOwnerName.value) activeFilters.push(`Owner: ${selectedOwnerName.value}`);
+        if (memberCountFilter && memberCountFilter.value) activeFilters.push(`Members: ${memberCountFilter.value}`);
+        if ((vaultDateFromFilter && vaultDateFromFilter.value) || (vaultDateToFilter && vaultDateToFilter.value)) {
+            let dateText = 'Created Date: ';
+            if (vaultDateFromFilter && vaultDateFromFilter.value && vaultDateToFilter && vaultDateToFilter.value) {
+                dateText += `${new Date(vaultDateFromFilter.value).toLocaleDateString('vi-VN')} đến ${new Date(vaultDateToFilter.value).toLocaleDateString('vi-VN')}`;
+            } else if (vaultDateFromFilter && vaultDateFromFilter.value) {
+                dateText += `từ ${new Date(vaultDateFromFilter.value).toLocaleDateString('vi-VN')}`;
+            } else if (vaultDateToFilter && vaultDateToFilter.value) {
+                dateText += `đến ${new Date(vaultDateToFilter.value).toLocaleDateString('vi-VN')}`;
             }
-            activeFilters.push(dateFilterText);
+            activeFilters.push(dateText);
         }
 
+        // Update filter info
         updateFilterInfo(activeFilters.join(', '), visibleCount);
 
-        // Close dropdown after applying filters
+        // Close dropdown
         $('#vaultFilterDropdown').dropdown('hide');
+
+        console.log(`Filter applied: ${visibleCount} rows visible`);
     }
 
+    // Simple and clean clear vault filters function
     function clearFilters() {
-        statusFilter.value = '';
-        ownerFilter.value = '';
-        memberCountFilter.value = '';
+        console.log('Clearing vault filters...');
+
+        // Clear filter inputs
+        const statusFilter = document.getElementById('statusFilter');
+        const ownerFilter = document.getElementById('ownerFilter');
+        const memberCountFilter = document.getElementById('memberCountFilter');
+        const vaultDateFromFilter = document.getElementById('vaultDateFromFilter');
+        const vaultDateToFilter = document.getElementById('vaultDateToFilter');
+
+        if (statusFilter) statusFilter.value = '';
+        if (ownerFilter) ownerFilter.value = '';
+        if (memberCountFilter) memberCountFilter.value = '';
         if (vaultDateFromFilter) vaultDateFromFilter.value = '';
         if (vaultDateToFilter) vaultDateToFilter.value = '';
+
+        // Clear owner filter selection
+        const selectedOwnerId = document.getElementById('selectedOwnerId');
+        const selectedOwnerName = document.getElementById('selectedOwnerName');
+        const selectedOwnerEmail = document.getElementById('selectedOwnerEmail');
+        const clearOwnerFilterBtn = document.getElementById('clearOwnerFilter');
+
+        if (selectedOwnerId) selectedOwnerId.value = '';
+        if (selectedOwnerName) selectedOwnerName.value = '';
+        if (selectedOwnerEmail) selectedOwnerEmail.value = '';
+        if (clearOwnerFilterBtn) clearOwnerFilterBtn.style.display = 'none';
+        if (ownerFilter) ownerFilter.classList.remove('user-selected');
 
         // Show all rows
         const rows = vaultTable.querySelectorAll('tbody tr');
@@ -2400,23 +2461,39 @@ document.addEventListener('DOMContentLoaded', function () {
             row.style.display = '';
         });
 
-        filterResultsInfo.style.display = 'none';
+        // Hide filter results info
+        const filterResultsInfo = document.getElementById('filterResultsInfo');
+        if (filterResultsInfo) filterResultsInfo.style.display = 'none';
 
-        // Close dropdown after clearing
+        // Close dropdown
         $('#vaultFilterDropdown').dropdown('hide');
+
+        console.log('Vault filters cleared');
     }
 
+    // Simple and clean clear all vault filters function
     function clearAllFilters() {
         clearFilters();
-        searchInput.value = '';
-        performSearch();
+
+        // Also clear search input
+        const searchInput = document.getElementById('vaultSearchInput');
+        if (searchInput) {
+            searchInput.value = '';
+            // Trigger search to refresh results
+            const event = new Event('input');
+            searchInput.dispatchEvent(event);
+        }
     }
 
+    // Simple and clean update filter info function
     function updateFilterInfo(filterText, visibleCount) {
-        if (filterText && filterText.trim() !== '') {
+        const filterResultsText = document.getElementById('filterResultsText');
+        const filterResultsInfo = document.getElementById('filterResultsInfo');
+
+        if (filterText && filterText.trim() !== '' && filterResultsText && filterResultsInfo) {
             filterResultsText.textContent = `Hiển thị ${visibleCount} kết quả với bộ lọc: ${filterText}`;
             filterResultsInfo.style.display = 'block';
-        } else {
+        } else if (filterResultsInfo) {
             filterResultsInfo.style.display = 'none';
         }
     }
@@ -2603,12 +2680,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td>${joinDate}</td>
                 <td class="text-center">
                     <div class="d-flex align-items-center justify-content-center list-user-action">
-                        <a class="iq-bg-primary edit-user-btn"
+                        <a class="iq-bg-primary edit-user-btn" style="background-color: black; border-radius: 20px; padding: 5px 10px; margin-right: 5px;"
                            data-toggle="tooltip" data-placement="top" title=""
                            data-original-title="Edit" href="#"
                            data-user-id="${user.id}"
                            ${!user.isActivated ? 'style="display: none;"' : ''}>
-                            <i class="ri-pencil-line"></i>
+                            <i class="ri-pencil-line" style="color: white;"></i>
                         </a>
                     </div>
                 </td>
@@ -2788,68 +2865,120 @@ document.addEventListener('DOMContentLoaded', function () {
         updateUserFilterInfo(searchTerm, visibleCount);
     }
 
+    // Simple and clean user filter function
     function applyUserFilters() {
+        console.log('Applying user filters...');
+
+        // Get filter values
+        const userStatusFilter = document.getElementById('userStatusFilter');
+        const userRoleFilter = document.getElementById('userRoleFilter');
+        const userProviderFilter = document.getElementById('userProviderFilter');
+        const userDateFromFilter = document.getElementById('userDateFromFilter');
+        const userDateToFilter = document.getElementById('userDateToFilter');
+
+        console.log('User filter elements:', {
+            userStatusFilter: userStatusFilter?.value,
+            userRoleFilter: userRoleFilter?.value,
+            userProviderFilter: userProviderFilter?.value,
+            userDateFromFilter: userDateFromFilter?.value,
+            userDateToFilter: userDateToFilter?.value
+        });
+
+        // Get all rows
         const rows = userTable.querySelectorAll('tbody tr');
         let visibleCount = 0;
         const activeFilters = [];
 
+        // Apply filters to each row
         rows.forEach(row => {
-            if (row.cells.length < 8) return; // Skip empty rows
+            // Skip rows with colspan (like "No users found" row)
+            if (row.querySelector('td[colspan]')) {
+                row.style.display = 'none';
+                return;
+            }
+
+            // Skip rows without enough cells
+            if (row.cells.length < 7) return;
 
             let isVisible = true;
 
             // Status filter
-            if (userStatusFilter.value) {
-                const statusBadge = row.cells[6].querySelector('.badge');
-                const status = statusBadge ? statusBadge.textContent.trim() : '';
-                if (status !== userStatusFilter.value) {
-                    isVisible = false;
+            if (userStatusFilter && userStatusFilter.value) {
+                const statusCell = row.cells[6]; // Status column (index 6)
+
+                // Check for toggle switch (like vault status)
+                const statusToggle = statusCell.querySelector('input[type="checkbox"]');
+                if (statusToggle) {
+                    const isActive = statusToggle.checked;
+                    const expectedStatus = userStatusFilter.value.toLowerCase() === 'active';
+
+                    console.log('User status filter check (toggle):', {
+                        isActive: isActive,
+                        filterValue: userStatusFilter.value,
+                        expectedStatus: expectedStatus,
+                        match: isActive === expectedStatus
+                    });
+
+                    if (isActive !== expectedStatus) {
+                        isVisible = false;
+                    }
+                } else {
+                    // Check for badge (fallback)
+                    const statusBadge = statusCell.querySelector('.badge');
+                    const status = statusBadge ? statusBadge.textContent.trim() : '';
+
+                    console.log('User status filter check (badge):', {
+                        status: status,
+                        filterValue: userStatusFilter.value,
+                        match: status === userStatusFilter.value
+                    });
+
+                    if (status !== userStatusFilter.value) {
+                        isVisible = false;
+                    }
                 }
             }
 
             // Role filter
-            if (userRoleFilter.value) {
-                const role = row.cells[5].textContent.trim();
+            if (userRoleFilter && userRoleFilter.value) {
+                const roleCell = row.cells[5]; // Role column (index 5)
+                const role = roleCell.textContent.trim();
                 if (!role.includes(userRoleFilter.value)) {
                     isVisible = false;
                 }
             }
 
             // Provider filter
-            if (userProviderFilter.value) {
-                const provider = row.cells[4].textContent.trim();
+            if (userProviderFilter && userProviderFilter.value) {
+                const providerCell = row.cells[4]; // Provider column (index 4)
+                const provider = providerCell.textContent.trim();
                 if (provider !== userProviderFilter.value) {
                     isVisible = false;
                 }
             }
 
             // Date range filter
-            if (userDateFromFilter.value || userDateToFilter.value) {
-                const joinDateCell = row.cells[7]; // Join Date column
-                const joinDateText = joinDateCell.textContent.trim();
+            if ((userDateFromFilter && userDateFromFilter.value) || (userDateToFilter && userDateToFilter.value)) {
+                const dateCell = row.cells[7]; // Join date column (index 7)
+                const dateText = dateCell.textContent.trim();
 
-                if (joinDateText && joinDateText !== 'Join Date') {
-                    // Parse the date from format yyyy/MM/dd
-                    const dateParts = joinDateText.split('/');
+                if (dateText && dateText !== 'Join Date') {
+                    const dateParts = dateText.split('/');
                     if (dateParts.length === 3) {
-                        const joinDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                        const rowDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
 
-                        // Check from date
-                        if (userDateFromFilter.value) {
+                        if (userDateFromFilter && userDateFromFilter.value) {
                             const fromDate = new Date(userDateFromFilter.value);
-                            // Set time to start of day for accurate comparison
                             fromDate.setHours(0, 0, 0, 0);
-                            if (joinDate < fromDate) {
+                            if (rowDate < fromDate) {
                                 isVisible = false;
                             }
                         }
 
-                        // Check to date
-                        if (userDateToFilter.value) {
+                        if (userDateToFilter && userDateToFilter.value) {
                             const toDate = new Date(userDateToFilter.value);
-                            // Set time to end of day for accurate comparison
                             toDate.setHours(23, 59, 59, 999);
-                            if (joinDate > toDate) {
+                            if (rowDate > toDate) {
                                 isVisible = false;
                             }
                         }
@@ -2857,42 +2986,52 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
+            // Show/hide row
             row.style.display = isVisible ? '' : 'none';
             if (isVisible) visibleCount++;
         });
 
-        // Build active filters array
-        if (userStatusFilter.value) activeFilters.push(`Status: ${userStatusFilter.value}`);
-        if (userRoleFilter.value) activeFilters.push(`Role: ${userRoleFilter.value}`);
-        if (userProviderFilter.value) activeFilters.push(`Provider: ${userProviderFilter.value}`);
-        if (userDateFromFilter.value || userDateToFilter.value) {
-            let dateFilterText = 'Join Date: ';
-            if (userDateFromFilter.value && userDateToFilter.value) {
-                const fromDate = new Date(userDateFromFilter.value).toLocaleDateString('vi-VN');
-                const toDate = new Date(userDateToFilter.value).toLocaleDateString('vi-VN');
-                dateFilterText += `${fromDate} đến ${toDate}`;
-            } else if (userDateFromFilter.value) {
-                const fromDate = new Date(userDateFromFilter.value).toLocaleDateString('vi-VN');
-                dateFilterText += `từ ${fromDate}`;
-            } else if (userDateToFilter.value) {
-                const toDate = new Date(userDateToFilter.value).toLocaleDateString('vi-VN');
-                dateFilterText += `đến ${toDate}`;
+        // Build active filters text
+        if (userStatusFilter && userStatusFilter.value) activeFilters.push(`Status: ${userStatusFilter.value}`);
+        if (userRoleFilter && userRoleFilter.value) activeFilters.push(`Role: ${userRoleFilter.value}`);
+        if (userProviderFilter && userProviderFilter.value) activeFilters.push(`Provider: ${userProviderFilter.value}`);
+        if ((userDateFromFilter && userDateFromFilter.value) || (userDateToFilter && userDateToFilter.value)) {
+            let dateText = 'Join Date: ';
+            if (userDateFromFilter && userDateFromFilter.value && userDateToFilter && userDateToFilter.value) {
+                dateText += `${new Date(userDateFromFilter.value).toLocaleDateString('vi-VN')} đến ${new Date(userDateToFilter.value).toLocaleDateString('vi-VN')}`;
+            } else if (userDateFromFilter && userDateFromFilter.value) {
+                dateText += `từ ${new Date(userDateFromFilter.value).toLocaleDateString('vi-VN')}`;
+            } else if (userDateToFilter && userDateToFilter.value) {
+                dateText += `đến ${new Date(userDateToFilter.value).toLocaleDateString('vi-VN')}`;
             }
-            activeFilters.push(dateFilterText);
+            activeFilters.push(dateText);
         }
 
+        // Update filter info
         updateUserFilterInfo(activeFilters.join(', '), visibleCount);
 
-        // Close dropdown after applying filters
+        // Close dropdown
         $('#userFilterDropdown').dropdown('hide');
+
+        console.log(`User filter applied: ${visibleCount} rows visible`);
     }
 
+    // Simple and clean clear user filters function
     function clearUserFilters() {
-        userStatusFilter.value = '';
-        userRoleFilter.value = '';
-        userProviderFilter.value = '';
-        userDateFromFilter.value = '';
-        userDateToFilter.value = '';
+        console.log('Clearing user filters...');
+
+        // Clear filter inputs
+        const userStatusFilter = document.getElementById('userStatusFilter');
+        const userRoleFilter = document.getElementById('userRoleFilter');
+        const userProviderFilter = document.getElementById('userProviderFilter');
+        const userDateFromFilter = document.getElementById('userDateFromFilter');
+        const userDateToFilter = document.getElementById('userDateToFilter');
+
+        if (userStatusFilter) userStatusFilter.value = '';
+        if (userRoleFilter) userRoleFilter.value = '';
+        if (userProviderFilter) userProviderFilter.value = '';
+        if (userDateFromFilter) userDateFromFilter.value = '';
+        if (userDateToFilter) userDateToFilter.value = '';
 
         // Show all rows
         const rows = userTable.querySelectorAll('tbody tr');
@@ -2900,31 +3039,432 @@ document.addEventListener('DOMContentLoaded', function () {
             row.style.display = '';
         });
 
-        userFilterResultsInfo.style.display = 'none';
+        // Hide filter results info
+        const userFilterResultsInfo = document.getElementById('userFilterResultsInfo');
+        if (userFilterResultsInfo) userFilterResultsInfo.style.display = 'none';
 
-        // Close dropdown after clearing
+        // Close dropdown
         $('#userFilterDropdown').dropdown('hide');
+
+        console.log('User filters cleared');
     }
 
+    // Simple and clean clear all user filters function
     function clearAllUserFilters() {
         clearUserFilters();
-        userSearchInput.value = '';
-        performUserSearch();
+
+        // Also clear search input
+        const userSearchInput = document.getElementById('userSearchInput');
+        if (userSearchInput) {
+            userSearchInput.value = '';
+            // Trigger search to refresh results
+            if (typeof loadUsersPaginated === 'function') {
+                loadUsersPaginated(0, '');
+            }
+        }
     }
 
+    // Simple and clean update user filter info function
     function updateUserFilterInfo(filterText, visibleCount) {
-        if (filterText && filterText.trim() !== '') {
-            userFilterResultsText.textContent = `Showing ${visibleCount} results with filters: ${filterText}`;
+        const userFilterResultsText = document.getElementById('userFilterResultsText');
+        const userFilterResultsInfo = document.getElementById('userFilterResultsInfo');
+
+        if (filterText && filterText.trim() !== '' && userFilterResultsText && userFilterResultsInfo) {
+            userFilterResultsText.textContent = `Hiển thị ${visibleCount} kết quả với bộ lọc: ${filterText}`;
             userFilterResultsInfo.style.display = 'block';
-        } else {
+        } else if (userFilterResultsInfo) {
             userFilterResultsInfo.style.display = 'none';
         }
+    }
+
+    // Initialize custom select functionality
+    function initializeCustomSelects() {
+        const customSelects = document.querySelectorAll('.custom-select');
+
+        customSelects.forEach(select => {
+            // Add enhanced styling and behavior
+            select.addEventListener('focus', function () {
+                this.parentElement.style.zIndex = '1051';
+            });
+
+            select.addEventListener('blur', function () {
+                setTimeout(() => {
+                    this.parentElement.style.zIndex = 'auto';
+                }, 200);
+            });
+
+            // Remove transition effects for cleaner UX
+            // select.addEventListener('change', function () {
+            //     // Add a subtle animation when value changes
+            //     this.style.transform = 'scale(1.02)';
+            //     setTimeout(() => {
+            //         this.style.transform = 'scale(1)';
+            //     }, 150);
+            // });
+
+            // Enhanced hover effects
+            select.addEventListener('mouseenter', function () {
+                this.style.borderColor = '#80bdff';
+                this.style.boxShadow = '0 0 0 0.2rem rgba(0, 123, 255, 0.15)';
+            });
+
+            select.addEventListener('mouseleave', function () {
+                if (!this.matches(':focus')) {
+                    this.style.borderColor = '#ced4da';
+                    this.style.boxShadow = 'none';
+                }
+            });
+        });
+    }
+
+    // Enhanced dropdown positioning and behavior
+    function enhanceUserFilterDropdown() {
+        const dropdown = document.querySelector('#userFilterDropdown');
+        const dropdownMenu = dropdown.nextElementSibling;
+
+        if (dropdown && dropdownMenu) {
+            // Ensure dropdown doesn't go off-screen
+            dropdown.addEventListener('click', function (e) {
+                setTimeout(() => {
+                    const rect = dropdownMenu.getBoundingClientRect();
+                    const viewportHeight = window.innerHeight;
+
+                    if (rect.bottom > viewportHeight) {
+                        dropdownMenu.style.maxHeight = `${viewportHeight - rect.top - 20}px`;
+                        dropdownMenu.style.overflowY = 'auto';
+                    }
+                }, 10);
+            });
+
+            // Add smooth animation when opening
+            dropdownMenu.addEventListener('show.bs.dropdown', function () {
+                this.style.opacity = '0';
+                this.style.transform = 'translateY(-10px)';
+
+                setTimeout(() => {
+                    this.style.transition = 'all 0.3s ease';
+                    this.style.opacity = '1';
+                    this.style.transform = 'translateY(0)';
+                }, 10);
+            });
+
+            // Add smooth animation when closing
+            dropdownMenu.addEventListener('hide.bs.dropdown', function () {
+                this.style.transition = 'all 0.2s ease';
+                this.style.opacity = '0';
+                this.style.transform = 'translateY(-10px)';
+            });
+        }
+    }
+
+    // Enhanced vault filter dropdown positioning and behavior
+    function enhanceVaultFilterDropdown() {
+        const dropdown = document.querySelector('#vaultFilterDropdown');
+        const dropdownMenu = dropdown.nextElementSibling;
+
+        if (dropdown && dropdownMenu) {
+            // Ensure dropdown doesn't go off-screen
+            dropdown.addEventListener('click', function (e) {
+                setTimeout(() => {
+                    const rect = dropdownMenu.getBoundingClientRect();
+                    const viewportHeight = window.innerHeight;
+
+                    if (rect.bottom > viewportHeight) {
+                        dropdownMenu.style.maxHeight = `${viewportHeight - rect.top - 20}px`;
+                        dropdownMenu.style.overflowY = 'auto';
+                    }
+                }, 10);
+            });
+
+            // Add smooth animation when opening
+            dropdownMenu.addEventListener('show.bs.dropdown', function () {
+                this.style.opacity = '0';
+                this.style.transform = 'translateY(-10px)';
+
+                setTimeout(() => {
+                    this.style.transition = 'all 0.3s ease';
+                    this.style.opacity = '1';
+                    this.style.transform = 'translateY(0)';
+                }, 10);
+            });
+
+            // Add smooth animation when closing
+            dropdownMenu.addEventListener('hide.bs.dropdown', function () {
+                this.style.transition = 'all 0.2s ease';
+                this.style.opacity = '0';
+                this.style.transform = 'translateY(-10px)';
+            });
+        }
+    }
+
+    // Initialize owner filter search functionality
+    function initializeOwnerFilterSearch() {
+        const ownerFilter = document.getElementById('ownerFilter');
+        const ownerFilterDropdown = document.getElementById('ownerFilterDropdown');
+        const ownerFilterList = document.getElementById('ownerFilterList');
+        const clearOwnerFilterBtn = document.getElementById('clearOwnerFilter');
+        const selectedOwnerId = document.getElementById('selectedOwnerId');
+        const selectedOwnerName = document.getElementById('selectedOwnerName');
+        const selectedOwnerEmail = document.getElementById('selectedOwnerEmail');
+
+        let allUsers = [];
+        let searchTimeout;
+
+        // Load all users for search
+        function loadUsersForOwnerFilter() {
+            fetch('/dashboard/admin/users')
+                .then(response => response.json())
+                .then(users => {
+                    allUsers = users;
+                })
+                .catch(error => {
+                    console.error('Error loading users for owner filter:', error);
+                });
+        }
+
+        // Create user item element for dropdown
+        function createOwnerFilterUserItem(user) {
+            const userItem = document.createElement('div');
+            userItem.className = 'vault-owner-item';
+            userItem.dataset.userId = user.id;
+            userItem.dataset.userEmail = user.email;
+            userItem.dataset.userName = user.name || user.username;
+
+            // Get user avatar or create default
+            const userAvatar = user.avatar || '';
+            const avatarHtml = userAvatar ?
+                `<img src="${userAvatar}" alt="${user.name || user.username}" class="user-avatar-img">` :
+                `<i class="fas fa-user"></i>`;
+
+            // Get correct role name
+            const roleName = user.roleName || 'USER';
+            const roleClass = roleName === 'ADMIN' ? 'admin-role' : 'user-role';
+
+            userItem.innerHTML = `
+                <div class="user-avatar">
+                    ${avatarHtml}
+                </div>
+                <div class="user-info">
+                    <div class="user-name">${user.name || user.username}</div>
+                    <div class="user-email">${user.email}</div>
+                </div>
+                <div class="user-role ${roleClass}">${roleName}</div>
+            `;
+
+            // Add click event
+            userItem.addEventListener('click', function () {
+                selectOwnerFilterUser(user);
+            });
+
+            return userItem;
+        }
+
+        // Select user for owner filter
+        function selectOwnerFilterUser(user) {
+            selectedOwnerId.value = user.id;
+            selectedOwnerName.value = user.name || user.username;
+            selectedOwnerEmail.value = user.email;
+
+            ownerFilter.value = `${user.name || user.username} (${user.email})`;
+            ownerFilter.classList.add('user-selected');
+
+            clearOwnerFilterBtn.style.display = 'block';
+            hideOwnerFilterDropdown();
+
+            console.log('Debug - Owner filter user selected:');
+            console.log('  user.id:', user.id);
+            console.log('  user.name:', user.name);
+            console.log('  user.username:', user.username);
+            console.log('  user.email:', user.email);
+            console.log('  selectedOwnerName.value:', selectedOwnerName.value);
+            console.log('  selectedOwnerEmail.value:', selectedOwnerEmail.value);
+        }
+
+        // Show owner filter dropdown
+        function showOwnerFilterDropdown() {
+            ownerFilterDropdown.style.display = 'block';
+        }
+
+        // Hide owner filter dropdown
+        function hideOwnerFilterDropdown() {
+            ownerFilterDropdown.style.display = 'none';
+        }
+
+        // Filter users based on search term
+        function filterOwnerUsers(searchTerm) {
+            const filteredUsers = allUsers.filter(user => {
+                const name = (user.name || user.username || '').toLowerCase();
+                const email = (user.email || '').toLowerCase();
+                const search = searchTerm.toLowerCase();
+
+                return name.includes(search) || email.includes(search);
+            });
+
+            // Clear current list
+            ownerFilterList.innerHTML = '';
+
+            // Add filtered users
+            filteredUsers.slice(0, 10).forEach(user => {
+                const userItem = createOwnerFilterUserItem(user);
+                ownerFilterList.appendChild(userItem);
+            });
+
+            // Show/hide dropdown based on results
+            if (filteredUsers.length > 0 && searchTerm.length > 0) {
+                showOwnerFilterDropdown();
+            } else {
+                hideOwnerFilterDropdown();
+            }
+        }
+
+        // Clear owner filter selection
+        function clearOwnerFilterSelection() {
+            selectedOwnerId.value = '';
+            selectedOwnerName.value = '';
+            selectedOwnerEmail.value = '';
+
+            ownerFilter.value = '';
+            ownerFilter.classList.remove('user-selected');
+
+            clearOwnerFilterBtn.style.display = 'none';
+            hideOwnerFilterDropdown();
+        }
+
+        // Event listeners
+        if (ownerFilter) {
+            // Search input event
+            ownerFilter.addEventListener('input', function () {
+                const searchTerm = this.value.trim();
+
+                // Clear timeout if exists
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+
+                // Set new timeout for search
+                searchTimeout = setTimeout(() => {
+                    if (searchTerm.length >= 2) {
+                        filterOwnerUsers(searchTerm);
+                    } else {
+                        hideOwnerFilterDropdown();
+                    }
+                }, 300);
+
+                // Remove user-selected class if user starts typing
+                if (searchTerm !== `${selectedOwnerName.value} (${selectedOwnerEmail.value})`) {
+                    this.classList.remove('user-selected');
+                    clearOwnerFilterBtn.style.display = 'none';
+                }
+            });
+
+            // Focus event
+            ownerFilter.addEventListener('focus', function () {
+                if (this.value.trim().length >= 2) {
+                    filterOwnerUsers(this.value.trim());
+                }
+            });
+
+            // Click outside to close dropdown
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.vault-owner-select-container')) {
+                    hideOwnerFilterDropdown();
+                }
+            });
+        }
+
+        // Clear button event
+        if (clearOwnerFilterBtn) {
+            clearOwnerFilterBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                clearOwnerFilterSelection();
+            });
+        }
+
+        // Load users on initialization
+        loadUsersForOwnerFilter();
+    }
+
+    // Initialize enhanced user filter functionality
+    function initializeEnhancedUserFilters() {
+        initializeCustomSelects();
+        enhanceUserFilterDropdown();
+        enhanceVaultFilterDropdown();
+
+        // Add keyboard navigation for custom selects
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
+                openDropdowns.forEach(dropdown => {
+                    const dropdownToggle = dropdown.previousElementSibling;
+                    if (dropdownToggle && dropdownToggle.classList.contains('dropdown-toggle')) {
+                        dropdownToggle.click();
+                    }
+                });
+            }
+        });
+
+        // Add click outside to close dropdown
+        document.addEventListener('click', function (e) {
+            const userFilterDropdown = document.getElementById('userFilterDropdown');
+            const userDropdownMenu = userFilterDropdown?.nextElementSibling;
+            const vaultFilterDropdown = document.getElementById('vaultFilterDropdown');
+            const vaultDropdownMenu = vaultFilterDropdown?.nextElementSibling;
+
+            if (userFilterDropdown && userDropdownMenu && !userFilterDropdown.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                if (userDropdownMenu.classList.contains('show')) {
+                    userFilterDropdown.click();
+                }
+            }
+
+            if (vaultFilterDropdown && vaultDropdownMenu && !vaultFilterDropdown.contains(e.target) && !vaultDropdownMenu.contains(e.target)) {
+                if (vaultDropdownMenu.classList.contains('show')) {
+                    vaultFilterDropdown.click();
+                }
+            }
+        });
+
+        // Add smooth scrolling for dropdown content
+        const userDropdownMenu = document.querySelector('#userFilterDropdown + .dropdown-menu');
+        const vaultDropdownMenu = document.querySelector('#vaultFilterDropdown + .dropdown-menu');
+
+        if (userDropdownMenu) {
+            userDropdownMenu.addEventListener('scroll', function (e) {
+                // Add smooth scrolling behavior
+                this.style.scrollBehavior = 'smooth';
+            });
+        }
+
+        if (vaultDropdownMenu) {
+            vaultDropdownMenu.addEventListener('scroll', function (e) {
+                // Add smooth scrolling behavior
+                this.style.scrollBehavior = 'smooth';
+            });
+        }
+
+        // Remove loading states for cleaner UX
+        // const customSelects = document.querySelectorAll('.custom-select');
+        // customSelects.forEach(select => {
+        //     select.addEventListener('change', function () {
+        //         // Add temporary loading state
+        //         this.classList.add('loading');
+        //         setTimeout(() => {
+        //             this.classList.remove('loading');
+        //         }, 300);
+        //     });
+        // });
+
+        // Initialize owner filter search functionality
+        initializeOwnerFilterSearch();
     }
 
     // Initialize user search on page load
     if (userSearchInput && userSearchInput.value.trim() !== '') {
         performUserSearch();
     }
+
+    // Initialize enhanced user filter functionality
+    initializeEnhancedUserFilters();
 });
 
 // Add Vault Form Functionality
@@ -3443,14 +3983,8 @@ window.testLoad = function () {
 
 // Function to refresh vault list from server
 function refreshVaultList() {
-    fetch('/dashboard/vaults')
-        .then(response => response.json())
-        .then(vaults => {
-            updateVaultTable(vaults);
-        })
-        .catch(error => {
-            console.error('Error refreshing vault list:', error);
-        });
+    // Refresh with current page and filters
+    loadVaultsPaginated(currentVaultPage, vaultFilters);
 }
 
 function refreshMyVaultList() {
@@ -3475,83 +4009,25 @@ function refreshTrashList() {
         });
 }
 
-// Function to update vault table with new data
+// Function to update vault table with new data (legacy function for backward compatibility)
 function updateVaultTable(vaults) {
-    const vaultTable = document.getElementById('vaultTable');
-    if (!vaultTable) return;
+    // This function is kept for backward compatibility
+    // For new pagination functionality, use updateVaultTableWithPagination
+    console.warn('updateVaultTable is deprecated. Use updateVaultTableWithPagination instead.');
 
-    const tbody = vaultTable.querySelector('tbody');
-    if (!tbody) return;
-
-    // Clear existing rows
-    tbody.innerHTML = '';
-
-    if (vaults.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center py-4">
-                    <div class="text-muted">
-                        <i class="fas fa-vault fa-3x mb-3"></i>
-                        <p class="mb-0">No vaults found</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
+    // If vaults is an array, convert to pagination format
+    if (Array.isArray(vaults)) {
+        const paginationData = {
+            vaults: vaults,
+            currentPage: 0,
+            totalPages: 1,
+            totalVaults: vaults.length,
+            pageSize: vaults.length,
+            hasNext: false,
+            hasPrevious: false
+        };
+        updateVaultTableWithPagination(paginationData);
     }
-
-    // Add new rows
-    vaults.forEach(vault => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-lock mr-2 ${vault.iconColorClass || 'text-primary'}"></i>
-                    <span>${vault.name}</span>
-                </div>
-            </td>
-            <td>${vault.ownerName || 'Unknown'}</td>
-            <td>
-                <span class="badge badge-info" style="color: white;">${vault.memberCount || 0}</span>
-            </td>
-            <td>
-                <div class="vault-status-toggle">
-                    <label class="switch">
-                        <input type="checkbox" 
-                               ${vault.isActivated ? 'checked' : ''}
-                               data-vault-id="${vault.id}"
-                               data-vault-name="${vault.name}"
-                               class="vault-status-checkbox"
-                               onclick="confirmToggleVaultStatus(this)">
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="status-label ${vault.isActivated ? 'active' : 'inactive'}">
-                        ${vault.status || 'Unknown'}
-                    </span>
-                </div>
-            </td>
-            <td>${formatDate(vault.createdAt)}</td>
-            <td>
-                <span class="badge badge-secondary" style="color: white;">${vault.documentCount || 0}</span>
-            </td>
-            <td>
-                <div class="d-flex align-items-center justify-content-center">
-                    ${vault.isActivated ? `
-                    <a href="/vault-detail?id=${vault.id}&assistant=true" 
-                       style="background-color: black; border-radius: 20px; padding: 5px 10px; margin-right: 5px;" 
-                       title="View Vault">
-                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" 
-                             xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24">
-                            <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"></path>
-                        </svg>
-                    </a>
-                    ` : ''}
-                </div>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
 }
 
 // Function to update my vault table with new data
@@ -6063,22 +6539,22 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Copy to clipboard function
-function copyToClipboard(text, button) {
+function copyToClipboard(text, button, successCallback = showCopySuccess) {
     if (navigator.clipboard && window.isSecureContext) {
         // Use modern clipboard API
         navigator.clipboard.writeText(text).then(function () {
-            showCopySuccess(button);
+            successCallback(button);
         }).catch(function (err) {
             console.error('Failed to copy: ', err);
-            fallbackCopyTextToClipboard(text, button);
+            fallbackCopyTextToClipboard(text, button, successCallback);
         });
     } else {
         // Fallback for older browsers
-        fallbackCopyTextToClipboard(text, button);
+        fallbackCopyTextToClipboard(text, button, successCallback);
     }
 }
 
-function fallbackCopyTextToClipboard(text, button) {
+function fallbackCopyTextToClipboard(text, button, successCallback = showCopySuccess) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.top = "0";
@@ -6093,13 +6569,13 @@ function fallbackCopyTextToClipboard(text, button) {
     try {
         const successful = document.execCommand('copy');
         if (successful) {
-            showCopySuccess(button);
+            successCallback(button);
         } else {
-            showToast('Failed to copy User ID', 'error');
+            showToast('Failed to copy ID', 'error');
         }
     } catch (err) {
         console.error('Fallback: Oops, unable to copy', err);
-        showToast('Failed to copy User ID', 'error');
+        showToast('Failed to copy ID', 'error');
     }
 
     document.body.removeChild(textArea);
@@ -6113,6 +6589,22 @@ function showCopySuccess(button) {
 
     // Show success message
     showToast('User ID copied to clipboard!', 'success');
+
+    // Reset button after 2 seconds
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.classList.remove('copied');
+    }, 2000);
+}
+
+function showVaultCopySuccess(button) {
+    // Change button appearance
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    button.classList.add('copied');
+
+    // Show success message
+    showToast('Vault ID copied to clipboard!', 'success');
 
     // Reset button after 2 seconds
     setTimeout(() => {
@@ -6164,3 +6656,278 @@ window.updateDashboardStatistics = function (data) {
         }
     }
 };
+
+// Vault Pagination Variables
+let currentVaultPage = 0;
+let vaultPageSize = 10;
+let vaultFilters = {
+    keyword: '',
+    status: '',
+    owner: '',
+    memberCount: '',
+    dateFrom: '',
+    dateTo: ''
+};
+
+// Function to load vaults with pagination
+function loadVaultsPaginated(page = 0, filters = {}) {
+    const params = new URLSearchParams({
+        page: page,
+        size: vaultPageSize
+    });
+
+    // Add filters to params
+    if (filters.keyword) params.append('keyword', filters.keyword);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.owner) params.append('owner', filters.owner);
+    if (filters.memberCount) params.append('memberCount', filters.memberCount);
+    if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+    if (filters.dateTo) params.append('dateTo', filters.dateTo);
+
+    console.log('loadVaultsPaginated called with filters:', filters);
+    console.log('Request URL:', `/dashboard/vaults/paginated?${params.toString()}`);
+
+    fetch(`/dashboard/vaults/paginated?${params.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            updateVaultTableWithPagination(data);
+        })
+        .catch(error => {
+            console.error('Error loading vaults:', error);
+            showToast('Error loading vaults', 'error');
+        });
+}
+
+// Function to update vault table with pagination data
+function updateVaultTableWithPagination(data) {
+    const vaultTable = document.getElementById('vaultTable');
+    if (!vaultTable) return;
+
+    const tbody = vaultTable.querySelector('tbody');
+    if (!tbody) return;
+
+    // Clear existing rows
+    tbody.innerHTML = '';
+
+    if (data.vaults.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="fas fa-vault fa-3x mb-3"></i>
+                        <p class="mb-0">No vaults found</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    } else {
+        // Add new rows
+        data.vaults.forEach(vault => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <span class="vault-id-cell">${vault.id}</span>
+                            <button class="btn btn-sm btn-outline-secondary ml-2 copy-vault-id-btn" 
+                                    data-vault-id="${vault.id}"
+                                    title="Copy Vault ID">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-lock mr-2 ${vault.iconColorClass || 'text-primary'}"></i>
+                            <span>${vault.name}</span>
+                        </div>
+                    </td>
+                <td>${vault.ownerName || 'Unknown'}</td>
+                <td>
+                    <span class="badge badge-info" style="color: white;">${vault.memberCount || 0}</span>
+                </td>
+                <td>
+                    <div class="vault-status-toggle">
+                        <label class="switch">
+                            <input type="checkbox" 
+                                   ${vault.isActivated ? 'checked' : ''}
+                                   data-vault-id="${vault.id}"
+                                   data-vault-name="${vault.name}"
+                                   class="vault-status-checkbox"
+                                   onclick="confirmToggleVaultStatus(this)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </td>
+                <td>${formatDate(vault.createdAt)}</td>
+                <td>
+                    <span class="badge badge-secondary" style="color: white;">${vault.documentCount || 0}</span>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center justify-content-center">
+                        ${vault.isActivated ? `
+                            <a href="/vault-detail?id=${vault.id}&assistant=true" 
+                               style="background-color: black; border-radius: 20px; padding: 5px 10px; margin-right: 5px;"
+                               title="View Vault">
+                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                     xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24">
+                                    <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2" />
+                                </svg>
+                            </a>
+                        ` : ''}
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add event listeners for copy vault ID buttons
+        const copyButtons = tbody.querySelectorAll('.copy-vault-id-btn');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const vaultId = this.getAttribute('data-vault-id');
+                copyToClipboard(vaultId, this, showVaultCopySuccess);
+            });
+        });
+    }
+
+    // Update pagination info
+    updateVaultPaginationInfo(data);
+
+    // Update pagination controls
+    updateVaultPaginationControls(data);
+}
+
+// Function to update pagination info
+function updateVaultPaginationInfo(data) {
+    const pageInfo = document.getElementById('vault-list-page-info');
+    if (pageInfo) {
+        if (data.totalVaults > 0) {
+            const startItem = data.currentPage * vaultPageSize + 1;
+            const endItem = data.currentPage * vaultPageSize + data.vaults.length;
+            pageInfo.innerHTML = `<span>Showing ${startItem} to ${endItem} of ${data.totalVaults} entries</span>`;
+        } else {
+            pageInfo.innerHTML = '<span>No entries found</span>';
+        }
+    }
+}
+
+// Function to update pagination controls
+function updateVaultPaginationControls(data) {
+    const pagination = document.getElementById('vaultPagination');
+    if (!pagination) return;
+
+    // Clear existing pagination
+    pagination.innerHTML = '';
+
+    const currentPage = data.currentPage;
+    const totalPages = data.totalPages;
+
+    // Previous button
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${currentPage === 0 ? 'disabled' : ''}`;
+    if (currentPage > 0) {
+        const prevLink = document.createElement('a');
+        prevLink.className = 'page-link pagination-link';
+        prevLink.href = '#';
+        prevLink.dataset.page = currentPage - 1;
+        prevLink.textContent = 'Previous';
+        prevLi.appendChild(prevLink);
+    } else {
+        const prevSpan = document.createElement('span');
+        prevSpan.className = 'page-link';
+        prevSpan.textContent = 'Previous';
+        prevLi.appendChild(prevSpan);
+    }
+    pagination.appendChild(prevLi);
+
+    // Page numbers
+    for (let i = 0; i < totalPages; i++) {
+        const pageLi = document.createElement('li');
+        pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+        const pageLink = document.createElement('a');
+        pageLink.className = 'page-link pagination-link';
+        pageLink.href = '#';
+        pageLink.dataset.page = i;
+        pageLink.textContent = i + 1;
+        pageLi.appendChild(pageLink);
+        pagination.appendChild(pageLi);
+    }
+
+    // Next button
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`;
+    if (currentPage < totalPages - 1) {
+        const nextLink = document.createElement('a');
+        nextLink.className = 'page-link pagination-link';
+        nextLink.href = '#';
+        nextLink.dataset.page = currentPage + 1;
+        nextLink.textContent = 'Next';
+        nextLi.appendChild(nextLink);
+    } else {
+        const nextSpan = document.createElement('span');
+        nextSpan.className = 'page-link';
+        nextSpan.textContent = 'Next';
+        nextLi.appendChild(nextSpan);
+    }
+    pagination.appendChild(nextLi);
+
+    // Add event listeners to pagination links
+    const paginationLinks = pagination.querySelectorAll('.pagination-link');
+    paginationLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const page = parseInt(this.dataset.page);
+            if (!isNaN(page)) {
+                loadVaultsPaginated(page, vaultFilters);
+            }
+        });
+    });
+}
+
+// Simple and clean apply vault filters function
+function applyVaultFilters() {
+    console.log('Applying vault filters...');
+    applyFilters();
+}
+
+// Simple and clean clear vault filters function
+function clearVaultFilters() {
+    console.log('Clearing vault filters...');
+    clearFilters();
+}
+
+// Initialize vault pagination and filters
+function initializeVaultPagination() {
+    // Load initial vault data
+    loadVaultsPaginated(0, vaultFilters);
+
+    // Add event listeners for filter buttons
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    const clearFiltersBtn = document.getElementById('clearFilters');
+    const clearAllFiltersBtn = document.getElementById('clearAllFilters');
+
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', applyVaultFilters);
+    }
+
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', clearVaultFilters);
+    }
+
+    if (clearAllFiltersBtn) {
+        clearAllFiltersBtn.addEventListener('click', clearVaultFilters);
+    }
+
+    // Add event listener for search input
+    const searchInput = document.getElementById('vaultSearchInput');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyVaultFilters();
+            }, 500); // Debounce search
+        });
+    }
+}

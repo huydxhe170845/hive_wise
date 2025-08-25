@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.time.LocalDate;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -565,6 +567,120 @@ public class DashboardController {
             }
 
             return ResponseEntity.ok(vaultList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/vaults/paginated")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getVaultsPaginated(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "owner", required = false) String owner,
+            @RequestParam(value = "memberCount", required = false) String memberCount,
+            @RequestParam(value = "dateFrom", required = false) String dateFrom,
+            @RequestParam(value = "dateTo", required = false) String dateTo) {
+        try {
+            // Get all vaults first for filtering
+            List<VaultDashboardResponse> allVaults = vaultService.getAllVaultsForDashboard();
+            List<VaultDashboardResponse> filteredVaults = new ArrayList<>(allVaults);
+
+            // Apply filters
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String lowerKeyword = keyword.toLowerCase();
+                filteredVaults = filteredVaults.stream()
+                        .filter(vault -> vault.getName().toLowerCase().contains(lowerKeyword) ||
+                                vault.getOwnerName().toLowerCase().contains(lowerKeyword))
+                        .collect(Collectors.toList());
+            }
+
+            if (status != null && !status.trim().isEmpty()) {
+                filteredVaults = filteredVaults.stream()
+                        .filter(vault -> vault.getStatus().equals(status))
+                        .collect(Collectors.toList());
+            }
+
+            if (owner != null && !owner.trim().isEmpty()) {
+                String lowerOwner = owner.toLowerCase();
+                filteredVaults = filteredVaults.stream()
+                        .filter(vault -> vault.getOwnerName().toLowerCase().contains(lowerOwner))
+                        .collect(Collectors.toList());
+            }
+
+            if (memberCount != null && !memberCount.trim().isEmpty()) {
+                filteredVaults = filteredVaults.stream()
+                        .filter(vault -> {
+                            int count = vault.getMemberCount();
+                            switch (memberCount) {
+                                case "0":
+                                    return count == 0;
+                                case "1-5":
+                                    return count >= 1 && count <= 5;
+                                case "6-20":
+                                    return count >= 6 && count <= 20;
+                                case "20+":
+                                    return count > 20;
+                                default:
+                                    return true;
+                            }
+                        })
+                        .collect(Collectors.toList());
+            }
+
+            if (dateFrom != null && !dateFrom.trim().isEmpty()) {
+                LocalDate fromDate = LocalDate.parse(dateFrom);
+                filteredVaults = filteredVaults.stream()
+                        .filter(vault -> vault.getCreatedAt().toLocalDate().isAfter(fromDate.minusDays(1)))
+                        .collect(Collectors.toList());
+            }
+
+            if (dateTo != null && !dateTo.trim().isEmpty()) {
+                LocalDate toDate = LocalDate.parse(dateTo);
+                filteredVaults = filteredVaults.stream()
+                        .filter(vault -> vault.getCreatedAt().toLocalDate().isBefore(toDate.plusDays(1)))
+                        .collect(Collectors.toList());
+            }
+
+            // Calculate pagination
+            int totalVaults = filteredVaults.size();
+            int totalPages = (int) Math.ceil((double) totalVaults / size);
+            int startIndex = page * size;
+            int endIndex = Math.min(startIndex + size, totalVaults);
+
+            // Get paginated results
+            List<VaultDashboardResponse> paginatedVaults = filteredVaults.subList(startIndex, endIndex);
+
+            // Convert to map format
+            List<Map<String, Object>> vaultList = new ArrayList<>();
+            for (VaultDashboardResponse vault : paginatedVaults) {
+                Map<String, Object> vaultMap = new HashMap<>();
+                vaultMap.put("id", vault.getId());
+                vaultMap.put("name", vault.getName());
+                vaultMap.put("ownerName", vault.getOwnerName());
+                vaultMap.put("memberCount", vault.getMemberCount());
+                vaultMap.put("status", vault.getStatus());
+                vaultMap.put("statusBadgeClass", vault.getStatusBadgeClass());
+                vaultMap.put("isActivated", vault.getIsActivated());
+                vaultMap.put("isDeleted", vault.getIsDeleted());
+                vaultMap.put("createdAt", vault.getCreatedAt());
+                vaultMap.put("documentCount", vault.getDocumentCount());
+                vaultMap.put("iconColorClass", vault.getIconColorClass());
+                vaultList.add(vaultMap);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("vaults", vaultList);
+            response.put("currentPage", page);
+            response.put("totalPages", totalPages);
+            response.put("totalVaults", totalVaults);
+            response.put("pageSize", size);
+            response.put("hasNext", page < totalPages - 1);
+            response.put("hasPrevious", page > 0);
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

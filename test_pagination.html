@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault Pagination Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+        }
+
+        .pagination a {
+            padding: 8px 12px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+
+        .pagination .active a {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .pagination .disabled a {
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Vault Pagination Test</h1>
+
+    <div>
+        <label for="search">Search:</label>
+        <input type="text" id="search" placeholder="Search vaults...">
+
+        <label for="status">Status:</label>
+        <select id="status">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+        </select>
+
+        <button onclick="applyFilters()">Apply Filters</button>
+        <button onclick="clearFilters()">Clear Filters</button>
+    </div>
+
+    <table id="vaultTable">
+        <thead>
+            <tr>
+                <th>Vault Name</th>
+                <th>Owner</th>
+                <th>Members</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Documents</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be loaded here -->
+        </tbody>
+    </table>
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <span id="paginationInfo">Showing 0 to 0 of 0 vaults</span>
+        </div>
+        <nav>
+            <ul class="pagination" id="pagination">
+                <li class="disabled" id="prevPage">
+                    <a href="#" tabindex="-1">Previous</a>
+                </li>
+                <li class="active">
+                    <a href="#" data-page="0">1</a>
+                </li>
+                <li class="disabled" id="nextPage">
+                    <a href="#" tabindex="-1">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <script>
+        let currentPage = 0;
+        let pageSize = 10;
+        let filters = {
+            keyword: '',
+            status: '',
+            owner: '',
+            memberCount: '',
+            dateFrom: '',
+            dateTo: ''
+        };
+
+        function loadVaultsPaginated(page = 0, filters = {}) {
+            const params = new URLSearchParams({
+                page: page,
+                size: pageSize
+            });
+
+            // Add filters to params
+            if (filters.keyword) params.append('keyword', filters.keyword);
+            if (filters.status) params.append('status', filters.status);
+            if (filters.owner) params.append('owner', filters.owner);
+            if (filters.memberCount) params.append('memberCount', filters.memberCount);
+            if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+            if (filters.dateTo) params.append('dateTo', filters.dateTo);
+
+            console.log('Loading vaults with params:', params.toString());
+
+            fetch(`/dashboard/vaults/paginated?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Received data:', data);
+                    updateVaultTable(data);
+                    updatePagination(data);
+                })
+                .catch(error => {
+                    console.error('Error loading vaults:', error);
+                });
+        }
+
+        function updateVaultTable(data) {
+            const tbody = document.querySelector('#vaultTable tbody');
+            tbody.innerHTML = '';
+
+            if (data.vaults.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 20px;">
+                            No vaults found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            data.vaults.forEach(vault => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${vault.name}</td>
+                    <td>${vault.ownerName || 'Unknown'}</td>
+                    <td>${vault.memberCount || 0}</td>
+                    <td>${vault.status || 'Unknown'}</td>
+                    <td>${new Date(vault.createdAt).toLocaleDateString()}</td>
+                    <td>${vault.documentCount || 0}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updatePagination(data) {
+            const pagination = document.getElementById('pagination');
+            const prevButton = document.getElementById('prevPage');
+            const nextButton = document.getElementById('nextPage');
+
+            // Update prev/next buttons
+            prevButton.classList.toggle('disabled', !data.hasPrevious);
+            nextButton.classList.toggle('disabled', !data.hasNext);
+
+            // Clear existing page numbers
+            const pageItems = pagination.querySelectorAll('li:not(#prevPage):not(#nextPage)');
+            pageItems.forEach(item => item.remove());
+
+            // Add page numbers
+            const totalPages = data.totalPages;
+            const currentPage = data.currentPage;
+
+            let startPage = Math.max(0, currentPage - 2);
+            let endPage = Math.min(totalPages - 1, currentPage + 2);
+
+            if (endPage - startPage < 4) {
+                if (startPage === 0) {
+                    endPage = Math.min(totalPages - 1, startPage + 4);
+                } else {
+                    startPage = Math.max(0, endPage - 4);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageItem = document.createElement('li');
+                pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
+
+                const pageLink = document.createElement('a');
+                pageLink.href = '#';
+                pageLink.textContent = i + 1;
+                pageLink.onclick = (e) => {
+                    e.preventDefault();
+                    if (i !== currentPage) {
+                        loadVaultsPaginated(i, filters);
+                    }
+                };
+
+                pageItem.appendChild(pageLink);
+                pagination.insertBefore(pageItem, nextButton);
+            }
+
+            // Update pagination info
+            const startIndex = data.vaults.length > 0 ? (data.currentPage * pageSize + 1) : 0;
+            const endIndex = data.currentPage * pageSize + data.vaults.length;
+            document.getElementById('paginationInfo').textContent =
+                `Showing ${startIndex} to ${endIndex} of ${data.totalVaults} vaults`;
+        }
+
+        function applyFilters() {
+            filters = {
+                keyword: document.getElementById('search').value,
+                status: document.getElementById('status').value,
+                owner: '',
+                memberCount: '',
+                dateFrom: '',
+                dateTo: ''
+            };
+
+            currentPage = 0;
+            loadVaultsPaginated(currentPage, filters);
+        }
+
+        function clearFilters() {
+            filters = {
+                keyword: '',
+                status: '',
+                owner: '',
+                memberCount: '',
+                dateFrom: '',
+                dateTo: ''
+            };
+
+            document.getElementById('search').value = '';
+            document.getElementById('status').value = '';
+
+            currentPage = 0;
+            loadVaultsPaginated(currentPage, filters);
+        }
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function () {
+            loadVaultsPaginated(0, filters);
+        });
+    </script>
+</body>
+
+</html>

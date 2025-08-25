@@ -637,25 +637,24 @@ input:checked+.slider:before {
     }
 }
 
-/* Vault Search and Filter Styles */
 .vault-search-filter,
 .user-search-filter {
     gap: 10px;
 }
 
 .search-box {
-    min-width: 250px;
+    min-width: 350px;
 }
 
 .search-box .form-control {
-    border-radius: 20px;
+    border-radius: 40px;
     border: 1px solid #e0e6ed;
     font-size: 14px;
 }
 
 .search-box .form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: #ebaf0a;
+    box-shadow: 0 0 0 0.2rem rgba(228, 168, 4, 0.274);
 }
 
 .filter-dropdown .dropdown-menu {
@@ -1382,6 +1381,107 @@ label.required::before {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Clear button for owner filter */
+.vault-owner-clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.vault-owner-clear-btn:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.vault-owner-clear-btn i {
+    font-size: 12px;
+}
+
+/* Enhanced styling for filter dropdown */
+#vaultFilterDropdown+.dropdown-menu .vault-owner-select-container {
+    margin-bottom: 0;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-search-wrapper input {
+    height: 42px;
+    font-size: 14px;
+    padding: 10px 40px 10px 12px;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-dropdown {
+    top: 100%;
+    max-height: 150px;
+    z-index: 1051;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-item {
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-item .user-avatar {
+    width: 36px;
+    height: 36px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-item .user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-item .user-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-item .user-email {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-item .user-role {
+    margin-left: 12px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    align-self: center;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #e9ecef;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-item .user-role.admin-role {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-color: #bbdefb;
+}
+
+#vaultFilterDropdown+.dropdown-menu .vault-owner-item .user-role.user-role {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+    border-color: #e1bee7;
 }
 
 .vault-owner-item .user-role {
@@ -2355,7 +2455,6 @@ label.required::before {
     border-bottom: 1px solid #e9ecef;
 }
 
-/* Form Styles */
 .form-group {
     margin-bottom: 16px;
 }
@@ -2371,7 +2470,7 @@ label.required::before {
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 8px 12px;
+    padding: 8px 20px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     font-size: 13px;
@@ -3929,7 +4028,52 @@ label.required::before {
     }
 }
 
-/* User Status Toggle Styles */
+/* Circular Filter Button */
+.filter-btn-circle {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #c9ced3 !important;
+    background-color: white !important;
+    color: #6c757d !important;
+    transition: all 0.2s ease !important;
+}
+
+.filter-btn-circle:hover {
+    background-color: #19191a !important;
+    color: white !important;
+    border-color: #6c757d !important;
+}
+
+.filter-btn-circle:focus {
+    box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25) !important;
+}
+
+.filter-btn-circle i {
+    font-size: 14px !important;
+    margin: 0 !important;
+}
+
+.filter-btn-circle::after {
+    display: none !important;
+}
+
+/* Responsive filter button */
+@media (max-width: 768px) {
+    .filter-btn-circle {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .filter-btn-circle i {
+        font-size: 12px !important;
+    }
+}
+
 .user-status-toggle {
     cursor: pointer;
 }
@@ -4049,4 +4193,423 @@ label.required::before {
 #userStatusConfirmModal .btn-secondary:hover {
     background-color: #545b62;
     border-color: #545b62;
+}
+
+/* Vault Pagination Styles - Using same styles as account list */
+.pagination-link {
+    cursor: pointer;
+}
+
+.pagination-link:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #0056b3;
+}
+
+/* Vault ID cell styles */
+.vault-id-cell {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.copy-vault-id-btn {
+    padding: 2px 6px;
+    font-size: 10px;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    transition: transform 0.2s ease;
+}
+
+.copy-vault-id-btn:hover {
+    background: transparent;
+    border: none;
+    color: #007bff;
+    transform: scale(1.1);
+}
+
+.copy-vault-id-btn:active {
+    transform: scale(0.95);
+}
+
+.copy-vault-id-btn.copied {
+    background: transparent;
+    border: none;
+    color: #28a745;
+}
+
+/* Custom Select Dropdown Styles */
+.custom-select-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.custom-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #fff url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 8px center;
+    background-size: 16px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 8px 32px 8px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    min-height: 38px;
+}
+
+.custom-select:hover {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.custom-select:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.custom-select:disabled {
+    background-color: #e9ecef;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* Custom Select Dropdown Menu */
+.custom-select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1050;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    margin-top: 2px;
+}
+
+.custom-select-dropdown.show {
+    display: block;
+    animation: dropdownSlideIn 0.2s ease-out;
+}
+
+@keyframes dropdownSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.custom-select-option {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid #f8f9fa;
+    font-size: 14px;
+    color: #495057;
+}
+
+.custom-select-option:last-child {
+    border-bottom: none;
+}
+
+.custom-select-option:hover {
+    background-color: #f8f9fa;
+}
+
+.custom-select-option.selected {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.custom-select-option.selected:hover {
+    background-color: #0056b3;
+}
+
+/* Scrollbar styling for dropdown */
+.custom-select-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-select-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.custom-select-dropdown::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.custom-select-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Enhanced user filter dropdown styles */
+#userFilterDropdown+.dropdown-menu {
+    left: auto;
+    right: 0;
+    min-width: 320px;
+    max-width: 400px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e9ecef;
+}
+
+/* Enhanced vault filter dropdown styles */
+#vaultFilterDropdown+.dropdown-menu {
+    left: auto;
+    right: 0;
+    min-width: 320px;
+    max-width: 400px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e9ecef;
+}
+
+#userFilterDropdown+.dropdown-menu .dropdown-header,
+#vaultFilterDropdown+.dropdown-menu .dropdown-header {
+    font-weight: 600;
+    color: #495057;
+    padding: 0 0 15px 0;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+    font-size: 16px;
+}
+
+#userFilterDropdown+.dropdown-menu .form-group,
+#vaultFilterDropdown+.dropdown-menu .form-group {
+    margin-bottom: 18px;
+}
+
+#userFilterDropdown+.dropdown-menu .form-group label,
+#vaultFilterDropdown+.dropdown-menu .form-group label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+#userFilterDropdown+.dropdown-menu .form-control,
+#vaultFilterDropdown+.dropdown-menu .form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px 12px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+#userFilterDropdown+.dropdown-menu .form-control:focus,
+#vaultFilterDropdown+.dropdown-menu .form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+#userFilterDropdown+.dropdown-menu .dropdown-divider,
+#vaultFilterDropdown+.dropdown-menu .dropdown-divider {
+    margin: 20px 0;
+    border-color: #e9ecef;
+}
+
+#userFilterDropdown+.dropdown-menu .btn,
+#vaultFilterDropdown+.dropdown-menu .btn {
+    border-radius: 20px;
+    font-weight: 500;
+    padding: 8px 16px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+#userFilterDropdown+.dropdown-menu .btn-primary,
+#vaultFilterDropdown+.dropdown-menu .btn-primary {
+    background-color: #1e1e1e;
+    border-color: #1e1e1e;
+}
+
+#userFilterDropdown+.dropdown-menu .btn-primary:hover,
+#vaultFilterDropdown+.dropdown-menu .btn-primary:hover {
+    background-color: #4d4d4d;
+    border-color: #4d4d4d;
+}
+
+#userFilterDropdown+.dropdown-menu .btn-outline-secondary,
+#vaultFilterDropdown+.dropdown-menu .btn-outline-secondary {
+    color: #282828;
+    border-color: #282828;
+}
+
+#userFilterDropdown+.dropdown-menu .btn-outline-secondary:hover,
+#vaultFilterDropdown+.dropdown-menu .btn-outline-secondary:hover {
+    background-color: #282828;
+    border-color: #282828;
+    color: #fff;
+}
+
+.date-range-filter {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.date-range-filter .form-group {
+    margin-bottom: 12px;
+}
+
+.date-range-filter .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.date-range-filter label {
+    color: #495057;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.date-range-filter label i {
+    color: #6c757d;
+    margin-right: 6px;
+}
+
+.date-range-filter input[type="date"] {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.date-range-filter input[type="date"]:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.date-range-filter input[type="date"]:hover {
+    border-color: #adb5bd;
+}
+
+/* Responsive adjustments for custom select */
+@media (max-width: 768px) {
+
+    #userFilterDropdown+.dropdown-menu,
+    #vaultFilterDropdown+.dropdown-menu {
+        left: 0 !important;
+        right: auto !important;
+        width: 100%;
+        max-width: 350px;
+        min-width: auto;
+        margin: 0 auto;
+        padding: 15px;
+    }
+
+    .custom-select-dropdown {
+        max-height: 150px;
+    }
+
+    .date-range-filter {
+        padding: 12px;
+    }
+
+    .custom-select {
+        font-size: 16px;
+        /* Prevent zoom on iOS */
+        padding: 10px 32px 10px 12px;
+    }
+
+    #userFilterDropdown+.dropdown-menu .form-group,
+    #vaultFilterDropdown+.dropdown-menu .form-group {
+        margin-bottom: 15px;
+    }
+
+    #userFilterDropdown+.dropdown-menu .btn,
+    #vaultFilterDropdown+.dropdown-menu .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+}
+
+/* Additional enhancements for better UX */
+.custom-select-container {
+    position: relative;
+}
+
+.custom-select-container::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #6c757d;
+    pointer-events: none;
+    transition: transform 0.2s ease;
+}
+
+.custom-select:focus+.custom-select-container::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Loading state for custom selects - removed for cleaner UX */
+/* .custom-select.loading {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M21 12a9 9 0 11-6.219-8.56'%3e%3c/path%3e%3c/svg%3e");
+    background-size: 16px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+} */
+
+/* Enhanced focus states */
+.custom-select:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Minimal transitions for better performance */
+.custom-select {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Better visual feedback for selected options */
+.custom-select option:checked {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+}
+
+/* Improved accessibility */
+.custom-select:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
 }
